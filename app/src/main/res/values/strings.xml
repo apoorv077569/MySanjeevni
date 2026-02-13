@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">MySanjeevni</string>
+    <string name="email_icon">email_icon</string>
+    <string name="password_icon">\npassword_icon</string>
+    <string name="login">Login</string>
+    <string name="signup">Signup</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="already_have_an_account">Already have an account? </string>
+    <string name="forget_password">Forget Password</string>
+    <string name="send_otp">Send OTP</string>
+    <string name="dont_have_an_account">Don\'t have an account</string>
+    <string name="reset_password">ResetPassword</string>
+    <string name="otp_verification">We have sent an otp to your email</string>
+    <string name="verify_otp">Verify Otp</string>
+
+</resources>
