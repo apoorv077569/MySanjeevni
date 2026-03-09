@@ -2,9 +2,9 @@ package com.mysanjeevni.mysanjeevni.features.auth.presentation.ui
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background // <--- Added
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme // <--- Added
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,17 +21,17 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.internal.composableLambda
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,18 +41,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.navigation.Screen
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @Composable
 fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
     val isFormValid = email.isNotBlank() && password.isNotBlank()
 
     val animatedColor by animateColorAsState(
@@ -88,9 +92,9 @@ fun LoginScreen(navController: NavController) {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary, // Primary usually handles dark mode well
         )
-        Spacer(modifier= Modifier.height(5.dp))
+        Spacer(modifier = Modifier.height(5.dp))
         Text(
-            text=stringResource(R.string.login),
+            text = stringResource(R.string.login),
             fontSize = 20.sp,
             fontWeight = FontWeight.Normal,
             color = MaterialTheme.colorScheme.primary,
@@ -166,11 +170,16 @@ fun LoginScreen(navController: NavController) {
 
         Button(
             onClick = {
-                navController.navigate(Screen.Home.route) {
-                    popUpTo(Screen.Login.route) { inclusive = true }
+                isLoading = true
+                scope.launch {
+                    delay(2000)
+                    isLoading = false
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             },
-            enabled = isFormValid,
+            enabled = isFormValid && !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
@@ -179,12 +188,20 @@ fun LoginScreen(navController: NavController) {
                 contentColor = Color.White
             )
         ) {
-            Text(text = stringResource(R.string.login), fontSize = 16.sp)
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.5.dp
+                )
+            } else {
+                Text(text = stringResource(R.string.login), fontSize = 16.sp)
+            }
         }
 
-        Spacer(modifier= Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Row{
+        Row {
             Text(
                 text = stringResource(R.string.dont_have_an_account) + " ",
                 color = textColor
@@ -193,7 +210,7 @@ fun LoginScreen(navController: NavController) {
                 text = stringResource(R.string.signup),
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable{
+                modifier = Modifier.clickable {
                     navController.navigate(Screen.Signup.route)
                 }
             )

@@ -1,10 +1,21 @@
 package com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.navigation
 
 sealed class Screen(val route:String) {
+    object Splash: Screen("splash")
     object Login: Screen("login")
     object Signup: Screen("signup")
     object Home: Screen("home")
     object Forget :Screen("forget")
     object VERIFY :Screen("verify")
     object ResetPassword :Screen("resetPassword")
+    object ProfileScreen :Screen("profile_screen")
+    object CartScreen :Screen("cart_screen")
+    object Consult : Screen("consult")
+    object Health : Screen("health")
+    object Plan : Screen("plan")
+    object PharmacyList : Screen("pharmacy_list")
+    object MyOrders : Screen("my_orders")
+    object ManageAddresses : Screen("manage_addresses")
+    object EditProfile : Screen("edit_profile")
+    object HealthRecords : Screen("health_records")
 }

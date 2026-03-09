@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,11 +39,16 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.navigation.Screen
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun ForgetScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
+    val isFormValid = email.isNotBlank()
+    val scope = rememberCoroutineScope()
     val isDark = isSystemInDarkTheme()
 
     val backgroundColor = if (isDark) Color(0xFF121212) else Color.White
@@ -97,10 +104,31 @@ fun ForgetScreen(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(10.dp))
 
-        Button(onClick = {
-            navController.navigate(Screen.VERIFY.route)
-        }) {
-            Text(stringResource(R.string.send_otp))
+        Button(
+            onClick = {
+                isLoading = true
+                scope.launch {
+                    delay(2000)
+                    isLoading = false
+                    navController.navigate(Screen.VERIFY.route)
+                }
+            },
+            enabled = isFormValid && !isLoading,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+        ) {
+            if (isLoading) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.5.dp
+                    )
+                }
+            } else {
+                Text(stringResource(R.string.send_otp))
+            }
         }
 
     }

@@ -12,11 +12,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui.components.MedicineItem
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.viewmodel.PharmacyViewModel
 
 @Composable
 fun PharmacyScreen(
+    navController: NavController,
     viewModel: PharmacyViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.collectAsState().value
@@ -32,7 +34,6 @@ fun PharmacyScreen(
         if (state.isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
-        // Error State - Show Text
         if (state.error.isNotBlank()) {
             Text(
                 text = state.error,

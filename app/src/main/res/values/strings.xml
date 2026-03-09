@@ -1,10 +1,11 @@
 <resources>
-    <string name="app_name">MySanjeevni</string>
+    <string name="app_name">MySanjeevani</string>
     <string name="email_icon">email_icon</string>
     <string name="password_icon">\npassword_icon</string>
     <string name="login">Login</string>
     <string name="signup">Signup</string>
     <string name="email">Email</string>
+    <string name="health">Health</string>
     <string name="password">Password</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="already_have_an_account">Already have an account? </string>
@@ -14,5 +15,43 @@
     <string name="reset_password">ResetPassword</string>
     <string name="otp_verification">We have sent an otp to your email</string>
     <string name="verify_otp">Verify Otp</string>
-
+    <string name="profile">Profile</string>
+    <string name="consult">Consult</string>
+    <string name="plan">Plan</string>
+    <string name="home">Home</string>
+    <string name="order_with_prescription">Order with prescription</string>
+    <string name="new_">New</string>
+    <string name="logout">Logout</string>
+    <string name="my_cart">My Cart</string>
+    <string name="back">Back</string>
+    <string name="decrease">Decrease</string>
+    <string name="increase">Increase</string>
+    <string name="bill_summary">Bill Summary</string>
+    <string name="item_total">Item Total</string>
+    <string name="grand_total">Grand Total</string>
+    <string name="delivery_fee">Delivery Fee</string>
+    <string name="free">FREE</string>
+    <string name="consult_now">Consult Now</string>
+    <string name="total_to_pay">Total to Pay</string>
+    <string name="checkout">Checkout</string>
+    <string name="consult_a_doctor">Consult a Doctor</string>
+    <string name="find_by_specialty">Find by Specialty</string>
+    <string name="top_doctors_near_you">Top Doctors Near You</string>
+    <string name="search_for_doctors_symptoms...">Search for doctors, symptoms...</string>
+    <string name="flat_50_off">Flat 50% OFF</string>
+    <string name="on_your_first_video_consultation">On your first video consultation</string>
+    <string name="my_orders">My Orders</string>
+    <string name="reorder">REORDER</string>
+    <string name="no_orders_yet">No Orders Yet</string>
+    <string name="start_shopping_to_see_your_orders_here">Start shopping to see your orders here</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="edit">Edit</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="full_name">Full Name</string>
+    <string name="email_id">Email ID</string>
+    <string name="mobile_number">Mobile Number</string>
+    <string name="manage_addresses">Manage Addresses</string>
+    <string name="add_address">Add Address</string>
+    <string name="address">Address</string>
+    <string name="office">Office</string>
 </resources>

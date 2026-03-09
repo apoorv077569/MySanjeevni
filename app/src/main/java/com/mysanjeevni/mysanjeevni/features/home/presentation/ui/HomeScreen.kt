@@ -1,44 +1,100 @@
 package com.mysanjeevni.mysanjeevni.features.home.presentation.ui
 
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.ShoppingBag
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.mysanjeevni.mysanjeevni.R
+import com.mysanjeevni.mysanjeevni.features.home.presentation.model.FeaturedMedicine
 import com.mysanjeevni.mysanjeevni.features.home.presentation.model.GridCategory
 import com.mysanjeevni.mysanjeevni.features.home.presentation.model.QuickCategory
+import com.mysanjeevni.mysanjeevni.features.home.presentation.util.HomeMockData
+import com.mysanjeevni.mysanjeevni.features.home.presentation.viewmodel.HomeViewModel
+import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.navigation.Screen
 
 // 1mg Brand Colors
 val Orange1mg = Color(0xFFFF6F61)
-val BgColor = Color(0xFFF5F7FA)
+//val BgColor = Color(0xFFF5F7FA)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltViewModel()) {
     val isDark = isSystemInDarkTheme()
-    val backgroundColor = if(isDark) Color(0xFF121212) else Color.White
-    val contentColor = if(isDark) Color.White else Color.Black
+    val backgroundColor = if (isDark) Color(0xFF121212) else Color.White
+    val contentColor = if (isDark) Color.White else Color.Black
+
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val searchResults by viewModel.searchResults.collectAsState()
+
+    // 1. Create the FocusRequester
+    val focusRequester = remember { FocusRequester() }
     Scaffold(
-        topBar = { HomeTopBar(isDark) },
-        bottomBar = { HomeBottomBar(isDark) },
+        topBar = {
+            HomeTopBar(isDark, onCartClick = {
+                navController.navigate(Screen.CartScreen.route)
+            })
+        },
+//        bottomBar = { HomeBottomBar(isDark,navController) },
         containerColor = Color.White
     ) { paddingValues ->
 
@@ -51,7 +107,13 @@ fun HomeScreen(navController: NavController) {
         ) {
 
             // 1. Search Bar
-            SearchBar(isDark)
+            SearchBar(
+                isDark = isDark,
+                query = searchQuery,
+                onQueryChange = { viewModel.onSearchQueryChanged(it) },
+                onClear = { viewModel.onSearchQueryChanged("") },
+                focusRequester = focusRequester
+            )
 
             // 2. Quick Categories (Horizontal Scroll)
             QuickCategoriesSection(isDark)
@@ -65,6 +127,16 @@ fun HomeScreen(navController: NavController) {
 
             // 4. Promo Banner (Carousel style)
             PromoBanner()
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            FeaturedMedicinesGrid(
+                isDark, onSeeAllClick = {
+                    navController.navigate(Screen.PharmacyList.route)
+                },
+                onAddToCartClick = { medicine ->
+                    viewModel.addToCart(medicine)
+                })
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -89,9 +161,9 @@ fun HomeScreen(navController: NavController) {
 // --- COMPONENTS ---
 
 @Composable
-fun HomeTopBar(isDark: Boolean) {
-    val textColor = if(isDark) Color.White else Color.Black
-    val containerColor = if(isDark) Color(0xFF121212) else Color.White
+fun HomeTopBar(isDark: Boolean, onCartClick: () -> Unit) {
+    val textColor = if (isDark) Color.White else Color.Black
+    val containerColor = if (isDark) Color(0xFF121212) else Color.White
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -133,35 +205,92 @@ fun HomeTopBar(isDark: Boolean) {
         Icon(
             imageVector = Icons.Outlined.ShoppingBag,
             contentDescription = "Cart",
-            modifier = Modifier.size(28.dp),
+            modifier = Modifier
+                .size(28.dp)
+                .clickable { onCartClick() },
             tint = textColor
         )
     }
 }
 
 @Composable
-fun SearchBar(isDark: Boolean) {
-    val borderColor = if(isDark) Color.Gray else Color.LightGray
-    val textColor = if(isDark) Color.LightGray else Color.Gray
-    val iconColor = if(isDark) Color.White else Color.Black
+fun SearchBar(
+    isDark: Boolean,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onClear: () -> Unit,
+    focusRequester: FocusRequester // 1. Add this parameter
+) {
+    val borderColor = if (isDark) Color.Gray else Color.LightGray
+    val textColor = if (isDark) Color.White else Color.Black
+    val placeholderColor = if (isDark) Color.LightGray else Color.Gray
+    val containerColor = if (isDark) Color(0xFF1E1E1E) else Color.White
 
-    Box(
+    // 2. Get keyboard controller to hide it manually when X is clicked
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
+    BasicTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        singleLine = true,
+        textStyle = TextStyle(
+            color = textColor,
+            fontSize = 16.sp
+        ),
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .height(50.dp)
-            .border(1.dp, borderColor, RoundedCornerShape(8.dp))
-            .padding(horizontal = 12.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.Search, contentDescription = null, tint = textColor)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Search for 'medicines'", color = textColor)
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(Icons.Default.Search, contentDescription = null, tint = iconColor) // Right search icon
+            .focusRequester(focusRequester), // 3. Attach requester here
+        decorationBox = { innerTextField ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .height(50.dp)
+                    .background(containerColor, RoundedCornerShape(8.dp))
+                    .border(1.dp, borderColor, RoundedCornerShape(8.dp))
+                    .padding(horizontal = 12.dp)
+                    // 4. Make the whole box clickable to focus input and show keyboard
+                    .clickable {
+                        focusRequester.requestFocus()
+                        keyboardController?.show()
+                    },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    tint = placeholderColor
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Box(modifier = Modifier.weight(1f)) {
+                    if (query.isEmpty()) {
+                        Text(
+                            text = "Search for 'medicines'",
+                            color = placeholderColor,
+                            fontSize = 16.sp
+                        )
+                    }
+                    innerTextField()
+                }
+
+                if (query.isNotEmpty()) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Clear",
+                        tint = placeholderColor,
+                        modifier = Modifier.clickable {
+                            onClear()
+                            // 5. Hide keyboard and clear focus when X is clicked
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                        }
+                    )
+                }
+            }
         }
-    }
+    )
 }
 
 @Composable
@@ -178,15 +307,15 @@ fun QuickCategoriesSection(isDark: Boolean) {
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(items.size) { index ->
-            QuickCategoryItem(items[index], isDark=isDark)
+            QuickCategoryItem(items[index], isDark = isDark)
         }
     }
 }
 
 @Composable
-fun QuickCategoryItem(item: QuickCategory,isDark: Boolean) {
-   val cardColor = if(isDark) Color(0xFF1E1E1E) else Color.White
-    val textColor = if(isDark) Color.LightGray else Color.Black
+fun QuickCategoryItem(item: QuickCategory, isDark: Boolean) {
+    val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
+    val textColor = if (isDark) Color.LightGray else Color.Black
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -209,7 +338,7 @@ fun QuickCategoryItem(item: QuickCategory,isDark: Boolean) {
             }
             if (item.isNew) {
                 Text(
-                    text = "NEW",
+                    text = stringResource(R.string.new_),
                     fontSize = 8.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
@@ -245,7 +374,7 @@ fun PrescriptionBanner(isDark: Boolean) {
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
-            text = "Order with prescription",
+            text = stringResource(R.string.order_with_prescription),
             fontWeight = FontWeight.Bold,
             color = textColor,
             modifier = Modifier.weight(1f)
@@ -257,7 +386,7 @@ fun PrescriptionBanner(isDark: Boolean) {
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
             modifier = Modifier.height(36.dp)
         ) {
-            Text("Order now", fontSize = 12.sp, color = if(isDark) Color.Black else Color.White)
+            Text("Order now", fontSize = 12.sp, color = if (isDark) Color.Black else Color.White)
         }
     }
 }
@@ -318,10 +447,10 @@ fun CategoryGrid(isDark: Boolean) {
 }
 
 @Composable
-fun GridCategoryItem(item: GridCategory, modifier: Modifier,isDark: Boolean) {
+fun GridCategoryItem(item: GridCategory, modifier: Modifier, isDark: Boolean) {
 
-    val cardColor = if(isDark) Color(0xFF1E1E1E) else Color(0xFFFFF0ED)
-    val textColor = if(isDark) Color.LightGray else Color.Black
+    val cardColor = if (isDark) Color(0xFF1E1E1E) else Color(0xFFFFF0ED)
+    val textColor = if (isDark) Color.LightGray else Color.Black
 
     Column(
         modifier = modifier.padding(4.dp),
@@ -330,7 +459,7 @@ fun GridCategoryItem(item: GridCategory, modifier: Modifier,isDark: Boolean) {
         Box(contentAlignment = Alignment.TopCenter) {
             Card(
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor =cardColor), // Light Peach bg
+                colors = CardDefaults.cardColors(containerColor = cardColor), // Light Peach bg
                 modifier = Modifier
                     .size(75.dp)
                     .padding(top = 6.dp) // Space for badge
@@ -372,56 +501,138 @@ fun GridCategoryItem(item: GridCategory, modifier: Modifier,isDark: Boolean) {
     }
 }
 
-// --- BOTTOM NAVIGATION ---
+@Composable
+fun FeaturedMedicinesGrid(
+    isDark: Boolean,
+    onSeeAllClick: () -> Unit,
+    onAddToCartClick: (FeaturedMedicine) -> Unit
+) {
+    val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
+    val textColor = if (isDark) Color.White else Color.Black
+
+    val medicines = HomeMockData.getMedicines()
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Featured Products",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = textColor
+            )
+            Text(
+                "See All",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFFF6F61),
+                modifier = Modifier.clickable { onSeeAllClick() }
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        LazyHorizontalGrid(
+            rows = GridCells.Fixed(2),
+            modifier = Modifier
+                .height(420.dp)
+                .fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(medicines) { medicine ->
+                FeaturedMedicinesItem(medicine, cardColor, textColor, onAddClick = { onAddToCartClick(medicine) })
+            }
+        }
+    }
+}
 
 @Composable
-fun HomeBottomBar(isDark: Boolean) {
-    val containerColor = if(isDark) Color(0xFF1E1E1E) else Color.White
-    val contentColor = if(isDark) Color.LightGray else Color.Black
-    NavigationBar(
-        containerColor = containerColor,
-        tonalElevation = 8.dp
+fun FeaturedMedicinesItem(
+    item: FeaturedMedicine,
+    cardColor: Color,
+    textColor: Color,
+    onAddClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .width(160.dp)
+            .height(200.dp)
+            .clickable {},
+        colors = CardDefaults.cardColors(containerColor = cardColor),
+        elevation = CardDefaults.cardElevation(2.dp),
+        shape = RoundedCornerShape(8.dp)
     ) {
-        NavigationBarItem(
-            selected = true,
-            onClick = { },
-            icon = { Icon(Icons.Default.Home, contentDescription = null) },
-            label = { Text("Home", fontSize = 10.sp) },
-            colors = NavigationBarItemDefaults.colors(selectedIconColor = Orange1mg, indicatorColor = Color.Transparent)
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = { },
-            icon = { Icon(Icons.Default.MedicalServices, contentDescription = null) },
-            label = { Text("Health", fontSize = 10.sp, color = contentColor) }
-        )
-
-        // Center Special Button
-        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(
+        Column(
+            modifier = Modifier.padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .height(100.dp)
+                    .fillMaxWidth()
+                    .background(Color.White, RoundedCornerShape(6.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = item.imageRes,
+                    contentDescription = null,
                     modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFFFE0B2)), // Light Orange
-                    contentAlignment = Alignment.Center
+                        .fillMaxSize()
+                        .padding(4.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    item.name,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = textColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "Bottle of 200ml",
+                    fontSize = 10.sp,
+                    color = Color.Gray
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Plan", color = Color(0xFFE65100), fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                    Text(
+                        item.price,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = textColor
+                    )
+                    Box(
+                        modifier = Modifier
+                            .border(1.dp, Color(0xFFFF6F61), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                            .clickable { onAddClick() }
+                    ) {
+                        Text(
+                            text = "ADD",
+                            color = Color(0xFFFF6F61),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
-
-        NavigationBarItem(
-            selected = false,
-            onClick = { },
-            icon = { Icon(Icons.Default.Person, contentDescription = null) },
-            label = { Text("Profile", fontSize = 10.sp) }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = { },
-            icon = { Icon(Icons.Default.Call, contentDescription = null) },
-            label = { Text("Consult", fontSize = 10.sp) }
-        )
     }
 }
