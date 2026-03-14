@@ -146,15 +146,20 @@ fun ProfileScreen(navController: NavController) {
                 "Lab Tests",
                 cardColor,
                 textColor,
-                Modifier
-                    .weight(1f)
+                Modifier.weight(1f),
+                onClick = {
+                    navController.navigate(Screen.MyLabTestsScreen.route)
+                }
             )
             ProfileStatCard(
                 Icons.Default.VideoCall,
                 "Consults",
                 cardColor,
                 textColor,
-                Modifier.weight(1f)
+                Modifier.weight(1f),
+                onClick = {
+                    navController.navigate(Screen.MyConsultScreen.route)
+                }
             )
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -165,17 +170,22 @@ fun ProfileScreen(navController: NavController) {
                 .clip(RoundedCornerShape(12.dp))
                 .background(cardColor)
         ) {
-            ProfileMenuItem(Icons.Default.MedicalServices, "My Health Records", textColor, secondaryText, onClick =
-                {navController.navigate(Screen.HealthRecords.route)})
+            ProfileMenuItem(
+                Icons.Default.MedicalServices, "My Health Records", textColor, secondaryText, onClick =
+                    { navController.navigate(Screen.HealthRecords.route) })
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
             ProfileMenuItem(Icons.Default.LocationOn, "Manage Addresses", textColor, secondaryText) {
                 navController
                     .navigate(Screen.ManageAddresses.route)
             }
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
-            ProfileMenuItem(Icons.Default.AccountBalanceWallet, "My Wallet", textColor, secondaryText) {}
+            ProfileMenuItem(
+                Icons.Default.AccountBalanceWallet, "My Wallet", textColor, secondaryText, onClick =
+                    { navController.navigate(Screen.WalletScreen.route) })
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
-            ProfileMenuItem(Icons.Default.CardGiftcard, "Refer & Earn", textColor, secondaryText) {}
+            ProfileMenuItem(Icons.Default.CardGiftcard, "Refer & Earn", textColor, secondaryText, onClick = {
+                navController.navigate(Screen.ReferralScreen.route)
+            })
         }
         Spacer(modifier = Modifier.height(16.dp))
         Column(
@@ -187,7 +197,9 @@ fun ProfileScreen(navController: NavController) {
         ) {
             ProfileMenuItem(Icons.AutoMirrored.Filled.Help, "Need Help?", textColor, secondaryText) {}
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
-            ProfileMenuItem(Icons.Default.Settings, "Settings", textColor, secondaryText) {}
+            ProfileMenuItem(Icons.Default.Settings, "Settings", textColor, secondaryText, onClick = {
+                navController.navigate(Screen.SettingScreen.route)
+            })
         }
         Spacer(modifier = Modifier.height(24.dp))
         Button(
@@ -251,7 +263,7 @@ fun ProfileMenuItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {onClick()}
+            .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

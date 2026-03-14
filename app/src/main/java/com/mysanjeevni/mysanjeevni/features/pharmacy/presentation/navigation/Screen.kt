@@ -18,4 +18,10 @@ sealed class Screen(val route:String) {
     object ManageAddresses : Screen("manage_addresses")
     object EditProfile : Screen("edit_profile")
     object HealthRecords : Screen("health_records")
+    object MyLabTestsScreen : Screen("my_lab_tests_screen")
+    object SettingScreen : Screen("setting_screen")
+    object MyConsultScreen : Screen("my_consult_screen")
+    object WalletScreen : Screen("wallet_screen")
+    object ReferralScreen : Screen("wallet_screen")
+    object TransactionHistoryScreen : Screen("transaction_history_screen")
 }

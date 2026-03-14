@@ -2,299 +2,232 @@ package com.mysanjeevni.mysanjeevni.features.profile.presentation.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Science
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.mysanjeevni.mysanjeevni.R
+import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.HealthRecordItem
+import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.RecordType
+import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.HealthRecordViewModel
 
-// dummy data
-
-data class HealthRecordItem(
-    val id: Int,
-    val title: String,
-    val date: String,
-    val type: RecordType,
-    val doctorName: String? = null
-)
-
-enum class RecordType { PRESCRIPTION, LAB_REPORT, INVOICE }
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HealthRecordsScreen(navController: NavController) {
-    var selectedFilter by remember { mutableStateOf("All") }
-    val filters = listOf("All", "Prescriptions", "Lab Reports", "Invoices")
+fun HealthRecordsScreen(
+    navController: NavController,
+    viewModel: HealthRecordViewModel = viewModel()
+) {
+    val state by viewModel.state.collectAsState()
 
-//     mock data
-    val allRecords = listOf(
-        HealthRecordItem(
-            1,
-            "Skin Infection",
-            "12 Feb 2026",
-            RecordType.PRESCRIPTION,
-            "Dr. A. Sharma"
-        ),
-        HealthRecordItem(
-            2,
-            "Thyroid Profile",
-            "15 Feb 2026",
-            RecordType.LAB_REPORT,
+    // Theme Colors
+    val isDark = isSystemInDarkTheme()
+    val bgColor = if (isDark) Color(0xFF121212) else Color(0xFFF5F7FA)
+    val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
+    val textColor = if (isDark) Color.White else Color.Black
+    val secondaryText = if (isDark) Color.LightGray else Color.Gray
+    val primaryColor = MaterialTheme.colorScheme.primary
 
-            ),
-        HealthRecordItem(
-            2,
-            "Vitamin D Test",
-            "20 Feb 2026",
-            RecordType.LAB_REPORT
-        ),
-        HealthRecordItem(
-            4,
-            "Fever Medicine",
-            "21 Feb 2026",
-            RecordType.PRESCRIPTION,
-            "Dr. P. Verma"
-        ),
-        HealthRecordItem(
-            5,
-            "Medicine Bill #9923",
-            "3 March 2026",
-            RecordType.INVOICE
-        )
-    )
-//    filter logic
-    val filterRecords = when (selectedFilter) {
-        "Prescriptions" -> allRecords.filter { it.type == RecordType.PRESCRIPTION }
-        "Lab Reports" -> allRecords.filter { it.type == RecordType.LAB_REPORT }
-        "Invoices" -> allRecords.filter { it.type == RecordType.INVOICE }
-        else -> allRecords
-    }
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("My Health Records") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.FilterList, contentDescription = "Filter")
-                    }
-                }
-            )
-        },
+        containerColor = bgColor,
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = {},
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White
-            ) {
-                Icon(Icons.Default.Add, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Upload New")
-            }
+                onClick = { /* Open File Picker */ },
+                containerColor = primaryColor,
+                contentColor = Color.White,
+                icon = { Icon(Icons.Default.FileUpload, null) },
+                text = { Text("Upload New") }
+            )
         }
     ) { padding ->
         Column(
             modifier = Modifier
-                .padding(padding)
                 .fillMaxSize()
-                .background(Color(0xFFF5F7FA))
+                .padding(padding)
         ) {
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // 1. Top Bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                items(filters) { filter ->
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = textColor,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable { navController.popBackStack() }
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "Medical Records",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor
+                )
+            }
+
+            // 2. Filters
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(bottom = 16.dp)
+            ) {
+                items(RecordType.entries.toTypedArray()) { type ->
+                    val label = when(type) {
+                        RecordType.ALL -> "All"
+                        RecordType.PRESCRIPTION -> "Prescriptions"
+                        RecordType.LAB_REPORT -> "Lab Reports"
+                        RecordType.INVOICE -> "Invoices"
+                    }
+
                     FilterChip(
-                        selected = selectedFilter == filter,
-                        onClick = { selectedFilter = filter },
-                        label = { Text(text = filter) },
+                        selected = state.selectedFilter == type,
+                        onClick = { viewModel.onFilterSelected(type) },
+                        label = { Text(label) },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.primary
+                            selectedContainerColor = primaryColor,
+                            selectedLabelColor = Color.White,
+                            containerColor = cardColor,
+                            labelColor = textColor
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = state.selectedFilter == type,
+                            borderColor = if(state.selectedFilter == type) primaryColor else Color.Transparent
                         )
                     )
                 }
             }
-//            Record List
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                if (filterRecords.isEmpty()) {
-                    item {
-                        EmptyStateView()
-                    }
-                } else {
-                    items(filterRecords) { record ->
-                        RecordCard(record)
+
+            // 3. List
+            if (state.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = primaryColor)
+                }
+            } else if (state.filteredRecords.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No records found", color = secondaryText)
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 80.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(state.filteredRecords) { record ->
+                        RecordItem(record, cardColor, textColor, secondaryText, primaryColor)
                     }
                 }
-                item { Spacer(modifier = Modifier.height(80.dp)) }
             }
         }
     }
 }
 
 @Composable
-fun RecordCard(record: HealthRecordItem) {
-    val icon = when(record.type){
-        RecordType.PRESCRIPTION -> Icons.Default.Description
-        RecordType.LAB_REPORT -> Icons.Default.Science
-            RecordType.INVOICE -> Icons.Default.Receipt
-    }
-    val color = when(record.type){
-        RecordType.PRESCRIPTION -> Color(0xFFE3F2FD)
-        RecordType.LAB_REPORT -> Color(0xFFE8F5E9)
-        RecordType.INVOICE -> Color(0xFFFFF3E0)
-    }
-    val iconTint =when(record.type){
-        RecordType.PRESCRIPTION -> Color(0xFF1976D2)
-        RecordType.LAB_REPORT -> Color(0xFF388E3C)
-        RecordType.INVOICE -> Color(0xFFF57C00)
-    }
+fun RecordItem(
+    record: HealthRecordItem,
+    cardColor: Color,
+    textColor: Color,
+    secondaryText: Color,
+    primaryColor: Color
+) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(1.dp),
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {}
+        colors = CardDefaults.cardColors(containerColor = cardColor),
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Icon Background based on Type
+            val iconBg = when(record.type) {
+                RecordType.PRESCRIPTION -> Color(0xFFE3F2FD) // Light Blue
+                RecordType.LAB_REPORT -> Color(0xFFF3E5F5)   // Light Purple
+                else -> Color(0xFFEEEEEE)                    // Grey
+            }
+            val iconTint = when(record.type) {
+                RecordType.PRESCRIPTION -> Color(0xFF1976D2)
+                RecordType.LAB_REPORT -> Color(0xFF7B1FA2)
+                else -> Color.Gray
+            }
+            val iconVector = when(record.type) {
+                RecordType.PRESCRIPTION -> Icons.Default.Description
+                RecordType.LAB_REPORT -> Icons.Default.Science
+                else -> Icons.Default.Receipt
+            }
+
             Box(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(color),
+                    .background(iconBg),
                 contentAlignment = Alignment.Center
-            ){
-                Icon(
-                    icon,
-                    null,
-                  tint =   iconTint
-                )
+            ) {
+                Icon(iconVector, null, tint = iconTint)
             }
+
             Spacer(modifier = Modifier.width(16.dp))
 
-//            Details
+            // Details
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    record.title,
+                    text = record.title,
                     fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    fontSize = 16.sp,
+                    color = textColor
+                )
+                Text(
+                    text = record.doctorOrLabName,
+                    fontSize = 14.sp,
+                    color = secondaryText
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = record.date,
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-                if (record.doctorName != null){
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = record.doctorName,
+                        text = record.date,
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Medium
+                        color = secondaryText
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(modifier = Modifier.size(4.dp).clip(RoundedCornerShape(2.dp)).background(secondaryText))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = record.fileSize,
+                        fontSize = 12.sp,
+                        color = secondaryText
                     )
                 }
             }
-            IconButton(onClick = {}) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    "Options",
-                    tint =  Color.Gray
-                )
+
+            // Action
+            IconButton(onClick = { /* Download */ }) {
+                Icon(Icons.Default.Download, contentDescription = "Download", tint = primaryColor)
             }
         }
-    }
-}
-
-@Composable
-fun EmptyStateView() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 100.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = Icons.Default.Description,
-            contentDescription = null,
-            modifier = Modifier.size(80.dp),
-            tint = Color.LightGray
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "No Records Found",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Gray
-        )
-        Text(
-            text = "Upload prescriptions or reports to keep them handy.",
-            fontSize = 14.sp,
-            color = Color.Gray,
-            modifier = Modifier.padding(horizontal = 32.dp),
-            textAlign = TextAlign.Center
-        )
     }
 }

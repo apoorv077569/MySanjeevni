@@ -16,9 +16,11 @@ import com.mysanjeevni.mysanjeevni.core.presentation.AppBottomBar // <--- Import
 import com.mysanjeevni.mysanjeevni.features.auth.presentation.ui.*
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.ui.CartScreen
 import com.mysanjeevni.mysanjeevni.features.consult.presentation.ui.ConsultScreen
+import com.mysanjeevni.mysanjeevni.features.consult.presentation.ui.MyConsultsScreen
 import com.mysanjeevni.mysanjeevni.features.health.presentation.ui.HealthScreen
 import com.mysanjeevni.mysanjeevni.features.home.presentation.ui.HomeScreen
 import com.mysanjeevni.mysanjeevni.features.home.presentation.ui.SplashScreen
+import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.MyLabTestsScreen
 import com.mysanjeevni.mysanjeevni.features.orders.presntation.ui.OrdersScreen
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui.PharmacyScreen
@@ -27,6 +29,10 @@ import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.EditProfileS
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.HealthRecordsScreen
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.ManageAddresses
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.ProfileScreen
+import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.TransactionHistoryScreen
+import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.WalletScreen
+import com.mysanjeevni.mysanjeevni.features.referral.presentation.ui.ReferralScreen
+import com.mysanjeevni.mysanjeevni.features.settings.presentation.ui.SettingsScreen
 import com.mysanjeevni.mysanjeevni.ui.theme.MySanjeevniTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -116,6 +122,24 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(route = Screen.HealthRecords.route) {
                             HealthRecordsScreen( navController = navController)
+                        }
+                        composable(route = Screen.WalletScreen.route) {
+                            WalletScreen( navController = navController)
+                        }
+                        composable(route = Screen.TransactionHistoryScreen.route) {
+                            TransactionHistoryScreen( navController = navController)
+                        }
+                        composable(route = Screen.MyLabTestsScreen.route) {
+                            MyLabTestsScreen( navController = navController)
+                        }
+                        composable(route = Screen.SettingScreen.route) {
+                            SettingsScreen( navController = navController)
+                        }
+                        composable(route = Screen.MyConsultScreen.route) {
+                            MyConsultsScreen( navController = navController)
+                        }
+                        composable(route = Screen.ReferralScreen.route) {
+                            ReferralScreen( navController = navController)
                         }
                     }
                 }
