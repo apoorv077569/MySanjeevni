@@ -44,7 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.navigation.Screen
+import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 
 @Composable
 fun WalletScreen(navController: NavController) {

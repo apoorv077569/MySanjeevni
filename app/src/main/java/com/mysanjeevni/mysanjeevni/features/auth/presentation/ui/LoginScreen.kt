@@ -1,11 +1,13 @@
 package com.mysanjeevni.mysanjeevni.features.auth.presentation.ui
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,14 +21,18 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,184 +42,289 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.R
-import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.navigation.Screen
-import kotlinx.coroutines.delay
+import com.mysanjeevni.mysanjeevni.core.navigation.Screen
+import com.mysanjeevni.mysanjeevni.data.remote.ApiClient
+import com.mysanjeevni.mysanjeevni.data.remote.model.LoginRequest
+import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import kotlinx.coroutines.launch
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController) {
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var role by remember { mutableStateOf("User") }
+    var expanded by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val sessionManager = SessionManager(context)
+
+
     val scope = rememberCoroutineScope()
 
-    val isFormValid = email.isNotBlank() && password.isNotBlank()
+    val isFormValid = email.isNotBlank() && password.isNotBlank() && role.isNotBlank()
 
-    val animatedColor by animateColorAsState(
-        targetValue = if (isFormValid)
-            Color(0xFF6A00C8)
-        else
-            Color(0xFFD1B3FF)
+    val buttonColor by animateColorAsState(
+        targetValue = if (isFormValid) Color(0XFFF97316) else Color.Gray
     )
-
-
-    val isDark = isSystemInDarkTheme()
-
-    val backgroundColor = if (isDark) Color(0xFF121212) else Color.White
-    val textColor = if (isDark) Color.LightGray else Color.Black
-    val linkColor = if (isDark) Color(0xFF64B5F6) else Color.Blue
-
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor) // <--- Apply Background
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(Color(0xFF00C853))
     ) {
-        Image(
-            painter = painterResource(R.drawable.app_logo),
-            contentDescription = "App Logo",
-            modifier = Modifier.size(100.dp)
-        )
-        Text(
-            text = stringResource(R.string.app_name),
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary, // Primary usually handles dark mode well
-        )
-        Spacer(modifier = Modifier.height(5.dp))
-        Text(
-            text = stringResource(R.string.login),
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Normal,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Spacer(modifier = Modifier.height(32.dp))
 
-        TextField(
-            value = email,
-            onValueChange = { email = it },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFECECEC),
-                unfocusedContainerColor = Color(0xFFECECEC),
-                focusedTextColor = Color(0xFF212121),
-                unfocusedTextColor = Color(0xFF212121),
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent
-            ),
-            shape = RoundedCornerShape(10.dp),
-            leadingIcon = {
-                Icon(
-                    Icons.Default.Email,
-                    stringResource(R.string.email_icon)
-                )
-            },
-            placeholder = { Text(stringResource(R.string.email)) },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = password,
-            onValueChange = { password = it },
-            placeholder = { Text(stringResource(R.string.password)) },
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFECECEC),
-                unfocusedContainerColor = Color(0xFFECECEC),
-                focusedTextColor = Color(0xFF212121),
-                unfocusedTextColor = Color(0xFF212121),
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent
-            ),
-            shape = RoundedCornerShape(10.dp),
-            textStyle = MaterialTheme.typography.bodyLarge,
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Lock, contentDescription = stringResource(R.string.password_icon)
-                )
-            },
+        Column(
             modifier = Modifier
-                .fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password, imeAction = ImeAction.Next
-            )
-        )
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
+            Spacer(modifier = Modifier.weight(1f))
 
-        Spacer(modifier = Modifier.height(5.dp))
+            // 🧊 Glass Card
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Color.White.copy(alpha = 0.95f),
+                        RoundedCornerShape(20.dp)
+                    )
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
 
-        Text(
-            stringResource(R.string.forget_password),
-            color = linkColor, // <--- Using our dynamic link color
-            modifier = Modifier
-                .align(Alignment.Start)
-                .padding(start = 10.dp)
-                .clickable { navController.navigate(Screen.Forget.route) }
-        )
+                Image(
+                    painter = painterResource(R.drawable.app_logo),
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp)
+                )
 
-        Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    text = stringResource(R.string.app_name),
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF6A00C8)
+                )
 
-        Button(
-            onClick = {
-                isLoading = true
-                scope.launch {
-                    delay(2000)
-                    isLoading = false
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                Text(
+                    text = stringResource(R.string.login),
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+
+                // 🔽 Register As Dropdown
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }
+                ) {
+                    OutlinedTextField(
+                        value = role,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Register As") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+                        },
+
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        listOf("User", "Doctor").forEach {
+                            DropdownMenuItem(
+                                text = { Text(it) },
+                                onClick = {
+                                    role = it
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
                 }
-            },
-            enabled = isFormValid && !isLoading,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = animatedColor,
-                contentColor = Color.White
-            )
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    color = Color.White,
-                    modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.5.dp
+
+                // 📧 Email
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Email, contentDescription = null)
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true
                 )
-            } else {
-                Text(text = stringResource(R.string.login), fontSize = 16.sp)
-            }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+                // 🔒 Password with eye
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Next
+                    ),
+                    leadingIcon = {
+                        Icon(Icons.Default.Lock, contentDescription = null)
+                    },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = if (passwordVisible)
+                                Icons.Default.Visibility
+                            else
+                                Icons.Default.VisibilityOff,
+                            contentDescription = null,
+                            modifier = Modifier.clickable {
+                                passwordVisible = !passwordVisible
+                            }
+                        )
+                    },
+                    visualTransformation =
+                        if (passwordVisible) VisualTransformation.None
+                        else PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true
+                )
 
-        Row {
-            Text(
-                text = stringResource(R.string.dont_have_an_account) + " ",
-                color = textColor
-            )
-            Text(
-                text = stringResource(R.string.signup),
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable {
-                    navController.navigate(Screen.Signup.route)
+                Text(
+                    text = stringResource(R.string.forget_password),
+                    color = Color(0xFF6A00C8),
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .clickable {
+                            navController.navigate(Screen.Forget.route)
+                        }
+                )
+
+                // 🚀 Button
+                Button(
+                    onClick = {
+                        isLoading = true
+                        scope.launch {
+                            try {
+
+                                // 🔥 REQUEST LOG (ADD THIS)
+                                val requestJson = """
+    {
+        "email":"$email",
+        "password":"$password"
+    }
+    """.trimIndent()
+
+                                Log.d("LOGIN_REQUEST", requestJson)
+
+                                val response = ApiClient.api.loginUser(
+                                    LoginRequest(role,email, password)
+                                )
+
+                                isLoading = false
+
+                                // 🔥 RESPONSE LOG
+                                Log.d(
+                                    "LOGIN_DEBUG", """
+        Code: ${response.code()}
+        Message: ${response.message()}
+        Body: ${response.body()}
+    """.trimIndent()
+                                )
+
+                                if (response.isSuccessful) {
+
+                                    val body = response.body()
+                                    val user = body?.user
+                                    val token = response.body()?.token
+
+                                    if (token != null){
+                                        sessionManager.saveLogin(token,user!!._id)
+                                    }
+                                    Toast.makeText(context,"Login Successfull",Toast.LENGTH_SHORT).show()
+                                    Log.d("LOGIN_SUCCESS", "User: $user")
+
+                                    if (user?.role == "Doctor") {
+                                        navController.navigate(Screen.DoctorDashboard.route) {
+                                            popUpTo(Screen.Login.route) { inclusive = true }
+                                        }
+                                    } else {
+                                        navController.navigate(Screen.Home.route) {
+                                            popUpTo(Screen.Login.route) { inclusive = true }
+                                        }
+                                    }
+
+                                } else {
+                                    val error = response.errorBody()?.string()
+                                    Toast.makeText(context,error,Toast.LENGTH_SHORT).show()
+
+                                    Log.e("LOGIN_ERROR", "Error Body: $error")
+                                }
+
+                            } catch (e: Exception) {
+                                isLoading = false
+                                Toast.makeText(context,e.localizedMessage,Toast.LENGTH_SHORT).show()
+
+                                Log.e("LOGIN_EXCEPTION", "Exception: ${e.message}")
+                            }
+                        }
+                    },
+                    enabled = isFormValid && !isLoading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = buttonColor)
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(22.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text("Login", fontSize = 16.sp)
+                    }
                 }
-            )
+
+                Row {
+                    Text("Don't have an account? ")
+                    Text(
+                        "Signup",
+                        color = Color(0xFF6A00C8),
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable {
+                            navController.navigate(Screen.Signup.route)
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }

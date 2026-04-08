@@ -9,5 +9,5 @@ data class QuickCategory(
 data class GridCategory(
     val name: String,
     val imageUrl:String,
-    val badge:String?=null
+    val type: HomeCategoryType
 )

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Person
@@ -29,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.mysanjeevni.mysanjeevni.R
-import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.navigation.Screen
+import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 
 @Composable
 fun AppBottomBar(navController: NavController) {
@@ -100,6 +101,24 @@ fun AppBottomBar(navController: NavController) {
                 }
             }
         }
+        NavigationBarItem(
+            selected = currentRoute == Screen.CategoryScreen.route,
+            onClick = {
+                navController.navigate(Screen.CategoryScreen.route) {
+                    popUpTo(Screen.Home.route)
+                }
+            },
+            icon = { Icon(Icons.Default.Category, contentDescription = null) },
+            label = { Text(stringResource(R.string.category), fontSize = 10.sp) },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = selectedColor,
+                selectedTextColor = selectedColor,
+                indicatorColor = Color.Transparent,
+                unselectedIconColor = contentColor,
+                unselectedTextColor = contentColor
+            )
+        )
+
         NavigationBarItem(
             selected = currentRoute == Screen.Health.route,
             onClick = {

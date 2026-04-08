@@ -1,6 +1,11 @@
 package com.mysanjeevni.mysanjeevni.features.profile.presentation.ui
 
+import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,18 +41,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.R
+import com.mysanjeevni.mysanjeevni.data.remote.ApiClient
+import com.mysanjeevni.mysanjeevni.data.remote.model.UpdateProfileRequest
+import com.mysanjeevni.mysanjeevni.utils.SessionManager
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,6 +68,22 @@ fun EditProfileScreen(navController: NavController) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var mobile by remember { mutableStateOf("") }
+    var address by remember {mutableStateOf("")}
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) {
+        uri: Uri? ->
+        uri?.let { selectedImageUri = it }
+    }
+
+    val context = LocalContext.current
+    val sessionManager = SessionManager(context)
+
+    val token = sessionManager.getToken()
+
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -99,15 +128,26 @@ fun EditProfileScreen(navController: NavController) {
                             .size(100.dp)
                             .clip(CircleShape)
                             .background(Color(0xFFECECEC))
+                            .clickable{galleryLauncher.launch("image/*")}
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(60.dp)
-                                .align(Alignment.Center),
-                            tint = Color.Gray
-                        )
+                        if (selectedImageUri != null) {
+                            AsyncImage(
+                                model = selectedImageUri,
+                                contentDescription = "Profile Image",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .align(Alignment.Center),
+                                tint = Color.Gray
+                            )
+                        }
                     }
 
                     // The Camera Icon Badge
@@ -148,8 +188,6 @@ fun EditProfileScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
-
-                // Email Field
                 TextField(
                     value = email,
                     onValueChange = { email = it },
@@ -188,12 +226,54 @@ fun EditProfileScreen(navController: NavController) {
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     singleLine = true
                 )
+
+                TextField(
+                    value = address,
+                    onValueChange = { address = it },
+                    label = { Text("Address") },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFFECECEC),
+                        unfocusedContainerColor = Color(0xFFECECEC),
+                        focusedTextColor = Color(0xFF212121),
+                        unfocusedTextColor = Color(0xFF212121),
+                        focusedBorderColor = Color.Transparent,
+                        unfocusedBorderColor = Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    leadingIcon = { Icon(Icons.Default.Phone, null) },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                    singleLine = true
+                )
             }
 
             // 3. Save Button (Pinned to Bottom)
             // This is OUTSIDE the scrollable column, but INSIDE the parent column
             Button(
-                onClick = { navController.popBackStack() },
+                onClick = {
+                    scope.launch {
+                        try{
+                            val response = ApiClient.api.updateProfile(
+                                "Bearer $token",
+                                UpdateProfileRequest(
+                                    name,
+                                    email,
+                                    mobile,
+                                    address
+                                )
+                            )
+                            if (response.isSuccessful){
+                                Log.d("UPDATE","Success: ${response.body()}")
+
+                                navController.popBackStack()
+                            }else{
+                                Log.e("UPDATE",response.errorBody()?.toString()?:"")
+                            }
+                        }catch (e: Exception){
+                            Log.e("UPDATE",e.message ?:"")
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),

@@ -1,5 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.home.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartItem
@@ -9,6 +10,7 @@ import com.mysanjeevni.mysanjeevni.features.home.presentation.util.HomeMockData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
@@ -23,6 +25,8 @@ class HomeViewModel @Inject constructor(
     // --- 1. SEARCH STATE ---
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
+    private val _usercity = MutableStateFlow("India")
+    val userCity: StateFlow<String> = _usercity
 
     // --- 2. DATA SOURCE (Mock Data) ---
     // We load the mock data here so we can filter it
@@ -62,7 +66,12 @@ class HomeViewModel @Inject constructor(
                 1,
                 medicine.imageRes
             )
+            Log.d("CART_DEBUG", "Adding to cart: ${cartItem.name}, id=${cartItem.id}")
             addToCartUseCase(cartItem)
+            Log.d("CART_DEBUG", "Added successfully")
         }
+    }
+    fun updateCity(city:String){
+        _usercity.value = city
     }
 }

@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.mysanjeevni.mysanjeevni.features.cart.data.local.entity.CartEntity
-import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartItem
 import kotlinx.coroutines.flow.Flow
 
 @Dao

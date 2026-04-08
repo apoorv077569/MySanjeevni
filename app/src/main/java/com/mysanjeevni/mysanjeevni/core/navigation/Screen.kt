@@ -1,7 +1,8 @@
-package com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.navigation
+package com.mysanjeevni.mysanjeevni.core.navigation
 
 sealed class Screen(val route:String) {
     object Splash: Screen("splash")
+    object OnBoarding: Screen("onBoarding")
     object Login: Screen("login")
     object Signup: Screen("signup")
     object Home: Screen("home")
@@ -17,11 +18,15 @@ sealed class Screen(val route:String) {
     object MyOrders : Screen("my_orders")
     object ManageAddresses : Screen("manage_addresses")
     object EditProfile : Screen("edit_profile")
+    object CategoryScreen : Screen("category_screen")
+    object MedicineScreen : Screen("medicine_screen")
     object HealthRecords : Screen("health_records")
     object MyLabTestsScreen : Screen("my_lab_tests_screen")
     object SettingScreen : Screen("setting_screen")
     object MyConsultScreen : Screen("my_consult_screen")
     object WalletScreen : Screen("wallet_screen")
+    object DoctorDashboard : Screen("doctor_dashboard")
     object ReferralScreen : Screen("wallet_screen")
     object TransactionHistoryScreen : Screen("transaction_history_screen")
+    object SummaryScreen : Screen("Summary_Screen")
 }

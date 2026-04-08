@@ -10,8 +10,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.math.BigDecimal
-import java.math.RoundingMode
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,16 +21,13 @@ class CartViewModel @Inject constructor(
     val state: StateFlow<CartState> = _state
 
     init {
-        loadCart()
+        observeCart()
     }
-    private fun loadCart(){
+
+    private fun observeCart() {
         viewModelScope.launch {
-            _state.value = CartState(isLoading = true)
-            try{
-                val items = getCartUseCase()
+            getCartUseCase().collect { items ->
                 updateStateWithNewItems(items)
-            }catch (e: Exception){
-                _state.value = CartState(error = e.message?:"Unknown Error")
             }
         }
     }
@@ -54,16 +49,6 @@ class CartViewModel @Inject constructor(
         val finalBill = total + delivery
 
         val roundedBill = String.format("%.2f",finalBill).toDouble()
-
-//        val total = items.fold(BigDecimal.ZERO){acc,item->
-//            acc+(item.price.toBigDecimal()*item.qty.toBigDecimal())
-//        }
-//        val delivery = if(total > BigDecimal("500")){
-//            BigDecimal.ZERO
-//        }else{
-//            BigDecimal("₹40.00")
-//        }
-//        val finalBill = (total+delivery).setScale(2, RoundingMode.HALF_UP)
 
         _state.value = CartState(
             isLoading = false,

@@ -47,16 +47,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.room.util.TableInfo
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.R
+import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartItem
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
 
@@ -88,7 +87,7 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel = hiltView
         },
         bottomBar = {
             if (state.cartItem.isNotEmpty()) {
-                CartBottomBar(state.totalBill, isDark)
+                CartBottomBar(state.totalBill, isDark,navController)
             }
         }, containerColor = bgColor
     ) { paddingValues ->
@@ -323,7 +322,7 @@ fun BillSummary(cartItems: List<CartItem>,grandTotal: Double,isDark: Boolean) {
 }
 
 @Composable
-fun CartBottomBar(grandTotal: Double,isDark: Boolean) {
+fun CartBottomBar(grandTotal: Double,isDark: Boolean,navController: NavController) {
     val containerColor = if(isDark) Color(0xFF1E1E1E) else Color.White
     val textColor = if(isDark) Color.White else Color.Black
 
@@ -353,7 +352,7 @@ fun CartBottomBar(grandTotal: Double,isDark: Boolean) {
                 )
             }
             Button(
-                onClick = {},
+                onClick = {navController.navigate("${Screen.ManageAddresses.route}?checkout=true")},
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6F61)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier

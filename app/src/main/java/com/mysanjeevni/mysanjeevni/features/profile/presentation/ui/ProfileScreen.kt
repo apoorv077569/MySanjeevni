@@ -1,5 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.profile.presentation.ui
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,26 +43,63 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.R
-import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.navigation.Screen
+import com.mysanjeevni.mysanjeevni.core.navigation.Screen
+import com.mysanjeevni.mysanjeevni.data.remote.ApiClient
+import com.mysanjeevni.mysanjeevni.data.remote.model.User
+import com.mysanjeevni.mysanjeevni.utils.SessionManager
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(navController: NavController) {
     val isDark = isSystemInDarkTheme()
+    val scope = rememberCoroutineScope()
     val bgColor = if (isDark) Color(0xFF121212) else Color(0xFFF5F7FA)
     val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDark) Color.White else Color.Black
-    val secondaryText = if (isDark) Color.LightGray else Color.Gray
+    val secondaryText = if (isDark) Color.LightGray else Color(0xFF26A69A)
+
+    var user by remember { mutableStateOf<User?>(null) }
+    val context = LocalContext.current
+    val sessionManager = SessionManager(context)
+
+    val token = sessionManager.getToken()
+
+
+
+    LaunchedEffect(Unit) {
+        scope.launch {
+            try {
+                val response = ApiClient.api.getProfile("Bearer $token")
+
+                if (response.isSuccessful) {
+                    user = response.body()?.user
+                    Log.d("PROFILE", user.toString())
+                } else {
+                    Log.e("PROFILE", response.errorBody()?.string() ?: "")
+                }
+            } catch (e: Exception) {
+                Log.e("PROFILE", e.message ?: "")
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -81,13 +119,13 @@ fun ProfileScreen(navController: NavController) {
                     modifier = Modifier
                         .size(60.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+                        .background(Color(0xFF26A69A)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
+                        tint = Color(0xFF26A69A),
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -95,25 +133,25 @@ fun ProfileScreen(navController: NavController) {
 // user info
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "John Doe",
+                        text = user?.fullName ?: "Loading...",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = textColor
                     )
                     Text(
-                        text = "+91 9732000036",
+                        text = user?.phone ?: "",
                         fontSize = 14.sp,
-                        color = secondaryText
+                        color = textColor
                     )
                     Text(
-                        text = "johndoe@example.com",
+                        text = user?.email ?: "",
                         fontSize = 14.sp,
-                        color = secondaryText
+                        color = textColor
                     )
                 }
                 Text(
                     text = "Edit",
-                    color = MaterialTheme.colorScheme.primary,
+                    color = Color(0xFF26A69A),
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable {
                         navController.navigate(Screen.EditProfile.route)
@@ -128,15 +166,16 @@ fun ProfileScreen(navController: NavController) {
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.Absolute.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
 
         ) {
             ProfileStatCard(
                 Icons.Outlined.ShoppingBag,
                 "Orders",
+
                 cardColor,
                 textColor,
-                Modifier.weight(1f),
+                Modifier.width(100.dp),
                 onClick = {
                     navController.navigate(Screen.MyOrders.route)
                 }
@@ -146,7 +185,7 @@ fun ProfileScreen(navController: NavController) {
                 "Lab Tests",
                 cardColor,
                 textColor,
-                Modifier.weight(1f),
+                Modifier.width(100.dp),
                 onClick = {
                     navController.navigate(Screen.MyLabTestsScreen.route)
                 }
@@ -156,7 +195,7 @@ fun ProfileScreen(navController: NavController) {
                 "Consults",
                 cardColor,
                 textColor,
-                Modifier.weight(1f),
+                Modifier.width(100.dp),
                 onClick = {
                     navController.navigate(Screen.MyConsultScreen.route)
                 }
@@ -204,6 +243,7 @@ fun ProfileScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(24.dp))
         Button(
             onClick = {
+                sessionManager.logout()
                 navController.navigate(Screen.Login.route) {
                     popUpTo(0)
                 }
@@ -245,7 +285,7 @@ fun ProfileStatCard(
             horizontalAlignment = Alignment.CenterHorizontally
 
         ) {
-            Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Icon(imageVector = icon, contentDescription = null, tint =Color(0xFF26A69A))
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = title, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = textColor)
         }

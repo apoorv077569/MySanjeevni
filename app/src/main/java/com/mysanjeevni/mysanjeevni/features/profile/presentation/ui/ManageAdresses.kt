@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.R
+import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressItem
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.AddressViewModel
 
@@ -56,7 +57,8 @@ import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.Addre
 @Composable
 fun ManageAddresses(
     navController: NavController,
-    viewModel: AddressViewModel = viewModel()
+    viewModel: AddressViewModel = viewModel(),
+    isCheckout: Boolean = false,
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -125,7 +127,11 @@ fun ManageAddresses(
                         secondaryText = secondaryText,
                         primaryColor = primaryColor,
                         onDelete = { viewModel.deleteAddress(address.id) },
-                        onSetDefault = { viewModel.setDefaultAddress(address.id) }
+                        onSetDefault = { viewModel.setDefaultAddress(address.id) },
+                        onSelect = {
+                            navController.navigate(Screen.SummaryScreen.route)
+                        },
+                        isCheckOut = isCheckout
                     )
                 }
             }
@@ -141,9 +147,14 @@ fun AddressCardItem(
     secondaryText: Color,
     primaryColor: Color,
     onDelete: () -> Unit,
-    onSetDefault: () -> Unit
+    onSetDefault: () -> Unit,
+    onSelect : () -> Unit,
+    isCheckOut : Boolean
 ) {
     Card(
+        modifier = Modifier.clickable{
+            if (isCheckOut) onSelect()
+        },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = cardColor),
         elevation = CardDefaults.cardElevation(2.dp),

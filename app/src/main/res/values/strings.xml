@@ -16,6 +16,7 @@
     <string name="otp_verification">We have sent an otp to your email</string>
     <string name="verify_otp">Verify Otp</string>
     <string name="profile">Profile</string>
+    <string name="category">Category</string>
     <string name="consult">Consult</string>
     <string name="plan">Plan</string>
     <string name="home">Home</string>
