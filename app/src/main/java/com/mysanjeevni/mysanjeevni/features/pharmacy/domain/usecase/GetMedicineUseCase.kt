@@ -1,6 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.pharmacy.domain.usecase
 
-import com.mysanjeevni.mysanjeevni.features.pharmacy.domain.model.Medicine
+import com.mysanjeevni.mysanjeevni.features.medicines.domain.model.Medicine
 import com.mysanjeevni.mysanjeevni.features.pharmacy.domain.repository.PharmacyRepository
 import javax.inject.Inject
 

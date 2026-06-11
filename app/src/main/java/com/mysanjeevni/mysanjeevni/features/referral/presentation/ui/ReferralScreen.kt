@@ -36,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.features.referral.presentation.state.ReferralItem
 import com.mysanjeevni.mysanjeevni.features.referral.presentation.viewmodel.ReferralViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 
 @Composable
@@ -76,7 +77,7 @@ fun ReferralScreen(
                     .clickable { navController.popBackStack() }
             )
             Spacer(modifier = Modifier.width(16.dp))
-            Text(
+            AutoText(
                 text = "Refer & Earn",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -112,7 +113,7 @@ fun ReferralScreen(
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(
+                    AutoText(
                         text = "Earn ₹500 for every friend!",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
@@ -120,7 +121,7 @@ fun ReferralScreen(
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
+                    AutoText(
                         text = state.rewardDescription,
                         fontSize = 14.sp,
                         color = secondaryText,
@@ -141,7 +142,7 @@ fun ReferralScreen(
                             .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
+                        AutoText(
                             text = "Your Referral Code",
                             fontSize = 12.sp,
                             color = secondaryText
@@ -151,7 +152,7 @@ fun ReferralScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            Text(
+                            AutoText(
                                 text = state.referralCode,
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
@@ -184,7 +185,7 @@ fun ReferralScreen(
                     ) {
                         Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Share Code", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        AutoText("Share Code", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(40.dp))
                 }
@@ -196,13 +197,13 @@ fun ReferralScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
+                        AutoText(
                             text = "Your Referrals",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = textColor
                         )
-                        Text(
+                        AutoText(
                             text = "Total Earned: ₹${state.totalEarned.toInt()}",
                             fontSize = 14.sp,
                             color = primaryColor,
@@ -215,7 +216,7 @@ fun ReferralScreen(
                 // History List
                 if (state.referralHistory.isEmpty()) {
                     item {
-                        Text(
+                        AutoText(
                             text = "No referrals yet. Invite friends to start earning!",
                             color = secondaryText,
                             fontSize = 14.sp,
@@ -266,18 +267,18 @@ fun ReferralHistoryCard(
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = item.friendName, fontWeight = FontWeight.Bold, color = textColor)
-                Text(text = item.date, fontSize = 12.sp, color = secondaryText)
+                AutoText(text = item.friendName, fontWeight = FontWeight.Bold, color = textColor)
+                AutoText(text = item.date, fontSize = 12.sp, color = secondaryText)
             }
             Column(horizontalAlignment = Alignment.End) {
                 if (item.status == "Success") {
-                    Text(
+                    AutoText(
                         text = "+₹${item.amountEarned.toInt()}",
                         color = primaryColor,
                         fontWeight = FontWeight.Bold
                     )
                 } else {
-                    Text(
+                    AutoText(
                         text = "Pending",
                         color = Color(0xFFFFA000), // Orange
                         fontSize = 12.sp,

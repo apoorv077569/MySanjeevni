@@ -2,6 +2,8 @@ package com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -29,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -41,9 +42,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.core.location.LocationHelper
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
+import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
 import com.mysanjeevni.mysanjeevni.features.location.ui.LocationSearchSDialog
+import com.mysanjeevni.mysanjeevni.features.pharmacy.data.mapper.toCartItem
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui.components.MedicineItem
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.viewmodel.PharmacyViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 // --- THEME COLORS ---
 val LavenderPrimary = Color(0xFF7E57C2)
@@ -54,6 +58,8 @@ fun PharmacyScreen(
     navController: NavController,
     viewModel: PharmacyViewModel = hiltViewModel()
 ) {
+    val cartViewModel: CartViewModel =
+        hiltViewModel(LocalContext.current as ComponentActivity)
     val state by viewModel.state.collectAsState()
     val isDark = isSystemInDarkTheme()
     val bgColor = if (isDark) Color(0xFF121212) else BackgroundColor
@@ -138,7 +144,7 @@ fun PharmacyScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     item {
-                        Text(
+                        AutoText(
                             text = "${state.medicines.size} Products found",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
@@ -148,7 +154,22 @@ fun PharmacyScreen(
                     }
 
                     items(state.medicines) { medicine ->
-                        MedicineItem(medicine = medicine)
+                        MedicineItem(medicine = medicine,
+                            onAddToCart = {
+
+
+                                val cartItem = medicine.toCartItem()
+                                Log.d("CART_DEBUG", "Pharmacy → Adding: ${cartItem.name}")
+
+                                cartViewModel.addToCart(
+                                    cartItem,
+                                )
+
+                                Log.d("CART_DEBUG", "Pharmacy → After Add Size: ${cartViewModel.state.value.cartItem.size}")
+
+
+                                navController.navigate(Screen.CartScreen.route)
+                            })
                     }
 
                     item { Spacer(modifier = Modifier.height(80.dp)) }
@@ -171,7 +192,7 @@ fun PharmacyScreen(
                 ) {
                     Icon(Icons.Default.Close, null, tint = Color.Red, modifier = Modifier.size(48.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
+                    AutoText(
                         text = state.error,
                         color = Color.Red,
                         fontWeight = FontWeight.Medium
@@ -182,14 +203,13 @@ fun PharmacyScreen(
             // Empty State
             if (!state.isLoading && state.medicines.isEmpty() && state.error.isBlank()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No medicines found", color = Color.Gray)
+                    AutoText("No medicines found", color = Color.Gray)
                 }
             }
         }
     }
 }
 
-// --- COMPONENTS ---
 
 @Composable
 fun FilterOptionsRow() {
@@ -227,7 +247,7 @@ fun FilterOptionsRow() {
                     .padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = filter, color = textColor, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                AutoText(text = filter, color = textColor, fontSize = 13.sp, fontWeight = FontWeight.Medium)
             }
         }
     }
@@ -243,59 +263,93 @@ fun PharmacyHeader(
     onLocationClick: () -> Unit,
     onCartClick: () -> Unit
 ) {
-    val headerBrush = Brush.verticalGradient(
-        colors = listOf(Color(0xFF673AB7), Color(0xFF9575CD))
-    )
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
-            .background(headerBrush)
+            .clip(RoundedCornerShape(bottomStart = 15.dp, bottomEnd = 15.dp))
+            .background(Color(0xFF38D6C6)) // ✅ Same teal color
             .statusBarsPadding()
-            .padding(bottom = 20.dp)
+            .padding(bottom = 6.dp)
     ) {
+        // 🔹 TOP ROW
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            // 📍 LOCATION
             Column(modifier = Modifier.clickable { onLocationClick() }) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
+                    Icon(
+                        Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp)
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "Delivering to", fontSize = 12.sp, color = Color.White.copy(alpha = 0.8f))
-                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color.White.copy(alpha = 0.8f), modifier = Modifier.size(16.dp))
+                    AutoText(text = "Delivering to", fontSize = 11.sp, color = Color.White)
+                    Icon(
+                        Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = Color.White.copy(alpha = 0.8f),
+                        modifier = Modifier.size(14.dp)
+                    )
                 }
-                Text(
+                AutoText(
                     text = location.ifEmpty { "Select Location" },
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     maxLines = 1
                 )
             }
+
+            // 🔔 ICONS ROW
             Row(verticalAlignment = Alignment.CenterVertically) {
+
+                // 🔔 NOTIFICATION
                 Box {
-                    Icon(Icons.Outlined.Notifications, contentDescription = "Alerts", tint = Color.White, modifier = Modifier.size(26.dp))
-                    Box(modifier = Modifier.size(8.dp).background(Color.Red, CircleShape).align(Alignment.TopEnd))
+                    Icon(
+                        Icons.Outlined.Notifications,
+                        contentDescription = "Alerts",
+                        tint = Color.White,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .background(Color.Red, CircleShape)
+                            .align(Alignment.TopEnd)
+                    )
                 }
-                Spacer(modifier = Modifier.width(20.dp))
-                Icon(Icons.Outlined.ShoppingBag, contentDescription = "Cart", tint = Color.White, modifier = Modifier.size(26.dp).clickable { onCartClick() })
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // 🛒 CART
+                Icon(
+                    Icons.Outlined.ShoppingBag,
+                    contentDescription = "Cart",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clickable { onCartClick() }
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
+        // 🔍 SEARCH BAR
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .height(50.dp),
+                .height(44.dp),
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(8.dp)
+            elevation = CardDefaults.cardElevation(4.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -304,22 +358,38 @@ fun PharmacyHeader(
                     .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.Search, null, tint = Color.Gray)
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = null,
+                    tint = Color.Gray,
+                    modifier = Modifier.size(18.dp)
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Box(modifier = Modifier.weight(1f)) {
                     if (query.isEmpty()) {
-                        Text(text = "Search medicines...", color = Color.LightGray, fontSize = 14.sp)
+                        AutoText(
+                            text = "Search medicines...",
+                            color = Color.LightGray,
+                            fontSize = 13.sp
+                        )
                     }
                     BasicTextField(
                         value = query,
                         onValueChange = onQueryChange,
                         singleLine = true,
-                        textStyle = TextStyle(color = Color.Black, fontSize = 16.sp),
+                        textStyle = TextStyle(color = Color.Black, fontSize = 14.sp),
                         modifier = Modifier.focusRequester(focusRequester)
                     )
                 }
                 if (query.isNotEmpty()) {
-                    Icon(Icons.Default.Close, "Clear", tint = Color.Gray, modifier = Modifier.clickable { onClear() })
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Clear",
+                        tint = Color.Gray,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .clickable { onClear() }
+                    )
                 }
             }
         }

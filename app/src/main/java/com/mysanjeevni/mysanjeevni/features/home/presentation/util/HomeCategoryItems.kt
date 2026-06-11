@@ -1,8 +1,8 @@
 package com.mysanjeevni.mysanjeevni.features.home.presentation.util
 
 import com.mysanjeevni.mysanjeevni.R
-import com.mysanjeevni.mysanjeevni.features.home.presentation.model.HomeCategoryType
-import com.mysanjeevni.mysanjeevni.features.home.presentation.model.HomeCategoryItem
+import com.mysanjeevni.mysanjeevni.features.home.model.HomeCategoryType
+import com.mysanjeevni.mysanjeevni.features.home.model.HomeCategoryItem
 
 object HomeCategoryItems {
 

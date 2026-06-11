@@ -1,5 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.profile.presentation.ui
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -35,10 +36,15 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,22 +52,54 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
+import com.mysanjeevni.mysanjeevni.data.remote.model.AddressModel
+import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
+import com.mysanjeevni.mysanjeevni.features.orders.presntation.viewmodel.OrderViewModel
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressItem
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.AddressViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
+import com.mysanjeevni.mysanjeevni.utils.dilaog.AddressDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManageAddresses(
     navController: NavController,
-    viewModel: AddressViewModel = viewModel(),
+    viewModel: AddressViewModel = hiltViewModel(),
+    cartViewModel: CartViewModel,
     isCheckout: Boolean = false,
+    orderViewModel: OrderViewModel
+
 ) {
     val state by viewModel.state.collectAsState()
+    val cartState by cartViewModel.state.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedAddressForEdit by remember { mutableStateOf<AddressItem?>(null) }
 
+    state.error?.let { error ->
+        LaunchedEffect(error) {
+            snackbarHostState.showSnackbar(error)
+        }
+    }
+
+    LaunchedEffect(cartState.cartItem) {
+
+        Log.d(
+            "ADDRESS_SCREEN",
+            "Cart Count = ${cartState.cartItem.size}"
+        )
+
+        cartState.cartItem.forEach {
+            Log.d(
+                "ADDRESS_SCREEN",
+                "Item=${it.name}, Qty=${it.qty}"
+            )
+        }
+    }
     val isDark = isSystemInDarkTheme()
     val bgColor = if (isDark) Color(0xFF121212) else Color(0xFFF5F7FA)
     val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
@@ -69,8 +107,25 @@ fun ManageAddresses(
     val secondaryText = if (isDark) Color.LightGray else Color.Gray
     val primaryColor = MaterialTheme.colorScheme.primary
 
+    if (showDialog) {
+        AddressDialog(
+            addressToEdit = selectedAddressForEdit,
+            onDismiss = {
+                showDialog = false
+                selectedAddressForEdit = null
+            },
+            onSave = { addressModel ->
+                if (selectedAddressForEdit == null) {
+                    viewModel.addAddress(addressModel)
+                } else {
+                    viewModel.updateAddress(selectedAddressForEdit!!.id, addressModel)
+                }
+            })
+    }
+
     Scaffold(
         containerColor = bgColor,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Row(
                 modifier = Modifier
@@ -88,7 +143,7 @@ fun ManageAddresses(
                         .clickable { navController.popBackStack() }
                 )
                 Spacer(modifier = Modifier.width(16.dp))
-                Text(
+                AutoText(
                     text = stringResource(R.string.manage_addresses),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
@@ -98,7 +153,10 @@ fun ManageAddresses(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {},
+                onClick = {
+                    selectedAddressForEdit = null // Reset for new entry
+                    showDialog = true
+                },
                 containerColor = primaryColor,
                 contentColor = Color.White
             ) {
@@ -109,6 +167,22 @@ fun ManageAddresses(
         if (state.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = primaryColor)
+            }
+        } else if (state.addresses.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    AutoText(
+                        text = "No addresses saved",
+                        fontSize = 16.sp,
+                        color = secondaryText
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    AutoText(
+                        text = "Tap + to add new address",
+                        fontSize = 14.sp,
+                        color = secondaryText
+                    )
+                }
             }
         } else {
             LazyColumn(
@@ -126,10 +200,40 @@ fun ManageAddresses(
                         textColor = textColor,
                         secondaryText = secondaryText,
                         primaryColor = primaryColor,
-                        onDelete = { viewModel.deleteAddress(address.id) },
-                        onSetDefault = { viewModel.setDefaultAddress(address.id) },
+                        onEdit = {
+                            selectedAddressForEdit = address
+                            showDialog = true
+
+                        },
+                        onDelete = {
+                            viewModel.deleteAddress(address.id)
+                        },
+                        onSetDefault = {
+                            val addressModel = AddressModel(
+                                userId = "", // temporary placeholder (overwrite hoga)
+                                type = address.type,
+                                fullName = address.fullName,
+                                phone = address.phone,
+                                addressLine1 = address.addressLine1,
+                                addressLine2 = address.addressLine2,
+                                city = address.city,
+                                state = address.state,
+                                pincode = address.pincode,
+                                isDefault = true
+                            )
+
+                            viewModel.updateAddress(address.id, addressModel)
+                        },
                         onSelect = {
-                            navController.navigate(Screen.SummaryScreen.route)
+                            if (isCheckout) {
+                                val selectedAddress = "${address.fullName},${address.type}, ${
+                                    address
+                                        .city
+                                }, ${address.phone}"
+                                orderViewModel.setAddress(address)
+                                Log.d("ADDRESS_DEBUG", "Selected Address = $selectedAddress")
+                                navController.navigate(Screen.SummaryScreen.route)
+                            }
                         },
                         isCheckOut = isCheckout
                     )
@@ -139,6 +243,8 @@ fun ManageAddresses(
     }
 }
 
+
+
 @Composable
 fun AddressCardItem(
     address: AddressItem,
@@ -146,13 +252,14 @@ fun AddressCardItem(
     textColor: Color,
     secondaryText: Color,
     primaryColor: Color,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
     onSetDefault: () -> Unit,
-    onSelect : () -> Unit,
-    isCheckOut : Boolean
+    onSelect: () -> Unit,
+    isCheckOut: Boolean
 ) {
     Card(
-        modifier = Modifier.clickable{
+        modifier = Modifier.clickable {
             if (isCheckOut) onSelect()
         },
         shape = RoundedCornerShape(12.dp),
@@ -172,7 +279,7 @@ fun AddressCardItem(
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
+                AutoText(
                     text = address.type,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
@@ -180,7 +287,7 @@ fun AddressCardItem(
                 )
                 if (address.isDefault) {
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    AutoText(
                         text = "(Default)",
                         fontSize = 12.sp,
                         color = primaryColor
@@ -193,7 +300,7 @@ fun AddressCardItem(
                     tint = secondaryText,
                     modifier = Modifier
                         .size(20.dp)
-                        .clickable {  }
+                        .clickable { onEdit() }
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Icon(
@@ -211,35 +318,39 @@ fun AddressCardItem(
                 color = secondaryText.copy(alpha = 0.2f)
             )
 
-            Text(
-                text = address.name,
+            AutoText(
+                text = address.fullName,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = textColor
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = address.addressLine,
+            AutoText(
+                text = address.addressLine1,
                 fontSize = 14.sp,
                 color = secondaryText
             )
-            Text(
-                text = address.cityStateZip,
+            AutoText(
+                text = address.addressLine2,
+                fontSize = 14.sp,
+                color = secondaryText
+            )
+            AutoText(
+                text = address.city,
                 fontSize = 14.sp,
                 color = secondaryText
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Phone: ${address.phoneNumber}",
+            AutoText(
+                text = "Phone: ${address.phone}",
                 fontSize = 14.sp,
                 color = secondaryText,
                 fontWeight = FontWeight.Medium
             )
 
-            // Set Default Button (if not already default)
             if (!address.isDefault) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
+                AutoText(
                     text = "Set as Default",
                     color = primaryColor,
                     fontSize = 14.sp,
@@ -250,3 +361,4 @@ fun AddressCardItem(
         }
     }
 }
+

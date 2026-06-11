@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun WalletScreen(navController: NavController) {
@@ -76,7 +77,7 @@ fun WalletScreen(navController: NavController) {
                     .size(24.dp)
                     .clickable { navController.popBackStack() })
             Spacer(modifier = Modifier.width(16.dp))
-            Text(
+            AutoText(
                 text = "My Wallet",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -107,14 +108,14 @@ fun WalletScreen(navController: NavController) {
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    AutoText(
                         text = "Total Balance",
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 14.sp
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
+                AutoText(
                     text = "₹ 2,450.00",
                     color = Color.White,
                     fontSize = 32.sp,
@@ -134,7 +135,7 @@ fun WalletScreen(navController: NavController) {
                 ) {
                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    AutoText(
                         text = "Add Money", fontWeight = FontWeight.Bold
                     )
                 }
@@ -144,7 +145,7 @@ fun WalletScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(24.dp))
 
         // --- Payment Methods / History ---
-        Text(
+        AutoText(
             text = "Payment Methods",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -178,13 +179,13 @@ fun WalletScreen(navController: NavController) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            AutoText(
                 text = "Recent Transactions",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = textColor
             )
-            Text(
+            AutoText(
                 text = "See All",
                 fontSize = 14.sp,
                 color = primaryColor,
@@ -272,14 +273,14 @@ fun TransactionItem(
 
         // Title and Date
         Column(modifier = Modifier.weight(1f)) {
-            Text(
+            AutoText(
                 text = transaction.title,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = textColor
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
+            AutoText(
                 text = transaction.date,
                 fontSize = 12.sp,
                 color = secondaryText
@@ -287,7 +288,7 @@ fun TransactionItem(
         }
 
         // Amount
-        Text(
+        AutoText(
             text = "${if (transaction.isCredit) "+" else "-"} ₹${kotlin.math.abs(transaction.amount)}",
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,

@@ -2,6 +2,7 @@ package com.mysanjeevni.mysanjeevni.features.profile.presentation.ui
 
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -38,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,10 +59,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.R
-import com.mysanjeevni.mysanjeevni.data.remote.ApiClient
-import com.mysanjeevni.mysanjeevni.data.remote.model.UpdateProfileRequest
+import com.mysanjeevni.mysanjeevni.data.remote.AuthApiClient
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,6 +90,26 @@ fun EditProfileScreen(navController: NavController) {
     val token = sessionManager.getToken()
 
     val scope = rememberCoroutineScope()
+    var existingImageUrl by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        scope.launch {
+            try {
+                val response = AuthApiClient.api.getProfile("Bearer $token")
+                if (response.isSuccessful){
+                    val user = response.body()?.user
+                    name = user?.fullName?:""
+                    email = user?.email?:""
+                    mobile = user?.phone?:""
+                    address = user?.address?:""
+                    existingImageUrl = user?.profileImage
+                }
+            }catch (e: Exception){
+                Toast.makeText(context,e.message, Toast.LENGTH_SHORT).show()
+                Log.e("EDIT_PROFILE",e.message?:"")
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -130,27 +156,35 @@ fun EditProfileScreen(navController: NavController) {
                             .background(Color(0xFFECECEC))
                             .clickable{galleryLauncher.launch("image/*")}
                     ) {
-                        if (selectedImageUri != null) {
-                            AsyncImage(
-                                model = selectedImageUri,
-                                contentDescription = "Profile Image",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(60.dp)
-                                    .align(Alignment.Center),
-                                tint = Color.Gray
-                            )
+                        when{
+                            selectedImageUri != null ->{
+                                AsyncImage(
+                                    model = selectedImageUri,
+                                    contentDescription = "Profile Image",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            !existingImageUrl.isNullOrEmpty() ->{
+                                AsyncImage(
+                                    model = existingImageUrl,
+                                    contentDescription = "Profile Image",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            else ->{
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(60.dp)
+                                        .align(Alignment.Center),
+                                    tint = Color.Gray
+                                )
+                            }
                         }
                     }
 
-                    // The Camera Icon Badge
                     Box(
                         modifier = Modifier
                             .align(Alignment.BottomEnd) // Correct Alignment
@@ -253,14 +287,28 @@ fun EditProfileScreen(navController: NavController) {
                 onClick = {
                     scope.launch {
                         try{
-                            val response = ApiClient.api.updateProfile(
-                                "Bearer $token",
-                                UpdateProfileRequest(
-                                    name,
-                                    email,
-                                    mobile,
-                                    address
+                            val nameBody = name.toRequestBody("text/plain".toMediaTypeOrNull())
+                            val emailBody = email.toRequestBody("text/plain".toMediaTypeOrNull())
+                            val phoneBody = mobile.toRequestBody("text/plain".toMediaTypeOrNull())
+                            val addressBody = address.toRequestBody("text/plain".toMediaTypeOrNull())
+                            var imagePart: MultipartBody.Part?=null
+                            selectedImageUri?.let { uri ->
+                                val inputStream = context.contentResolver.openInputStream(uri)
+                                val file = File(context.cacheDir,"profile_image.jpg")
+                                file.outputStream().use { inputStream?.copyTo(it) }
+
+                                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+                                imagePart = MultipartBody.Part.createFormData(
+                                    "profileImage",file.name,requestFile
                                 )
+                            }
+                            val response = AuthApiClient.api.updateProfile(
+                                "Bearer $token",
+                                nameBody,
+                                emailBody,
+                                phoneBody,
+                                addressBody,
+                                imagePart
                             )
                             if (response.isSuccessful){
                                 Log.d("UPDATE","Success: ${response.body()}")

@@ -1,6 +1,7 @@
 package com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.state
 
-import com.mysanjeevni.mysanjeevni.features.pharmacy.domain.model.Medicine
+import com.mysanjeevni.mysanjeevni.features.medicines.domain.model.Medicine
+
 
 data class PharamcyState(
     val isLoading: Boolean = false,

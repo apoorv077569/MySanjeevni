@@ -1,17 +1,23 @@
 package com.mysanjeevni.mysanjeevni.di
 
-import com.mysanjeevni.mysanjeevni.features.cart.data.repository.RoomCartRepositoryImpl
+import com.mysanjeevni.mysanjeevni.data.local.cart.CartDao
+import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
 import com.mysanjeevni.mysanjeevni.features.cart.domain.repository.CartRepository
-import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class CartModule {
-    @Binds
+object CartModule {
+    @Provides
     @Singleton
-    abstract fun bindCartRepository(roomRepo: RoomCartRepositoryImpl): CartRepository
+    fun provideCartRepository(
+        api: ApiService,
+        dao: CartDao
+    ): CartRepository {
+        return CartRepository(api,dao)
+    }
 }

@@ -21,6 +21,7 @@ class PharmacyViewModel @Inject constructor(
         loadMedicines()
     }
 
+
     private fun loadMedicines() {
         viewModelScope.launch {
             // show loading

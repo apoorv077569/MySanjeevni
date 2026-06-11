@@ -1,5 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.cart.presentation.ui
 
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -40,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -51,17 +53,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartItem
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartScreen(navController: NavController, viewModel: CartViewModel = hiltViewModel()) {
+fun CartScreen(navController: NavController, viewModel: CartViewModel) {
 
     val state by viewModel.state.collectAsState()
     val isDark = isSystemInDarkTheme()
@@ -69,10 +71,15 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel = hiltView
     val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDark) Color.White else Color.Black
 
+    LaunchedEffect(state.cartItem) {
+        Log.d("CART_DEBUG", "CART VM = ${viewModel.hashCode()}")
+        Log.d("CART_DEBUG", "CartScreen → Items Size: ${state.cartItem.size}")
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.my_cart), fontWeight = FontWeight.Bold) },
+                title = { AutoText(stringResource(R.string.my_cart), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
@@ -87,9 +94,10 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel = hiltView
         },
         bottomBar = {
             if (state.cartItem.isNotEmpty()) {
-                CartBottomBar(state.totalBill, isDark,navController)
+                CartBottomBar(state.totalBill, isDark, navController)
             }
-        }, containerColor = bgColor
+        },
+        containerColor = bgColor
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -98,25 +106,24 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel = hiltView
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-            else if (state.cartItem.isEmpty()) {
+            } else if (state.cartItem.isEmpty()) {
                 EmptyCartView(textColor)
-            }
-            else{
-                LazyColumn(modifier = Modifier.fillMaxSize(),
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(state.cartItem){item ->
+                    items(state.cartItem) { item ->
                         CartItemRow(
                             item = item,
                             isDark = isDark,
-                            onIncrease = {viewModel.incrementQty(item)},
-                            onDecrease = {viewModel.decrementQty(item)}
+                            onIncrease = { viewModel.incrementQty(item) },
+                            onDecrease = { viewModel.decrementQty(item) }
                         )
                     }
-                    item{
-                        BillSummary(state.cartItem,state.totalBill,isDark)
+                    item {
+                        BillSummary(state.cartItem, state.totalBill, isDark)
                     }
                     item { Spacer(modifier = Modifier.height(20.dp)) }
                 }
@@ -139,20 +146,20 @@ fun EmptyCartView(textColor: Color) {
             tint = Color.Gray
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Your cart is empty!", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = textColor)
-        Text("Add medicines to proceed", fontSize = 14.sp, color = Color.Gray)
+        AutoText("Your cart is empty!", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = textColor)
+        AutoText("Add medicines to proceed", fontSize = 14.sp, color = Color.Gray)
     }
 }
 
 @Composable
 fun CartItemRow(
-    item : CartItem,
+    item: CartItem,
     isDark: Boolean,
-    onIncrease :() -> Unit,
-    onDecrease :() -> Unit
+    onIncrease: () -> Unit,
+    onDecrease: () -> Unit
 ) {
-    val cardColor = if(isDark) Color(0xFF1E1E1E) else Color.White
-    val textColor = if(isDark) Color.White else Color.Black
+    val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
+    val textColor = if (isDark) Color.White else Color.Black
 
     Card(
         colors = CardDefaults.cardColors(containerColor = cardColor),
@@ -179,7 +186,7 @@ fun CartItemRow(
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AutoText(
                     text = item.name,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
@@ -188,62 +195,74 @@ fun CartItemRow(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text="₹${item.price}",
+                    AutoText(
+                        text = "₹${item.price}",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
                         color = textColor
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text= "₹${item.originalPrice}",
+                    AutoText(
+                        text = "₹${item.originalPrice}",
                         fontSize = 12.sp,
                         color = Color.Gray,
                         textDecoration = TextDecoration.LineThrough
                     )
                 }
             }
+
+            // ✅ FIX: Box wrap kiya clickable ke liye proper touch area
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .border(1.dp, Color(0xFFFF6F61), RoundedCornerShape(4.dp))
                     .padding(horizontal = 4.dp, vertical = 2.dp)
-            ) { 
-                Icon(
-                    imageVector = if (item.qty > 1) Icons.Default.Remove else Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.decrease),
-                    tint = Color(0xFFFF6F61),
+            ) {
+                Box(
                     modifier = Modifier
-                        .size(20.dp)
-                        .clickable { onDecrease() }
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
+                        .size(28.dp)
+                        .clickable { onDecrease() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (item.qty > 1) Icons.Default.Remove else Icons.Default.Delete,
+                        contentDescription = stringResource(R.string.decrease),
+                        tint = Color(0xFFFF6F61),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                AutoText(
                     text = "${item.qty}",
                     color = Color(0xFFFF6F61),
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.width(12.dp))
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.increase),
-                    tint = Color(0xFFFF6F61),
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
                     modifier = Modifier
-                        .size(20.dp)
-                        .clickable { onIncrease() }
-                )
+                        .size(28.dp)
+                        .clickable { onIncrease() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(R.string.increase),
+                        tint = Color(0xFFFF6F61),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun BillSummary(cartItems: List<CartItem>,grandTotal: Double,isDark: Boolean) {
-    val cardColor = if(isDark) Color(0xFF1E1E1E) else Color.White
-    val textColor = if(isDark) Color.White else Color.Black
+fun BillSummary(cartItems: List<CartItem>, grandTotal: Double, isDark: Boolean) {
+    val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
+    val textColor = if (isDark) Color.White else Color.Black
 
     val itemTotal = cartItems.sumOf { it.price * it.qty }
-    val deliveryFee = if(itemTotal > 500) 0.0 else 40.0
+    val deliveryFee = if (itemTotal > 500) 0.0 else 40.0
 
     Card(
         colors = CardDefaults.cardColors(containerColor = cardColor),
@@ -251,66 +270,64 @@ fun BillSummary(cartItems: List<CartItem>,grandTotal: Double,isDark: Boolean) {
         shape = RoundedCornerShape(8.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
+            AutoText(
                 stringResource(R.string.bill_summary),
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 color = textColor
-                )
+            )
             Spacer(modifier = Modifier.height(12.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
+                AutoText(
                     stringResource(R.string.item_total),
                     color = Color.Gray,
                     fontSize = 14.sp
-                    )
-                val roundedTotal = String.format("%.2f",itemTotal).toDouble()
-
-                Text("₹$roundedTotal",color=textColor, fontSize = 14.sp)
+                )
+                val roundedTotal = String.format("%.2f", itemTotal).toDouble()
+                AutoText("₹$roundedTotal", color = textColor, fontSize = 14.sp)
             }
             Spacer(modifier = Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
+                AutoText(
                     stringResource(R.string.delivery_fee),
                     color = Color.Gray,
                     fontSize = 14.sp
                 )
-                if(deliveryFee == 0.0){
-                    Text(
+                if (deliveryFee == 0.0) {
+                    AutoText(
                         stringResource(R.string.free),
                         color = Color(0xFF008000),
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
                     )
-                }else{
-                    Text(
+                } else {
+                    AutoText(
                         "₹$deliveryFee",
                         color = textColor,
                         fontSize = 14.sp
                     )
                 }
             }
-            Spacer(modifier  = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(12.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
+                AutoText(
                     stringResource(R.string.grand_total),
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = textColor
                 )
-                Text(
+                AutoText(
                     "₹$grandTotal",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
@@ -322,9 +339,9 @@ fun BillSummary(cartItems: List<CartItem>,grandTotal: Double,isDark: Boolean) {
 }
 
 @Composable
-fun CartBottomBar(grandTotal: Double,isDark: Boolean,navController: NavController) {
-    val containerColor = if(isDark) Color(0xFF1E1E1E) else Color.White
-    val textColor = if(isDark) Color.White else Color.Black
+fun CartBottomBar(grandTotal: Double, isDark: Boolean, navController: NavController) {
+    val containerColor = if (isDark) Color(0xFF1E1E1E) else Color.White
+    val textColor = if (isDark) Color.White else Color.Black
 
     Surface(
         shadowElevation = 16.dp,
@@ -338,13 +355,13 @@ fun CartBottomBar(grandTotal: Double,isDark: Boolean,navController: NavControlle
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column{
+            Column {
                 Text(
                     stringResource(R.string.total_to_pay),
                     fontSize = 12.sp,
                     color = Color.Gray
-                    )
-                Text(
+                )
+                AutoText(
                     "₹$grandTotal",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
@@ -352,19 +369,19 @@ fun CartBottomBar(grandTotal: Double,isDark: Boolean,navController: NavControlle
                 )
             }
             Button(
-                onClick = {navController.navigate("${Screen.ManageAddresses.route}?checkout=true")},
+                onClick = { navController.navigate(Screen.ManageAddresses.createRoute(true))},
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6F61)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
                     .height(48.dp)
                     .width(180.dp)
             ) {
-                Text(
+                AutoText(
                     stringResource(R.string.checkout),
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
-                    )
+                )
             }
         }
     }

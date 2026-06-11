@@ -1,0 +1,41 @@
+package com.mysanjeevni.mysanjeevni.features.medicines.data.dto
+
+import com.mysanjeevni.mysanjeevni.features.medicines.domain.model.Medicine
+
+data class MedicineDto(
+    val _id: String,
+    val name: String,
+    val description: String?,
+    val price: Double,
+    val mrp: Double,
+    val category: String,
+    val subcategory: String?,
+    val diseaseCategory: String?,
+    val diseaseSubcategory: String?,
+    val productType: String,
+    val brand: String?,
+    val quantity: Int,
+    val quantityUnit: String,
+    val stock: Int,
+    val icon: String?,
+    val image: String?,
+    val images: List<String>?,
+    val specifications: String?,
+    val safetyInformation: String?,
+    val healthConcerns: List<String>?,
+    val requiresPrescription: Boolean,
+    val vendorId: String?,
+    val vendorName: String?,
+    val vendorRating: Double?,
+    val rating: Double,
+    val reviews: Int,
+    val isActive: Boolean,
+    val approvalStatus: String,
+    val isPopular: Boolean,
+    val isPopularGeneric: Boolean,
+    val isPopularAyurveda: Boolean,
+    val isPopularHomeopathy: Boolean,
+    val isPopularLabTests: Boolean,
+    val createdAt: String?,
+    val updatedAt: String?
+)

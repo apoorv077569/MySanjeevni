@@ -42,6 +42,7 @@ import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.features.health.domain.model.HealthArticle
 import com.mysanjeevni.mysanjeevni.features.health.domain.model.HealthTool
 import com.mysanjeevni.mysanjeevni.features.health.presentation.viemodel.HealthViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 // --- DUMMY DATA ---
 val healthTools = listOf(
@@ -83,13 +84,13 @@ fun HealthScreen(navController: NavController, viewModel: HealthViewModel = hilt
                     .padding(16.dp)
                     .fillMaxWidth()
             ) {
-                Text(
+                AutoText(
                     text = "Health Hub",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = textColor
                 )
-                Text(
+                AutoText(
                     text = "Trusted advice for a healthier you",
                     fontSize = 14.sp,
                     color = Color.Gray
@@ -113,7 +114,7 @@ fun HealthScreen(navController: NavController, viewModel: HealthViewModel = hilt
             )
 
             // 2. Health Tools (Horizontal)
-            Text(
+            AutoText(
                 "Health Tools",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
@@ -157,8 +158,8 @@ fun HealthScreen(navController: NavController, viewModel: HealthViewModel = hilt
                             .align(Alignment.BottomStart)
                             .padding(16.dp)
                     ) {
-                        Text("Summer Health Guide", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                        Text("Stay hydrated and safe", color = Color.White, fontSize = 14.sp)
+                        AutoText("Summer Health Guide", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        AutoText("Stay hydrated and safe", color = Color.White, fontSize = 14.sp)
                     }
                 }
             }
@@ -171,8 +172,8 @@ fun HealthScreen(navController: NavController, viewModel: HealthViewModel = hilt
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Trending Articles", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = textColor)
-                Text("View All", color = brandColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                AutoText("Trending Articles", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = textColor)
+                AutoText("View All", color = brandColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
             }
 
             LazyRow(
@@ -187,7 +188,7 @@ fun HealthScreen(navController: NavController, viewModel: HealthViewModel = hilt
             Spacer(modifier = Modifier.height(10.dp))
 
             // 5. Shop by Concern (Grid)
-            Text("Health Concerns", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = textColor, modifier = Modifier.padding(horizontal = 16.dp))
+            AutoText("Health Concerns", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = textColor, modifier = Modifier.padding(horizontal = 16.dp))
             Spacer(modifier = Modifier.height(10.dp))
 
             // Note: In a vertical scroll column, we can't use LazyVerticalGrid easily without fixed height.
@@ -256,7 +257,7 @@ fun HealthSearchBar(
 
                 Box(modifier = Modifier.weight(1f)) {
                     if (query.isEmpty()) {
-                        Text("Search health topics...", color = placeholderColor)
+                        AutoText("Search health topics...", color = placeholderColor)
                     }
                     innerTextField()
                 }
@@ -300,7 +301,7 @@ fun SearchResultRow(title: String, imageUrl: String, isDark: Boolean) {
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.width(16.dp))
-            Text(title, fontWeight = FontWeight.Medium, color = textColor, modifier = Modifier.weight(1f))
+            AutoText(title, fontWeight = FontWeight.Medium, color = textColor, modifier = Modifier.weight(1f))
             Icon(Icons.Default.ArrowForward, contentDescription = null, tint = Color.Gray)
         }
     }
@@ -324,7 +325,7 @@ fun HealthToolItem(tool: HealthTool, isDark: Boolean) {
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Text(tool.name, fontSize = 12.sp, color = textColor, fontWeight = FontWeight.Medium)
+        AutoText(tool.name, fontSize = 12.sp, color = textColor, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -347,14 +348,14 @@ fun HealthArticleCard(article: HealthArticle, isDark: Boolean) {
                 modifier = Modifier.height(110.dp).fillMaxWidth()
             )
             Column(modifier = Modifier.padding(12.dp)) {
-                Text(
+                AutoText(
                     text = article.category.uppercase(),
                     fontSize = 10.sp,
                     color = Color(0xFF009688),
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
+                AutoText(
                     text = article.title,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
@@ -363,7 +364,7 @@ fun HealthArticleCard(article: HealthArticle, isDark: Boolean) {
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
+                AutoText(
                     text = article.readTime,
                     fontSize = 11.sp,
                     color = Color.Gray
@@ -386,7 +387,7 @@ fun ConcernChip(name: String, isDark: Boolean) {
         elevation = CardDefaults.cardElevation(1.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(name, fontSize = 12.sp, color = textColor, fontWeight = FontWeight.SemiBold)
+            AutoText(name, fontSize = 12.sp, color = textColor, fontWeight = FontWeight.SemiBold)
         }
     }
 }

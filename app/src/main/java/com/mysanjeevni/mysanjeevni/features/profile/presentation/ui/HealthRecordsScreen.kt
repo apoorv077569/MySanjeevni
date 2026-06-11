@@ -32,6 +32,7 @@ import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.HealthRecordItem
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.RecordType
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.HealthRecordViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun HealthRecordsScreen(
@@ -56,7 +57,7 @@ fun HealthRecordsScreen(
                 containerColor = primaryColor,
                 contentColor = Color.White,
                 icon = { Icon(Icons.Default.FileUpload, null) },
-                text = { Text("Upload New") }
+                text = { AutoText("Upload New") }
             )
         }
     ) { padding ->
@@ -81,7 +82,7 @@ fun HealthRecordsScreen(
                         .clickable { navController.popBackStack() }
                 )
                 Spacer(modifier = Modifier.width(16.dp))
-                Text(
+                AutoText(
                     text = "Medical Records",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
@@ -106,7 +107,7 @@ fun HealthRecordsScreen(
                     FilterChip(
                         selected = state.selectedFilter == type,
                         onClick = { viewModel.onFilterSelected(type) },
-                        label = { Text(label) },
+                        label = { AutoText(label) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = primaryColor,
                             selectedLabelColor = Color.White,
@@ -129,7 +130,7 @@ fun HealthRecordsScreen(
                 }
             } else if (state.filteredRecords.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No records found", color = secondaryText)
+                    AutoText("No records found", color = secondaryText)
                 }
             } else {
                 LazyColumn(
@@ -195,20 +196,20 @@ fun RecordItem(
 
             // Details
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AutoText(
                     text = record.title,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = textColor
                 )
-                Text(
+                AutoText(
                     text = record.doctorOrLabName,
                     fontSize = 14.sp,
                     color = secondaryText
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
+                    AutoText(
                         text = record.date,
                         fontSize = 12.sp,
                         color = secondaryText
@@ -216,7 +217,7 @@ fun RecordItem(
                     Spacer(modifier = Modifier.width(8.dp))
                     Box(modifier = Modifier.size(4.dp).clip(RoundedCornerShape(2.dp)).background(secondaryText))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    AutoText(
                         text = record.fileSize,
                         fontSize = 12.sp,
                         color = secondaryText

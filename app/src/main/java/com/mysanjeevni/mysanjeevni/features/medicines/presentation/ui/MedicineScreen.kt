@@ -41,6 +41,7 @@ import com.mysanjeevni.mysanjeevni.features.category.presenttion.data.bodyParts
 import com.mysanjeevni.mysanjeevni.features.category.presenttion.data.categoryList
 import com.mysanjeevni.mysanjeevni.features.category.presenttion.data.issues
 import com.mysanjeevni.mysanjeevni.features.category.presenttion.model.CategoryModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun MedicineScreen() {
@@ -120,9 +121,9 @@ fun SectionTitle(title: String) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
 
-        Text(title, fontWeight = FontWeight.Bold)
+        AutoText(title, fontWeight = FontWeight.Bold)
 
-        Text("View All", color = Color(0xFF38D6C6))
+        AutoText("View All", color = Color(0xFF38D6C6))
     }
 }
 @Composable
@@ -152,7 +153,7 @@ fun HorizontalList(list: List<CategoryModel>) {
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                Text(item.name, fontSize = 12.sp)
+                AutoText(item.name, fontSize = 12.sp)
             }
         }
     }

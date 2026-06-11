@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +39,7 @@ import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.category.presenttion.data.categoryList
 import com.mysanjeevni.mysanjeevni.features.category.presenttion.model.CategoryModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun CategoryScreen(navController: NavController) {
@@ -65,7 +65,7 @@ fun CategoryScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            Text(
+            AutoText(
                 text = "All categories",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
@@ -90,7 +90,18 @@ fun CategoryScreen(navController: NavController) {
         ) {
             items(categoryList) { item ->
                 CategoryItem(item, onClick = {
-                    navController.navigate("home?scrollTo=medicines")
+
+                    val section = when (item.name.lowercase()) {
+
+                        "medicines", "pharmacy" -> "medicines"
+                        "lab tests", "diagnostics" -> "lab"
+                        "doctor consult", "consult" -> "doctor"
+                        "health care", "health" -> "health"
+
+                        else -> "medicines" // fallback
+                    }
+
+                    navController.navigate(Screen.Home.withScrollTo(section))
                 })
             }
         }
@@ -130,11 +141,9 @@ fun CategoryItem(item: CategoryModel, onClick: () -> Unit) {
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        Text(
+        AutoText(
             text = item.name,
             fontSize = 13.sp,
-
-
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
             maxLines = 2,

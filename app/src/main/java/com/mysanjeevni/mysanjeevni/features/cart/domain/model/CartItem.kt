@@ -1,10 +1,10 @@
 package com.mysanjeevni.mysanjeevni.features.cart.domain.model
 
 data class CartItem(
-    val id: Int,
+    val id: String,
     val name: String,
     val price: Double,
-    val originalPrice: Double,
-    val qty: Int,
-    val imageUrl: Int
+    val originalPrice:  Double,
+    var qty: Int,
+    val imageUrl: String,
 )

@@ -21,7 +21,8 @@ data class DoctorAppointmentItem(
 
 data class DoctorDashboardState(
     val isLoading: Boolean = false,
-    val doctorName: String = "Dr. Aarya",
+    val doctorName: String = "",
+    val specialization: String = "" ,
     val isOnline: Boolean = true,
     val totalPatientsToday: Int = 0,
     val pendingAppointments: Int = 0,

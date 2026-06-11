@@ -13,7 +13,7 @@
     <string name="send_otp">Send OTP</string>
     <string name="dont_have_an_account">Don\'t have an account</string>
     <string name="reset_password">ResetPassword</string>
-    <string name="otp_verification">We have sent an otp to your email</string>
+    <string name="otp_verification">We have sent an otp to your mobile</string>
     <string name="verify_otp">Verify Otp</string>
     <string name="profile">Profile</string>
     <string name="category">Category</string>

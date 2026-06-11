@@ -1,25 +1,61 @@
 package com.mysanjeevni.mysanjeevni.core.navigation
 
-sealed class Screen(val route:String) {
-    object Splash: Screen("splash")
-    object OnBoarding: Screen("onBoarding")
-    object Login: Screen("login")
-    object Signup: Screen("signup")
-    object Home: Screen("home")
-    object Forget :Screen("forget")
-    object VERIFY :Screen("verify")
-    object ResetPassword :Screen("resetPassword")
-    object ProfileScreen :Screen("profile_screen")
-    object CartScreen :Screen("cart_screen")
+import android.net.Uri
+
+sealed class Screen(val route: String) {
+    object Splash : Screen("splash")
+    object OnBoarding : Screen("onBoarding")
+    object Login : Screen("login")
+    object Signup : Screen("signup")
+    object Home : Screen("home?scrollTo={scrollTo}") {
+        const val plain = "home?scrollTo="
+        fun withScrollTo(section: String) = "home?scrollTo=$section"
+    }
+
+    object Forget : Screen("forget")
+    object VERIFY : Screen("verify/{mobile}") {
+        fun createRoute(mobile: String) = "verify/$mobile"
+    }
+
+    object ResetPassword : Screen("resetPassword/{mobile}") {
+        fun createRoute(mobile: String) = "resetPassword/$mobile"
+    }
+
+    object MedicineDetail : Screen("medicine_detail/{id}") {
+        fun createRoute(id: String) =
+            "medicine_detail/$id"
+    }
+
+    object LabTestDetail : Screen("lab_test_detail/{id}") {
+
+        fun createRoute(id: String): String {
+            return "lab_test_detail/$id"
+        }
+    }
+
+    object ProfileScreen : Screen("profile_screen")
+    object CartScreen : Screen("cart_screen")
     object Consult : Screen("consult")
     object Health : Screen("health")
     object Plan : Screen("plan")
     object PharmacyList : Screen("pharmacy_list")
-    object MyOrders : Screen("my_orders")
-    object ManageAddresses : Screen("manage_addresses")
+    object MyOrders : Screen("my_orders?address={address}") {
+        const val plain = "my_orders"
+        fun createRoute(address: String): String {
+            return "my_orders?address=${Uri.encode(address)}"
+        }
+    }
+
+    object ManageAddresses :
+        Screen("manage_addresses?checkout={checkout}") {
+
+        fun createRoute(
+            checkout: Boolean
+        ) = "manage_addresses?checkout=$checkout"
+    }
+
     object EditProfile : Screen("edit_profile")
     object CategoryScreen : Screen("category_screen")
-    object MedicineScreen : Screen("medicine_screen")
     object HealthRecords : Screen("health_records")
     object MyLabTestsScreen : Screen("my_lab_tests_screen")
     object SettingScreen : Screen("setting_screen")
@@ -28,5 +64,31 @@ sealed class Screen(val route:String) {
     object DoctorDashboard : Screen("doctor_dashboard")
     object ReferralScreen : Screen("wallet_screen")
     object TransactionHistoryScreen : Screen("transaction_history_screen")
-    object SummaryScreen : Screen("Summary_Screen")
+    object SummaryScreen : Screen("summary_screen?address={address}") {
+
+        fun createRoute(address: String): String {
+            return "summary_screen?address=${Uri.encode(address)}"
+        }
+    }
+
+    object PaymentScreen : Screen("payment_screen/{address}") {
+        fun createRoute(address: String) = "payment_screen/$address"
+    }
+
+    object OrderSuccessScreen : Screen("OrderSuccess_Screen?address={address}") {
+        const val plain = "OrderSuccess_Screen"
+        fun createRoute(address: String): String {
+            return "OrderSuccess_Screen?address=${Uri.encode(address)}"
+        }
+    }
+
+    object TermsScreen : Screen("terms")
+    object Payment : Screen("payment")
+    object PrivacyScreen : Screen("privacy")
+
+    object OrderDetailScreen : Screen("order_detail/{id}") {
+        fun createRoute(id: String): String {
+            return "order_detail/$id"
+        }
+    }
 }

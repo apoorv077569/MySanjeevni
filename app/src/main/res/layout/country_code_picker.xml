@@ -1,0 +1,8 @@
+<com.hbb20.CountryCodePicker android:id="@+id/ccp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:ccp_defaultNameCode="IN"
+    app:ccp_showFlag="true"
+    app:ccp_showNameCode="false"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android" />

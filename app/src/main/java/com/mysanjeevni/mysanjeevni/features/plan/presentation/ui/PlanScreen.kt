@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,13 +96,13 @@ fun PlanScreen(navController: NavController) {
                         modifier = Modifier.size(48.dp)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
+                    AutoText(
                         "Care Plan Member",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
-                    Text(
+                    AutoText(
                         "Save extra 5% on every order + Free Delivery",
                         fontSize = 14.sp,
                         color = Color.White.copy(alpha = 0.9f),
@@ -122,11 +123,11 @@ fun PlanScreen(navController: NavController) {
                     modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Total Estimated Savings", color = Color.Gray, fontSize = 14.sp)
-                    Text("₹ 4,500 / year", fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Color(0xFF00C853))
+                    AutoText("Total Estimated Savings", color = Color.Gray, fontSize = 14.sp)
+                    AutoText("₹ 4,500 / year", fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Color(0xFF00C853))
                 }
             }
-            Text(
+            AutoText(
                 "Membership Benefits",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
@@ -142,7 +143,7 @@ fun PlanScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
+            AutoText(
                 "Choose your Plan",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
@@ -205,7 +206,7 @@ fun BenefitItem(
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(12.dp))
-        Text(text, fontSize = 14.sp, color = textColor)
+        AutoText(text, fontSize = 14.sp, color = textColor)
     }
 }
 
@@ -228,7 +229,7 @@ fun PlanBottomBar(isDark: Boolean) {
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
-                Text("Join Now", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
+                AutoText("Join Now", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
             }
         }
     }
@@ -262,13 +263,13 @@ fun PlanSelectionCard(
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
+            AutoText(
                 title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp,
                 color = textColor
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(price, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = textColor)
-            Text(
+            AutoText(price, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = textColor)
+            AutoText(
                 oldPrice,
                 fontSize = 1.sp,
                 color = Color.Gray,

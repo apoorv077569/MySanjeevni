@@ -46,6 +46,7 @@ import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.TransactionHistoryItem
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.TransactionHistoryViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun TransactionHistoryScreen(
@@ -83,7 +84,7 @@ fun TransactionHistoryScreen(
                     .clickable { navController.popBackStack() }
             )
             Spacer(modifier = Modifier.width(16.dp))
-            Text(
+            AutoText(
                 text = stringResource(R.string.transaction_history),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -127,7 +128,7 @@ fun TransactionHistoryScreen(
             ) {
                 state.groupedTransactions.forEach { (date, transactions) ->
                     item {
-                        Text(
+                        AutoText(
                             text = date,
                             fontSize = 14.sp,
                             color = secondaryText,
@@ -172,7 +173,7 @@ fun FilterChipItem(
             .clickable { onClick() }
             .padding(horizontal = 20.dp, vertical = 10.dp)
     ){
-        Text(
+        AutoText(
             text = text,
             color = if(isSelected) Color.White else textColor,
             fontWeight = if(isSelected) FontWeight.Bold else FontWeight.Normal,
@@ -212,20 +213,20 @@ fun HistoryTransactionItem(
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
+            AutoText(
                 text = transaction.title,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = textColor
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
+            AutoText(
                 text = transaction.time,
                 fontSize = 12.sp,
                 color = secondaryText
             )
         }
-        Text(
+        AutoText(
             text = "${if (transaction.isCredit) "+" else "-"} ₹${kotlin.math.abs(transaction.amount)}",
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,

@@ -62,8 +62,8 @@ import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.features.consult.domnain.model.Doctor
 import com.mysanjeevni.mysanjeevni.features.consult.domnain.model.Specialty
 import com.mysanjeevni.mysanjeevni.features.consult.presentation.viewmodel.ConsultViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
-// Dummy Data
 val specialties = listOf(
     Specialty("General Physician", "https://cdn-icons-png.flaticon.com/512/387/387561.png"),
     Specialty("Skin & Hair", "https://cdn-icons-png.flaticon.com/512/3050/3050186.png"),
@@ -138,7 +138,7 @@ fun ConsultScreen(navController: NavController,
         containerColor = bgColor,
         topBar = {
             Column(modifier = Modifier.background(cardColor).statusBarsPadding()) {
-                Text(
+                AutoText(
                     stringResource(R.string.consult_a_doctor),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
@@ -162,7 +162,7 @@ fun ConsultScreen(navController: NavController,
             contentPadding = PaddingValues(bottom = 20.dp)
         ) {
             item {
-                Text(
+                AutoText(
                     stringResource(R.string.find_by_specialty),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
@@ -184,7 +184,7 @@ fun ConsultScreen(navController: NavController,
                 Spacer(modifier = Modifier.height(24.dp))
             }
             item {
-                Text(
+                AutoText(
                     stringResource(R.string.top_doctors_near_you),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,

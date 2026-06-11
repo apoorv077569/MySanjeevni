@@ -36,6 +36,7 @@ import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.features.consult.presentation.ConsultItem
 import com.mysanjeevni.mysanjeevni.features.consult.presentation.ConsultStatus
 import com.mysanjeevni.mysanjeevni.features.consult.presentation.viewmodel.MyConsultViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun MyConsultsScreen(
@@ -74,7 +75,7 @@ fun MyConsultsScreen(
                     .clickable { navController.popBackStack() }
             )
             Spacer(modifier = Modifier.width(16.dp))
-            Text(
+            AutoText(
                 text = "My Consultations",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -97,12 +98,12 @@ fun MyConsultsScreen(
             Tab(
                 selected = state.selectedTab == 0,
                 onClick = { viewModel.onTabSelected(0) },
-                text = { Text("Upcoming") }
+                text = { AutoText("Upcoming") }
             )
             Tab(
                 selected = state.selectedTab == 1,
                 onClick = { viewModel.onTabSelected(1) },
-                text = { Text("Past Consults") }
+                text = { AutoText("Past Consults") }
             )
         }
 
@@ -116,7 +117,7 @@ fun MyConsultsScreen(
 
             if (listToShow.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No consultations found", color = secondaryText)
+                    AutoText("No consultations found", color = secondaryText)
                 }
             } else {
                 LazyColumn(
@@ -167,19 +168,19 @@ fun ConsultCard(
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
+                    AutoText(
                         text = consult.doctorName,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
                         color = textColor
                     )
-                    Text(
+                    AutoText(
                         text = consult.specialization,
                         fontSize = 13.sp,
                         color = secondaryText
                     )
                     if (consult.hospitalName != null) {
-                        Text(
+                        AutoText(
                             text = consult.hospitalName,
                             fontSize = 12.sp,
                             color = secondaryText
@@ -192,7 +193,7 @@ fun ConsultCard(
                     color = consult.status.color.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(4.dp)
                 ) {
-                    Text(
+                    AutoText(
                         text = consult.status.label,
                         color = consult.status.color,
                         fontSize = 11.sp,
@@ -220,7 +221,7 @@ fun ConsultCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Schedule, null, tint = secondaryText, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = consult.time, fontSize = 14.sp, color = textColor)
+                    AutoText(text = consult.time, fontSize = 14.sp, color = textColor)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
@@ -230,7 +231,7 @@ fun ConsultCard(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = if(consult.isVideoCall) "Video" else "Visit", fontSize = 14.sp, color = textColor)
+                    AutoText(text = if(consult.isVideoCall) "Video" else "Visit", fontSize = 14.sp, color = textColor)
                 }
             }
 
@@ -249,7 +250,7 @@ fun ConsultCard(
                     ) {
                         Icon(Icons.Default.VideoCall, null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Join Call")
+                        AutoText("Join Call")
                     }
 
                     OutlinedButton(
@@ -258,7 +259,7 @@ fun ConsultCard(
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(1.dp, secondaryText)
                     ) {
-                        Text("Reschedule", color = textColor)
+                        AutoText("Reschedule", color = textColor)
                     }
                 } else if (consult.status == ConsultStatus.COMPLETED) {
                     // Past Actions
@@ -270,7 +271,7 @@ fun ConsultCard(
                     ) {
                         Icon(Icons.Default.Description, null, tint = primaryColor, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("View Rx", color = primaryColor)
+                        AutoText("View Rx", color = primaryColor)
                     }
 
                     Button(
@@ -279,7 +280,7 @@ fun ConsultCard(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Book Again")
+                        AutoText("Book Again")
                     }
                 }
             }

@@ -3,6 +3,8 @@ package com.mysanjeevni.mysanjeevni.features.profile.presentation.ui
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -28,7 +30,6 @@ import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MedicalServices
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoCall
@@ -40,7 +41,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,57 +54,54 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.data.remote.ApiClient
+import com.mysanjeevni.mysanjeevni.data.remote.AuthApiClient
 import com.mysanjeevni.mysanjeevni.data.remote.model.User
+import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.ProfileViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import kotlinx.coroutines.launch
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hiltViewModel()
+) {
     val isDark = isSystemInDarkTheme()
     val scope = rememberCoroutineScope()
     val bgColor = if (isDark) Color(0xFF121212) else Color(0xFFF5F7FA)
     val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDark) Color.White else Color.Black
     val secondaryText = if (isDark) Color.LightGray else Color(0xFF26A69A)
+    val state by viewModel.state.collectAsState()
 
-    var user by remember { mutableStateOf<User?>(null) }
+    val user = state.user
+//    var user by remember { mutableStateOf<User?>(null) }
     val context = LocalContext.current
     val sessionManager = SessionManager(context)
 
     val token = sessionManager.getToken()
 
+    val initials = user?.fullName
+        ?.split(" ")
+        ?.take(2)
+        ?.mapNotNull { it.firstOrNull()?.uppercase() }
+        ?.joinToString("")?:"U"
 
-
-    LaunchedEffect(Unit) {
-        scope.launch {
-            try {
-                val response = ApiClient.api.getProfile("Bearer $token")
-
-                if (response.isSuccessful) {
-                    user = response.body()?.user
-                    Log.d("PROFILE", user.toString())
-                } else {
-                    Log.e("PROFILE", response.errorBody()?.string() ?: "")
-                }
-            } catch (e: Exception) {
-                Log.e("PROFILE", e.message ?: "")
-            }
-        }
-    }
 
     Column(
         modifier = Modifier
             .padding(top = 20.dp)
             .fillMaxSize()
+            .padding(bottom = 100.dp)
             .background(bgColor)
             .verticalScroll(rememberScrollState())
     ) {
@@ -122,34 +119,53 @@ fun ProfileScreen(navController: NavController) {
                         .background(Color(0xFF26A69A)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        tint = Color(0xFF26A69A),
-                        modifier = Modifier.size(32.dp)
-                    )
+                    if (!user?.profileImage.isNullOrEmpty()) {
+                        AsyncImage(
+                            model = user.profileImage,
+                            contentDescription = "Profile",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    else {
+                        Box(
+                            modifier = Modifier.fillMaxSize()
+                                .clip(CircleShape)
+                                .background(Color(0xFF26A69A)),
+                            contentAlignment = Alignment.Center
+                        ){
+                            AutoText(
+                                initials,
+                                color = Color.White,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.width(16.dp))
 // user info
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
+                    AutoText(
                         text = user?.fullName ?: "Loading...",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = textColor
                     )
-                    Text(
+                    AutoText(
                         text = user?.phone ?: "",
                         fontSize = 14.sp,
                         color = textColor
                     )
-                    Text(
+                    AutoText(
                         text = user?.email ?: "",
                         fontSize = 14.sp,
                         color = textColor
                     )
                 }
-                Text(
+                AutoText(
                     text = "Edit",
                     color = Color(0xFF26A69A),
                     fontWeight = FontWeight.Bold,
@@ -227,6 +243,7 @@ fun ProfileScreen(navController: NavController) {
             })
         }
         Spacer(modifier = Modifier.height(16.dp))
+
         Column(
             Modifier
                 .fillMaxWidth()
@@ -243,7 +260,7 @@ fun ProfileScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(24.dp))
         Button(
             onClick = {
-                sessionManager.logout()
+                viewModel.logout()
                 navController.navigate(Screen.Login.route) {
                     popUpTo(0)
                 }
@@ -285,7 +302,7 @@ fun ProfileStatCard(
             horizontalAlignment = Alignment.CenterHorizontally
 
         ) {
-            Icon(imageVector = icon, contentDescription = null, tint =Color(0xFF26A69A))
+            Icon(imageVector = icon, contentDescription = null, tint = Color(0xFF26A69A))
             Spacer(modifier = Modifier.height(4.dp))
             Text(text = title, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = textColor)
         }

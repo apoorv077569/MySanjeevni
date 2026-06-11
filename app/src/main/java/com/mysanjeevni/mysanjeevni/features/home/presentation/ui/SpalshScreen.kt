@@ -1,5 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.home.presentation.ui
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,8 +32,11 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
+import com.mysanjeevni.mysanjeevni.utils.FcmHelper
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun SplashScreen(navController: NavController) {
@@ -50,14 +54,35 @@ fun SplashScreen(navController: NavController) {
     )
 
     LaunchedEffect(Unit) {
-        delay(2500)
-        if (session.isLoggedIn()) {
-            navController.navigate(Screen.Home.route) {
-                popUpTo(Screen.Splash.route) { inclusive = true }
+        val isLoggedIn = session.isLoggedIn()
+        val role = session.getUserRole()
+        val userId = session.getUserId()
+
+        if (isLoggedIn && userId != null) {
+            launch(Dispatchers.IO) {
+                try {
+                    FcmHelper.sendTokenToServer(userId)
+                } catch (e: Exception) {
+                    Log.e("FCM", "Error: ${e.message}")
+                }            }
+        }
+
+
+        when{
+            !isLoggedIn -> {
+                navController.navigate(Screen.OnBoarding.route){
+                    popUpTo(Screen.Splash.route){inclusive = true}
+                }
             }
-        } else {
-            navController.navigate(Screen.OnBoarding.route) {
-                popUpTo(Screen.Splash.route) { inclusive = true }
+            role == "Doctor" ->{
+                navController.navigate(Screen.DoctorDashboard.route){
+                    popUpTo(Screen.Splash.route){inclusive = true}
+                }
+            }
+            else ->{
+                navController.navigate(Screen.Home.route){
+                    popUpTo(Screen.Splash.route){inclusive = true}
+                }
             }
         }
     }

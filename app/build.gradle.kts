@@ -5,6 +5,7 @@ plugins {
 
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -55,6 +56,7 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.compose.foundation)
+    implementation(libs.ui)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -91,5 +93,22 @@ dependencies {
     implementation("com.google.android.libraries.places:places:3.4.0")
     implementation("androidx.compose.material:material-icons-extended:1.6.7")
 
-    implementation("io.coil-kt:coil-compose:2.5.0")
+//    razorpay
+    implementation("com.razorpay:checkout:1.6.26")
+
+//    firebase
+    implementation(platform("com.google.firebase:firebase-bom:31.5.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-messaging")
+//    google auth
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+
+    implementation("com.hbb20:ccp:2.7.0")
+//    ml kit translator
+    implementation("com.google.mlkit:translate:17.0.1")
+//    Pagination
+    implementation("androidx.paging:paging-runtime-ktx:3.3.0")
+    implementation("androidx.paging:paging-compose:3.3.0")
+
 }
+

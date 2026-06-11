@@ -1,198 +1,213 @@
 package com.mysanjeevni.mysanjeevni.features.orders.presntation.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.ShoppingBag
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.*
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.features.orders.domain.model.Order
-
-// Dummy Data
-val dummyOrders = listOf(
-    Order("ORD-29384", "12 May 2024", "Dabur Chyawanprash, Dolo 650", 450.0, "Delivered", 0xFF00C853), // Green
-    Order("ORD-99821", "10 May 2024", "Accu-Chek Active Strips", 850.0, "Processing", 0xFFFFA000), // Orange
-    Order("ORD-11223", "01 Apr 2024", "Shelcal 500mg + 3 items", 1200.0, "Cancelled", 0xFFD32F2F), // Red
-    Order("ORD-77654", "15 Mar 2024", "Volini Spray", 190.0, "Delivered", 0xFF00C853)
-)
+import com.mysanjeevni.mysanjeevni.features.orders.presntation.state.OrderState
+import com.mysanjeevni.mysanjeevni.features.orders.presntation.viewmodel.OrderViewModel
+import com.mysanjeevni.mysanjeevni.utils.SessionManager
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OrdersScreen(navController: NavController) {
-    val isDark = isSystemInDarkTheme()
-    val bgColor = if (isDark) Color(0xFF121212) else Color(0xFFF5F7FA)
-    val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
-    val textColor = if (isDark) Color.White else Color.Black
+fun OrdersScreen(
+    navController: NavController,
+    address: String,
+    onOrderClick: (orderId: String) -> Unit,   // ← add karo
+    viewModel: OrderViewModel = hiltViewModel()
+) {
+    val sessionManager = SessionManager(LocalContext.current)
+    val orderState by viewModel.orderState.collectAsStateWithLifecycle()
+    val userId = sessionManager.getUserId()
+
+    LaunchedEffect(userId) {
+        viewModel.getOrders(userId)
+    }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.my_orders), fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = cardColor, titleContentColor = textColor, navigationIconContentColor = textColor
-                )
-            )
-        },
-        containerColor = bgColor,
+            TopAppBar(title = { Text("My Orders") })
+        }
     ) { paddingValues ->
-        if (dummyOrders.isEmpty()) {
-            EmptyOrderView(textColor)
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(dummyOrders) { order ->
-                    OrderCard(order, cardColor, textColor)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (val state = orderState) {
+                is OrderState.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
+
+                is OrderState.Success -> {
+                    if (state.orders.isEmpty()) {
+                        EmptyOrdersView(
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(state.orders) { order ->
+                                OrderCard(order = order)
+                            }
+                        }
+                    }
+                }
+
+                is OrderState.Error -> {
+                    ErrorView(
+                        message = state.message,
+                        onRetry = { viewModel.getOrders(userId) },
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                else -> Unit
             }
         }
     }
 }
 
 @Composable
-fun OrderCard(order: Order, cardColor: Color, textColor: Color) {
+private fun OrderCard(order: Order) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = cardColor),
-        elevation = CardDefaults.cardElevation(2.dp),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {}) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Absolute.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = order.id, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = textColor
-                )
-                Surface(
-                    color = Color(order.statusColor).copy(alpha = 0.1f), shape = RoundedCornerShape(4.dp)
-                ) {
-                    Text(
-                        text = order.status,
-                        color = Color(order.statusColor),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.LightGray.copy(alpha = 0.2f)), contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Default.ShoppingBag, contentDescription = null, tint = Color.Gray)
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = order.items,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        color = textColor,
-                        maxLines = 1
-                    )
-                    Text(
-                        text = "Ordered on ${order.date}", fontSize = 12.sp, color = Color.Gray
-                    )
-                }
-                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.Gray)
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Total: ₹${order.totalAmount}",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = textColor
+                    text = "Order #${order.id.takeLast(6).uppercase()}",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                OrderStatusChip(status = order.status)
+            }
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "₹${order.totalPrice}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
                 )
                 Text(
-                    text = stringResource(R.string.reorder),
-                    color = Color(0xFFFF6F61),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
-                    modifier = Modifier.clickable {})
+                    text = formatDate(order.createdAt),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
 }
 
 @Composable
-fun EmptyOrderView(textColor: Color) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+private fun OrderStatusChip(status: String) {
+    val (bgColor, textColor) = when (status.lowercase()) {
+        "delivered"  -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+        "cancelled"  -> Color(0xFFFFEBEE) to Color(0xFFC62828)
+        "processing" -> Color(0xFFFFF8E1) to Color(0xFFF57F17)
+        else         -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
+    }
+
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = bgColor
     ) {
-        Icon(
-            imageVector = Icons.Default.ShoppingBag,
-            contentDescription = null,
-            tint = Color.LightGray,
-            modifier = Modifier.size(100.dp)
+        Text(
+            text = status.replaceFirstChar { it.uppercase() },
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = textColor,
+            fontWeight = FontWeight.Medium
         )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(stringResource(R.string.no_orders_yet), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = textColor)
-        Text(stringResource(R.string.start_shopping_to_see_your_orders_here), fontSize = 14.sp, color = Color.Gray)
+    }
+}
+
+@Composable
+private fun EmptyOrdersView(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = "No orders yet",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = "Your orders will appear here",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun ErrorView(
+    message: String,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error
+        )
+        Button(onClick = onRetry) {
+            Text("Retry")
+        }
+    }
+}
+
+private fun formatDate(dateString: String): String {
+    return try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+        val date = inputFormat.parse(dateString)
+        outputFormat.format(date ?: return dateString)
+    } catch (e: Exception) {
+        dateString
     }
 }

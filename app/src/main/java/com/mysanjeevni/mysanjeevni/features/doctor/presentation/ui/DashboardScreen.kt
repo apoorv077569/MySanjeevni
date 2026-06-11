@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -17,21 +18,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.features.doctor.presentation.state.DoctorAppointmentItem
 import com.mysanjeevni.mysanjeevni.features.doctor.presentation.state.DoctorDashboardState
 import com.mysanjeevni.mysanjeevni.features.doctor.presentation.viewmodel.DoctorViewModel
+import com.mysanjeevni.mysanjeevni.utils.SessionManager
 
 @Composable
 fun DoctorDashboardScreen(
     navController: NavController,
-    viewModel: DoctorViewModel = viewModel()
+    viewModel: DoctorViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+
+    val context = LocalContext.current
+
+    val sessionManager = SessionManager(context)
+
+
 
     Scaffold(
         containerColor = Color(0xFFF5F7FA)
@@ -92,38 +103,55 @@ fun DoctorHeader(state: DoctorDashboardState) {
             .padding(20.dp)
     ) {
 
-        Column {
+        Row(verticalAlignment = Alignment.CenterVertically) {
 
-            Text(
-                text = "👋 Welcome Back",
-                color = Color.White.copy(0.8f),
-                fontSize = 14.sp
-            )
-
-            Text(
-                text = "${state.doctorName}",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+            // 🔥 Profile Image
+            Box(
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(0.2f)),
+                contentAlignment = Alignment.Center
             ) {
+                Icon(Icons.Default.Person, contentDescription = null, tint = Color.White)
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
 
                 Text(
-                    text = if (state.isOnline) "🟢 Online" else "🔴 Offline",
-                    color = Color.White,
-                    fontWeight = FontWeight.Medium
+                    text = "👋 Welcome Back",
+                    color = Color.White.copy(0.8f),
+                    fontSize = 14.sp
                 )
+
+                Text(
+                    text = state.doctorName.ifEmpty { "Loading..." },
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = state.specialization ?: "General Physician",
+                    color = Color.White.copy(0.7f),
+                    fontSize = 12.sp
+                )
+            }
+
+            // 🔥 Online Toggle
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
                 Switch(
                     checked = state.isOnline,
-                    onCheckedChange = { /* toggle */ }
+                    onCheckedChange = { /* API call */ }
+                )
+
+                Text(
+                    text = if (state.isOnline) "Online" else "Offline",
+                    color = Color.White,
+                    fontSize = 12.sp
                 )
             }
         }
