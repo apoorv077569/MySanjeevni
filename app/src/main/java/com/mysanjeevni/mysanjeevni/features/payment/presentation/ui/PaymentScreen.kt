@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import com.mysanjeevni.mysanjeevni.features.orders.data.mapper.toDomain
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -57,7 +58,6 @@ import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.app.MainActivity
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.OrderItemDto
-import com.mysanjeevni.mysanjeevni.features.orders.presntation.state.OrderState
 import com.mysanjeevni.mysanjeevni.features.orders.presntation.viewmodel.OrderViewModel
 import com.mysanjeevni.mysanjeevni.features.payment.domain.model.PaymentMethod
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.state.PaymentState
@@ -65,8 +65,7 @@ import com.mysanjeevni.mysanjeevni.features.payment.presentation.viewmodel.Payme
 import com.mysanjeevni.mysanjeevni.features.payment.utils.startRazorpayCheckout
 import com.mysanjeevni.mysanjeevni.utils.FcmHelper
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
-import com.mysanjeevni.mysanjeevni.utils.dilaog.PaymentErrorDialog
-import kotlinx.coroutines.flow.first
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -89,7 +88,7 @@ fun PaymentScreen(
         .collectAsState()
     val address by orderViewModel.selectedAddress.collectAsState()
     val cartItems by orderViewModel.cartItems.collectAsState()
-    val colorScheme = MaterialTheme.colorScheme
+    colorScheme
     var selectedMethod by remember { mutableStateOf(PaymentMethod.RAZORPAY) }
     val userId = sessionManager.getUserId()
     val subtotal = if (cartItems.isNotEmpty()) {
@@ -146,7 +145,7 @@ fun PaymentScreen(
                 }
             }
 
-        MainActivity.Companion.RazorpayCallbackHolder.onFailure = { error ->
+        MainActivity.Companion.RazorpayCallbackHolder.onFailure = { _ ->
             Log.d("PAYMENT_TRACE", "2. PaymentScreen onFailure")
 
             checkoutOpened = false
@@ -199,7 +198,26 @@ fun PaymentScreen(
                 }
             }
 
+            is PaymentState.CodOrderCreated -> {
 
+                viewModel.resetState()
+                orderViewModel.setRecentOrder(state.order)
+
+                navController.navigate(
+                    Screen.OrderSuccessScreen.createRoute(address!!.id)
+                ) {
+                    popUpTo(Screen.PaymentScreen.route) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
+
+                FcmHelper.sendNotification(
+                    userId = userId ?: "",
+                    title = "Order Confirmed 🎉",
+                    body = "Your order has been placed successfully."
+                )
+            }
 
             else -> Unit
         }
@@ -211,7 +229,7 @@ fun PaymentScreen(
         }
     }
 
-    PaymentErrorDialog()
+//    PaymentErrorDialog()
 
     Scaffold(
         topBar = {
@@ -252,6 +270,7 @@ fun PaymentScreen(
                                 notes = "COD",
                                 shippingCharge = 0.0
                             )
+
                         }
                     }
                 }
@@ -282,7 +301,7 @@ fun PaymentScreen(
             if (paymentState is PaymentState.Error) {
                 Text(
                     text = (paymentState as PaymentState.Error).message,
-                    color = MaterialTheme.colorScheme.error,
+                    color = colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -325,7 +344,7 @@ private fun PaymentBottomBar(
                         Icon(
                             imageVector = Icons.Default.AccountBalanceWallet,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = colorScheme.primary,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -334,13 +353,13 @@ private fun PaymentBottomBar(
                         Text(
                             text = "Total Amount",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = "₹$totalPrice",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = colorScheme.onSurface
                         )
                     }
                 }
@@ -350,7 +369,7 @@ private fun PaymentBottomBar(
                     enabled = !isLoading,
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
+                        containerColor = colorScheme.primary,
                         disabledContainerColor = Color(0xFF5B3FD9).copy(alpha = 0.6f)
                     ),
                     modifier = Modifier.height(52.dp)
@@ -358,7 +377,7 @@ private fun PaymentBottomBar(
                     if (isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
-                            MaterialTheme.colorScheme.onPrimary,
+                            colorScheme.onPrimary,
                             strokeWidth = 2.dp
                         )
                     } else {
@@ -389,14 +408,14 @@ private fun PaymentBottomBar(
                 Icon(
                     imageVector = Icons.Default.Security,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(13.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = "100% Secure Payments",
                     fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = colorScheme.onSurfaceVariant
                 )
             }
         }

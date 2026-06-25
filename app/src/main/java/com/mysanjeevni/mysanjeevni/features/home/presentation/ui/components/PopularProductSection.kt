@@ -163,16 +163,18 @@ fun PopularProductCard(
                 contentAlignment = Alignment.Center
             ) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (!item.image.isNullOrBlank()) {
+                    if (item.image.isNotBlank()) {
 
                         AsyncImage(
                             model = item.image,
                             contentDescription = item.name,
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                            contentScale = ContentScale.Fit
                         )
 
                     } else {
@@ -341,7 +343,8 @@ fun PopularProductCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(36.dp)
-                        .background(MaterialTheme.colorScheme.surface)                        .border(
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(
                             1.dp,
                             Color(0xFF26A69A),
                             RoundedCornerShape(8.dp)
@@ -371,7 +374,8 @@ fun PopularProductCard(
                         text = quantity.toString(),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface                    )
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
 
                     Box(
                         modifier = Modifier

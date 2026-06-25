@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.mysanjeevni.mysanjeevni.features.cart.domain.repository.CartRepository
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.CreateOrderRequest
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.OrderItemDto
+import com.mysanjeevni.mysanjeevni.features.orders.data.mapper.toDomain
 import com.mysanjeevni.mysanjeevni.features.orders.domain.repository.OrderRepository
 import com.mysanjeevni.mysanjeevni.features.payment.data.remote.CreateRazorpayOrderRequest
 import com.mysanjeevni.mysanjeevni.features.payment.data.remote.PaymentRepository
@@ -168,7 +169,11 @@ class PaymentViewModel @Inject constructor(
                             "COD Order - No Razorpay Order Returned"
                         )
                         cartRepository.clearCart(userId ?: "")
-                        _paymentState.value = PaymentState.PaymentSuccess
+                        if (notes == "COD") {
+                            _paymentState.value = PaymentState.CodOrderCreated(response.order.toDomain())
+                        } else {
+                            _paymentState.value = PaymentState.PaymentSuccess
+                        }
                     }
                 }
                 .onFailure { e ->

@@ -15,11 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.mysanjeevni.mysanjeevni.features.medicines.domain.model.Medicine
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 import java.util.Locale
@@ -57,22 +59,28 @@ fun MedicineItem(
 
 
             Box(
-                modifier = Modifier.wrapContentSize(),
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                if (medicine.image.isNotEmpty()) {
+
+                if (medicine.image.isNotBlank()) {
 
                     AsyncImage(
-                        model = medicine.image,
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(medicine.image)
+                            .crossfade(true)
+                            .build(),
                         contentDescription = medicine.name,
                         modifier = Modifier
-                            .size(60.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(colorScheme.surfaceVariant),
-                        contentScale = ContentScale.Crop
+                            .fillMaxSize()
+                            .padding(6.dp),
+                        contentScale = ContentScale.Fit
                     )
 
                 } else {
+
                     Text(
                         text = medicine.icon ?: "💊",
                         fontSize = 36.sp

@@ -154,16 +154,19 @@ fun FeaturedMedicinesItem(
 
                 Box(
                     modifier = Modifier
-                        .fillMaxSize(),
+                        .fillMaxWidth()
+                        .height(150.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (!item.image.isNullOrBlank()) {
+                    if (item.image.isNotBlank()) {
 
                         AsyncImage(
                             model = item.image,
                             contentDescription = item.name,
                             modifier = Modifier.wrapContentSize(),
-                            contentScale = ContentScale.Crop
+                            contentScale = ContentScale.Fit
+
+
                         )
 
                     } else {

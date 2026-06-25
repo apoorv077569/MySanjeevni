@@ -282,7 +282,7 @@ fun OrderDetailScreen(
                                                 modifier = Modifier
                                                     .size(90.dp)
                                                     .clip(RoundedCornerShape(12.dp)),
-                                                contentScale = ContentScale.Crop
+                                                contentScale = ContentScale.Fit
                                             )
 
                                             Spacer(modifier = Modifier.width(12.dp))
