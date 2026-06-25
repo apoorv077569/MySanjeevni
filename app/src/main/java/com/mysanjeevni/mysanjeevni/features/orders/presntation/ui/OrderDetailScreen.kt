@@ -189,28 +189,30 @@ fun OrderDetailScreen(
 
                                     TrackingStep(
                                         title = "Order Placed",
-                                        subtitle = "Confirmed",
+                                        completed = true,
+                                        isLast = false
+                                    )
+
+                                    TrackingStep(
+                                        title = "Pending",
                                         completed = true,
                                         isLast = false
                                     )
 
                                     TrackingStep(
                                         title = "Confirmed",
-                                        subtitle = if (confirmed) "Confirmed" else "Pending",
                                         completed = confirmed,
                                         isLast = false
                                     )
 
                                     TrackingStep(
                                         title = "Shipped",
-                                        subtitle = if (shipped) "Shipped" else "Pending",
                                         completed = shipped,
                                         isLast = false
                                     )
 
                                     TrackingStep(
                                         title = "Delivered",
-                                        subtitle = if (delivered) "Delivered" else "Pending",
                                         completed = delivered,
                                         isLast = true
                                     )
@@ -414,7 +416,6 @@ private fun SectionHeader(
 @Composable
 private fun TrackingStep(
     title: String,
-    subtitle: String,
     completed: Boolean,
     isLast: Boolean
 ) {
@@ -466,14 +467,7 @@ private fun TrackingStep(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = if (subtitle.equals("Pending", ignoreCase = true))
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant
-            )
+
         }
     }
 }
