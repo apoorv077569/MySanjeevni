@@ -1,8 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.profile.presentation.ui
 
 import android.net.Uri
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -25,10 +23,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,10 +40,10 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,283 +56,253 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.R
-import com.mysanjeevni.mysanjeevni.data.remote.AuthApiClient
+import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.EditProfileViewModel
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
-import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(navController: NavController) {
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var mobile by remember { mutableStateOf("") }
-    var address by remember {mutableStateOf("")}
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val viewModel: EditProfileViewModel = hiltViewModel()
+    val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val sessionManager = SessionManager(context)
+    val userId = sessionManager.getUserId()
+    var selectedImageUri by remember {
+        mutableStateOf<Uri?>(null)
+    }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) {
-        uri: Uri? ->
-        uri?.let { selectedImageUri = it }
+    ) { uri ->
+        selectedImageUri = uri
     }
-
-    val context = LocalContext.current
-    val sessionManager = SessionManager(context)
-
-    val token = sessionManager.getToken()
-
-    val scope = rememberCoroutineScope()
-    var existingImageUrl by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(Unit) {
-        scope.launch {
-            try {
-                val response = AuthApiClient.api.getProfile("Bearer $token")
-                if (response.isSuccessful){
-                    val user = response.body()?.user
-                    name = user?.fullName?:""
-                    email = user?.email?:""
-                    mobile = user?.phone?:""
-                    address = user?.address?:""
-                    existingImageUrl = user?.profileImage
-                }
-            }catch (e: Exception){
-                Toast.makeText(context,e.message, Toast.LENGTH_SHORT).show()
-                Log.e("EDIT_PROFILE",e.message?:"")
-            }
+    val colorScheme = MaterialTheme.colorScheme
+    LaunchedEffect(userId) {
+        userId?.let {
+            viewModel.loadProfile(it)
+        }
+    }
+    LaunchedEffect(state.navigateBack) {
+        if (state.navigateBack) {
+            viewModel.onNavigatedBack()
+            navController.popBackStack()
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.edit_profile)) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
-                        )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.edit_profile)) },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.back)
+                            )
+                        }
                     }
-                }
-            )
-        }
-    ) { padding ->
-        // 1. Parent Column (Main Container)
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-
-            // 2. Child Column (Scrollable Form Content)
-            // We give this weight(1f) so it takes all space EXCEPT what the button needs
+                )
+            }
+        ) { padding ->
             Column(
                 modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(16.dp)
             ) {
-
-                // --- Profile Image Section ---
-                Box(
-                    contentAlignment = Alignment.Center
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // The Gray Circle Placeholder
                     Box(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFECECEC))
-                            .clickable{galleryLauncher.launch("image/*")}
+                        contentAlignment = Alignment.Center
                     ) {
-                        when{
-                            selectedImageUri != null ->{
-                                AsyncImage(
-                                    model = selectedImageUri,
-                                    contentDescription = "Profile Image",
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
+                        Box(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                                .background(colorScheme.surfaceVariant)
+                                .clickable { galleryLauncher.launch("image/*") }
+                        ) {
+                            when {
+                                selectedImageUri != null -> {
+                                    AsyncImage(
+                                        model = selectedImageUri,
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+
+                                !state.profileImage.isNullOrEmpty() -> {
+                                    AsyncImage(
+                                        model = state.profileImage,
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+
+                                else -> {
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(60.dp),
+                                        tint = colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
-                            !existingImageUrl.isNullOrEmpty() ->{
-                                AsyncImage(
-                                    model = existingImageUrl,
-                                    contentDescription = "Profile Image",
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
-                            else ->{
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(60.dp)
-                                        .align(Alignment.Center),
-                                    tint = Color.Gray
-                                )
-                            }
+                        }
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd) // Correct Alignment
+                                .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                .padding(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.CameraAlt,
+                                contentDescription = stringResource(R.string.edit),
+                                tint = colorScheme.onPrimary,
+                                modifier = Modifier.size(14.dp)
+                            )
                         }
                     }
 
-                    Box(
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    TextField(
+                        value = state.fullName,
+                        onValueChange = { viewModel.onNameChanged(it) },
+                        label = { Text(stringResource(R.string.full_name)) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = colorScheme.surfaceVariant,
+                            unfocusedContainerColor = colorScheme.surfaceVariant,
+                            focusedTextColor = colorScheme.onSurface,
+                            unfocusedTextColor = colorScheme.onSurface,
+                            focusedBorderColor = Color.Transparent,
+                            focusedLabelColor = colorScheme.primary,
+                            unfocusedLabelColor = colorScheme.onSurfaceVariant,
+                            focusedLeadingIconColor = colorScheme.primary,
+                            unfocusedLeadingIconColor = colorScheme.onSurfaceVariant,
+                            unfocusedBorderColor = Color.Transparent,
+                            cursorColor = colorScheme.primary
+
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        leadingIcon = { Icon(Icons.Default.Person, null) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    TextField(
+                        value = state.email,
+                        onValueChange = { viewModel.onEmailChanged(it) },
+                        label = { Text(stringResource(R.string.email)) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = colorScheme.surfaceVariant,
+                            unfocusedContainerColor = colorScheme.surfaceVariant,
+                            focusedTextColor = colorScheme.onSurface,
+                            unfocusedTextColor = colorScheme.onSurface,
+                            focusedLabelColor = colorScheme.primary,
+                            unfocusedLabelColor = colorScheme.onSurfaceVariant,
+                            focusedLeadingIconColor = colorScheme.primary,
+                            unfocusedLeadingIconColor = colorScheme.onSurfaceVariant,
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
+                            cursorColor = colorScheme.primary
+
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        leadingIcon = { Icon(Icons.Default.Email, null) },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        singleLine = true
+                    )
+
+                    // Mobile Field
+                    TextField(
+                        value = state.phone,
+                        onValueChange = { viewModel.onPhoneChanged(it) },
+                        label = { Text(stringResource(R.string.mobile_number)) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = colorScheme.surfaceVariant,
+                            unfocusedContainerColor = colorScheme.surfaceVariant,
+                            focusedTextColor = colorScheme.onSurface,
+                            unfocusedTextColor = colorScheme.onSurface,
+                            focusedLabelColor = colorScheme.primary,
+                            unfocusedLabelColor = colorScheme.onSurfaceVariant,
+
+                            focusedLeadingIconColor = colorScheme.primary,
+                            unfocusedLeadingIconColor = colorScheme.onSurfaceVariant,
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
+                            cursorColor = colorScheme.primary
+
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        leadingIcon = { Icon(Icons.Default.Phone, null) },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        singleLine = true
+                    )
+
+                    TextField(
+                        value = state.address,
+                        onValueChange = { viewModel.onAddressChanged(it) },
+                        label = { Text("Address") },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = colorScheme.surfaceVariant,
+                            unfocusedContainerColor = colorScheme.surfaceVariant,
+                            focusedTextColor = colorScheme.onSurface,
+                            unfocusedTextColor = colorScheme.onSurface,
+                            focusedLabelColor = colorScheme.primary,
+                            unfocusedLabelColor = colorScheme.onSurfaceVariant,
+                            focusedLeadingIconColor = colorScheme.primary,
+                            unfocusedLeadingIconColor = colorScheme.onSurfaceVariant,
+                            focusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.Transparent,
+                            cursorColor = colorScheme.primary
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        leadingIcon = { Icon(Icons.Default.LocationOn, null) },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        singleLine = false
+                    )
+
+                    Button(
+                        onClick = {
+                            viewModel.updateProfile()
+                        },
+                        enabled = !state.isLoading,
                         modifier = Modifier
-                            .align(Alignment.BottomEnd) // Correct Alignment
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                            .padding(8.dp)
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Icon(
-                            Icons.Default.CameraAlt,
-                            contentDescription = stringResource(R.string.edit),
-                            tint = Color.White,
-                            modifier = Modifier.size(14.dp)
-                        )
+                        if (state.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                stringResource(R.string.save_changes),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // --- Form Fields ---
-
-                // Name Field
-                TextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text(stringResource(R.string.full_name)) },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFECECEC),
-                        unfocusedContainerColor = Color(0xFFECECEC),
-                        focusedTextColor = Color(0xFF212121),
-                        unfocusedTextColor = Color(0xFF212121),
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(10.dp),
-                    leadingIcon = { Icon(Icons.Default.Person, null) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                TextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text(stringResource(R.string.email)) },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFECECEC),
-                        unfocusedContainerColor = Color(0xFFECECEC),
-                        focusedTextColor = Color(0xFF212121),
-                        unfocusedTextColor = Color(0xFF212121),
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(10.dp),
-                    leadingIcon = { Icon(Icons.Default.Email, null) },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    singleLine = true
-                )
-
-                // Mobile Field
-                TextField(
-                    value = mobile,
-                    onValueChange = { mobile = it },
-                    label = { Text(stringResource(R.string.mobile_number)) },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFECECEC),
-                        unfocusedContainerColor = Color(0xFFECECEC),
-                        focusedTextColor = Color(0xFF212121),
-                        unfocusedTextColor = Color(0xFF212121),
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(10.dp),
-                    leadingIcon = { Icon(Icons.Default.Phone, null) },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    singleLine = true
-                )
-
-                TextField(
-                    value = address,
-                    onValueChange = { address = it },
-                    label = { Text("Address") },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFECECEC),
-                        unfocusedContainerColor = Color(0xFFECECEC),
-                        focusedTextColor = Color(0xFF212121),
-                        unfocusedTextColor = Color(0xFF212121),
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(10.dp),
-                    leadingIcon = { Icon(Icons.Default.Phone, null) },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    singleLine = true
-                )
-            }
-
-            // 3. Save Button (Pinned to Bottom)
-            // This is OUTSIDE the scrollable column, but INSIDE the parent column
-            Button(
-                onClick = {
-                    scope.launch {
-                        try{
-                            val nameBody = name.toRequestBody("text/plain".toMediaTypeOrNull())
-                            val emailBody = email.toRequestBody("text/plain".toMediaTypeOrNull())
-                            val phoneBody = mobile.toRequestBody("text/plain".toMediaTypeOrNull())
-                            val addressBody = address.toRequestBody("text/plain".toMediaTypeOrNull())
-                            var imagePart: MultipartBody.Part?=null
-                            selectedImageUri?.let { uri ->
-                                val inputStream = context.contentResolver.openInputStream(uri)
-                                val file = File(context.cacheDir,"profile_image.jpg")
-                                file.outputStream().use { inputStream?.copyTo(it) }
-
-                                val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-                                imagePart = MultipartBody.Part.createFormData(
-                                    "profileImage",file.name,requestFile
-                                )
-                            }
-                            val response = AuthApiClient.api.updateProfile(
-                                "Bearer $token",
-                                nameBody,
-                                emailBody,
-                                phoneBody,
-                                addressBody,
-                                imagePart
-                            )
-                            if (response.isSuccessful){
-                                Log.d("UPDATE","Success: ${response.body()}")
-
-                                navController.popBackStack()
-                            }else{
-                                Log.e("UPDATE",response.errorBody()?.toString()?:"")
-                            }
-                        }catch (e: Exception){
-                            Log.e("UPDATE",e.message ?:"")
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    stringResource(R.string.save_changes),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
             }
         }
     }

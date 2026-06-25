@@ -5,7 +5,7 @@ import com.mysanjeevni.mysanjeevni.data.remote.model.AuthResponse
 import com.mysanjeevni.mysanjeevni.data.remote.model.CreateAddressRequest
 import com.mysanjeevni.mysanjeevni.data.remote.model.GenericResponse
 import com.mysanjeevni.mysanjeevni.data.remote.model.LoginRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.MessageResponse
+import com.mysanjeevni.mysanjeevni.data.remote.model.ProfileResponse
 import com.mysanjeevni.mysanjeevni.data.remote.model.RegisterRequest
 import com.mysanjeevni.mysanjeevni.data.remote.model.ResetPasswordRequest
 import com.mysanjeevni.mysanjeevni.data.remote.model.SendOtpBeforeSignupRequest
@@ -13,27 +13,40 @@ import com.mysanjeevni.mysanjeevni.data.remote.model.SendOtpRequest
 import com.mysanjeevni.mysanjeevni.data.remote.model.UpdateAddressRequest
 import com.mysanjeevni.mysanjeevni.data.remote.model.UpdateCartRequest
 import com.mysanjeevni.mysanjeevni.data.remote.model.VerifyOtpRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.WishlistItemResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.WishlistRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.WishlistResponse
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartResponse
+import com.mysanjeevni.mysanjeevni.features.category.data.dto.CategoryResponseDto
+import com.mysanjeevni.mysanjeevni.features.labs.data.dto.CreateLabBookingRequestDto
+import com.mysanjeevni.mysanjeevni.features.labs.data.dto.LabBookingResponseDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.LabTestDetailResponse
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.LabTestsResponse
+import com.mysanjeevni.mysanjeevni.features.labs.data.dto.cancel.CancelBookingResponseDto
+import com.mysanjeevni.mysanjeevni.features.labs.data.dto.history.BookingHistoryResponseDto
+import com.mysanjeevni.mysanjeevni.features.labs.data.dto.history.SyncBookingResponseDto
+import com.mysanjeevni.mysanjeevni.features.labs.data.dto.slot.ServiceabilityResponseDto
+import com.mysanjeevni.mysanjeevni.features.labs.data.dto.slot.SlotsRequestDto
+import com.mysanjeevni.mysanjeevni.features.labs.data.dto.slot.SlotsResponseDto
 import com.mysanjeevni.mysanjeevni.features.medicines.data.dto.MedicineDetailResponseDto
 import com.mysanjeevni.mysanjeevni.features.medicines.data.dto.MedicineResponseDto
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.CreateOrderRequest
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.CreateOrderResponse
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.GetOrdersResponse
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.RefundRequest
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.RefundResponse
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.VerifyPaymentRequest
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.VerifyResponse
+import com.mysanjeevni.mysanjeevni.features.orders.data.dto.RazorpayOrderResponse
+import com.mysanjeevni.mysanjeevni.features.profile.data.model.UpdateProfileRequest
+import com.mysanjeevni.mysanjeevni.features.profile.data.model.UpdateProfileResponse
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressResponse
 import com.mysanjeevni.mysanjeevni.features.review.data.dto.CreateReviewRequestDto
 import com.mysanjeevni.mysanjeevni.features.review.data.dto.CreateReviewResponseDto
 import com.mysanjeevni.mysanjeevni.features.review.data.dto.ReviewListResponseDto
 import com.mysanjeevni.mysanjeevni.features.review.data.dto.UpdateReviewRequestDto
 import com.mysanjeevni.mysanjeevni.features.review.data.dto.UpdateReviewResponseDto
+import com.mysanjeevni.mysanjeevni.features.support.chat.data.dto.ChatResponseDto
+import com.mysanjeevni.mysanjeevni.features.support.chat.data.dto.SendChatRequestDto
+import com.mysanjeevni.mysanjeevni.features.support.returns.data.dto.ReturnListResponseDto
+import com.mysanjeevni.mysanjeevni.features.support.returns.data.dto.ReturnRequestDto
+import com.mysanjeevni.mysanjeevni.features.support.returns.data.dto.ReturnResponseDto
+import com.mysanjeevni.mysanjeevni.features.support.ticket.data.dto.CreateTicketRequestDto
+import com.mysanjeevni.mysanjeevni.features.support.ticket.data.dto.CreateTicketResponseDto
+import com.mysanjeevni.mysanjeevni.features.support.ticket.data.dto.TicketsResponseDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -47,11 +60,88 @@ import retrofit2.http.Query
 
 interface ApiService {
 
-
     @POST("api/auth/login")
     suspend fun loginUser(
         @Body request: LoginRequest
     ): Response<AuthResponse>
+
+    @POST("api/user/support/chat")
+    suspend fun sendChatMessage(
+        @Body request: SendChatRequestDto
+    ): Response<ChatResponseDto>
+
+
+    @GET("api/user/support/chat")
+    suspend fun getChatMessages(
+        @Query("userId") userId: String
+    ): Response<ChatResponseDto>
+
+    @POST("api/user/support/returns")
+    suspend fun submitReturnRequest(
+        @Body request: ReturnRequestDto
+    ): Response<ReturnResponseDto>
+
+    @GET("api/user/support/returns")
+    suspend fun getReturnRequests(
+        @Query("userId") userId: String
+    ): Response<ReturnListResponseDto>
+
+    @GET("api/user/profile")
+    suspend fun getProfile(
+        @Query("id") userId: String?
+    ): Response<ProfileResponse>
+
+    @POST("api/inquiries")
+    suspend fun raiseTicket(
+        @Header("x-user-id") userId: String?,
+        @Header("x-user-name") userName: String?,
+        @Header("x-user-email") email: String?,
+        @Header("x-user-role") role: String?,
+        @Body request: CreateTicketRequestDto
+    ): Response<CreateTicketResponseDto>
+
+    @GET("api/user/support/tickets")
+    suspend fun getTickets(
+        @Query("userId") userId: String?
+    ): Response<TicketsResponseDto>
+
+    @GET("api/payments/razorpay/order")
+    suspend fun getRazorpayOrder(
+        @Query("orderId") orderId: String
+    ): Response<RazorpayOrderResponse>
+
+    @PUT("api/user/update-profile")
+    suspend fun updateProfile(
+        @Body request: UpdateProfileRequest
+    ): Response<UpdateProfileResponse>
+
+    @GET("api/lab-partners/serviceability")
+    suspend fun checkServiceability(
+        @Query("testId") testId: String,
+        @Query("pincode") pincode: String
+    ): Response<ServiceabilityResponseDto>
+
+    @POST("api/lab-partners/slots")
+    suspend fun searchSlots(
+        @Body request: SlotsRequestDto
+    ): Response<SlotsResponseDto>
+
+    @GET("api/lab-test-bookings/history")
+    suspend fun getBookingHistory(
+        @Header("x-user-id") userId: String?
+    ): Response<BookingHistoryResponseDto>
+
+    @POST("api/lab-test-bookings/{id}/cancel")
+    suspend fun cancelBooking(
+        @Path("id") bookingId: String,
+        @Header("x-user-id") userId: String?
+    ): CancelBookingResponseDto
+
+    @POST("api/lab-test-bookings/{id}/sync")
+    suspend fun syncBooking(
+        @Path("id") bookingId: String,
+        @Header("x-user-id") userId: String?
+    ): Response<SyncBookingResponseDto>
 
     @POST("api/auth/signup")
     suspend fun registerUser(
@@ -88,16 +178,6 @@ interface ApiService {
         @Body request: VerifyOtpRequest
     ): Response<AuthResponse>
 
-    @POST("api/payments/razorpay/verify-order")
-    suspend fun verifyPayment(
-        @Body request: VerifyPaymentRequest
-    ): Response<VerifyResponse>
-
-    @POST("api/payments/razorpay/refund")
-    suspend fun refundPayment(
-        @Body request: RefundRequest
-    ): Response<RefundResponse>
-
     @GET("api/lab-tests")
     suspend fun getLabTests(
         @Query("category") category: String? = null,
@@ -119,28 +199,20 @@ interface ApiService {
         @Body request: AddToCartRequest
     ): Response<CartResponse>
 
-    @GET("api/wishlist")
-    suspend fun getWishlist(
-        @Query("userId") userId: String
-    ): Response<WishlistResponse>
 
 
-    @POST("api/wishlist")
-    suspend fun addToWishlist(
-        @Body request: WishlistRequest
-    ): Response<WishlistItemResponse>
 
-
-    @DELETE("api/wishlist")
-    suspend fun removeFromWishlist(
-        @Query("userId") userId: String,
-        @Query("productId") productId:String
-    ): Response<MessageResponse>
 
     @POST("api/cart")
     suspend fun updateCart(
         @Body request: UpdateCartRequest
     ): Response<CartResponse>
+
+    @POST("api/lab-test-bookings")
+    suspend fun createLabTestBooking(
+        @Header("x-user-id") userId: String?,
+        @Body request: CreateLabBookingRequestDto
+    ): Response<LabBookingResponseDto>
 
     @GET("api/reviews")
     suspend fun getReviews(
@@ -167,7 +239,7 @@ interface ApiService {
     @DELETE("api/cart")
     suspend fun clearCart(
         @Query("userId") userId: String
-    ): Response<MessageResponse>
+    ):  Result<Unit>
 
 
 
@@ -216,6 +288,10 @@ interface ApiService {
         @Path("id") id: String,
         @Body address: UpdateAddressRequest
     ): Response<AddressResponse>
+
+    @GET("api/categories")
+    suspend fun getCategories(): Response<CategoryResponseDto>
+
 
 
 }

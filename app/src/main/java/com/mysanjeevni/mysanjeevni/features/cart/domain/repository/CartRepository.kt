@@ -1,8 +1,8 @@
 package com.mysanjeevni.mysanjeevni.features.cart.domain.repository
 
 
-import com.mysanjeevni.mysanjeevni.data.local.cart.CartDao
-import com.mysanjeevni.mysanjeevni.data.local.cart.CartEntity
+import com.mysanjeevni.mysanjeevni.data.local.dao.CartDao
+import com.mysanjeevni.mysanjeevni.data.local.entity.CartEntity
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
 import com.mysanjeevni.mysanjeevni.data.remote.model.UpdateCartRequest
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartResponse
@@ -54,5 +54,8 @@ class CartRepository @Inject constructor(
         qty: Int
     ) {
         dao.updateQuantity(productId, userId, qty)
+    }
+    suspend fun clearCart(userId: String) {
+        dao.clearCart(userId)
     }
 }

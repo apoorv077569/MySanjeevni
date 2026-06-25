@@ -26,7 +26,6 @@ object ApiClient {
         .build()
 
     val gson = GsonBuilder()
-        .excludeFieldsWithoutExposeAnnotation()
         .create()
 
     val api: ApiService by lazy {

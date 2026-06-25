@@ -60,6 +60,7 @@ import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartItem
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,6 +71,14 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
     val bgColor = if (isDark) Color(0xFF121212) else Color(0xFFF5F7FA)
     val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDark) Color.White else Color.Black
+
+    val itemTotal = state.cartItem.sumOf {
+        it.price * it.qty
+    }
+
+    val deliveryFee = if (itemTotal > 299) 0.0 else 50.0
+
+    val grandTotal = itemTotal + deliveryFee
 
     LaunchedEffect(state.cartItem) {
         Log.d("CART_DEBUG", "CART VM = ${viewModel.hashCode()}")
@@ -94,7 +103,7 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
         },
         bottomBar = {
             if (state.cartItem.isNotEmpty()) {
-                CartBottomBar(state.totalBill, isDark, navController)
+                CartBottomBar(grandTotal, isDark, navController)
             }
         },
         containerColor = bgColor
@@ -123,9 +132,9 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
                         )
                     }
                     item {
-                        BillSummary(state.cartItem, state.totalBill, isDark)
+                        BillSummary(state.cartItem, isDark)
                     }
-                    item { Spacer(modifier = Modifier.height(20.dp)) }
+                    item { Spacer(modifier = Modifier.height(100.dp)) }
                 }
             }
         }
@@ -161,6 +170,7 @@ fun CartItemRow(
     val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDark) Color.White else Color.Black
 
+
     Card(
         colors = CardDefaults.cardColors(containerColor = cardColor),
         elevation = CardDefaults.cardElevation(2.dp),
@@ -175,7 +185,13 @@ fun CartItemRow(
             Card(
                 shape = RoundedCornerShape(4.dp),
                 modifier = Modifier.size(60.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.LightGray.copy(alpha = 0.2f))
+                colors = CardDefaults.cardColors(
+                    containerColor =
+                        if (isDark)
+                            Color.White.copy(alpha = 0.08f)
+                        else
+                            Color(0xFFF5F5F5)
+                )
             ) {
                 AsyncImage(
                     model = item.imageUrl,
@@ -211,7 +227,6 @@ fun CartItemRow(
                 }
             }
 
-            // ✅ FIX: Box wrap kiya clickable ke liye proper touch area
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -257,12 +272,14 @@ fun CartItemRow(
 }
 
 @Composable
-fun BillSummary(cartItems: List<CartItem>, grandTotal: Double, isDark: Boolean) {
+fun BillSummary(cartItems: List<CartItem>, isDark: Boolean) {
     val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDark) Color.White else Color.Black
-
     val itemTotal = cartItems.sumOf { it.price * it.qty }
-    val deliveryFee = if (itemTotal > 500) 0.0 else 40.0
+    val deliveryFee = if (itemTotal > 299.0) 0.0 else 50.0
+    val grandTotal = itemTotal + deliveryFee
+    val dividerColor = if (isDark) Color.White.copy(alpha = 0.12f) else Color.LightGray.copy(alpha = 0.5f)
+
 
     Card(
         colors = CardDefaults.cardColors(containerColor = cardColor),
@@ -286,7 +303,7 @@ fun BillSummary(cartItems: List<CartItem>, grandTotal: Double, isDark: Boolean) 
                     color = Color.Gray,
                     fontSize = 14.sp
                 )
-                val roundedTotal = String.format("%.2f", itemTotal).toDouble()
+                val roundedTotal = String.format(Locale.getDefault(), "%.2f", itemTotal).toDouble()
                 AutoText("₹$roundedTotal", color = textColor, fontSize = 14.sp)
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -315,7 +332,7 @@ fun BillSummary(cartItems: List<CartItem>, grandTotal: Double, isDark: Boolean) 
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+            HorizontalDivider(color = dividerColor, thickness = 1.dp)
             Spacer(modifier = Modifier.height(12.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -369,7 +386,7 @@ fun CartBottomBar(grandTotal: Double, isDark: Boolean, navController: NavControl
                 )
             }
             Button(
-                onClick = { navController.navigate(Screen.ManageAddresses.createRoute(true))},
+                onClick = { navController.navigate("${Screen.ManageAddresses.route}?checkout=true&home=false") },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6F61)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier

@@ -30,7 +30,6 @@ class AddressViewModel @Inject constructor(
         loadAddresses()
     }
 
-    // 🔹 LOAD
     fun loadAddresses() {
         val token = sessionManager.getToken()
         val userId = sessionManager.getUserId()

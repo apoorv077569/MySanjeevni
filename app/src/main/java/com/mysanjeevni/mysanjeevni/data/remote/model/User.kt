@@ -1,7 +1,29 @@
 package com.mysanjeevni.mysanjeevni.data.remote.model
 
-data class User(
-    val _id: String?, val fullName: String,
+import com.google.gson.annotations.SerializedName
 
-    val phone: String, val role: String, val email: String, val profileImage: String, val address: String
+data class User(
+    @SerializedName(value = "_id", alternate = ["id"])
+    val _id: String?,
+
+    @SerializedName("fullName")
+    val fullName: String?,
+
+    @SerializedName("phone")
+    val phone: String?,
+
+    @SerializedName("role")
+    val role: String?,
+
+    @SerializedName("email")
+    val email: String?,
+
+    @SerializedName("profileImage")
+    val profileImage: String?,
+
+    @SerializedName(value = "address", alternate = ["fullAddress"])
+    val address: String?,
+
+    @SerializedName("isVerified")
+    val isVerified: Boolean?
 )

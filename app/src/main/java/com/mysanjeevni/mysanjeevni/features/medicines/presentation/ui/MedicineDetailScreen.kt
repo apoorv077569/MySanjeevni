@@ -1,5 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.medicines.presentation.ui
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -13,10 +14,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,6 +50,7 @@ import com.mysanjeevni.mysanjeevni.features.orders.presntation.viewmodel.OrderVi
 import com.mysanjeevni.mysanjeevni.features.review.domain.model.Review
 import com.mysanjeevni.mysanjeevni.features.review.presentation.ui.ReviewSection
 import com.mysanjeevni.mysanjeevni.features.review.presentation.viewmodel.ReviewViewModel
+import com.mysanjeevni.mysanjeevni.features.wishlist.presentation.viewmodel.WishlistViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import com.mysanjeevni.mysanjeevni.utils.dilaog.AddReviewDialog
@@ -57,10 +60,12 @@ fun MedicineDetailScreen(
     navController: NavController,
     id: String,
     viewModel: MedicineViewModel = hiltViewModel(),
+    wishlistViewModel: WishlistViewModel = hiltViewModel(),
     orderViewModel: OrderViewModel
 
 ) {
     val state by viewModel.state.collectAsState()
+    val wishlistState by wishlistViewModel.state.collectAsState()
     val reviewViewModel: ReviewViewModel = hiltViewModel()
     val cartViewModel: CartViewModel = hiltViewModel()
     val reviewState by reviewViewModel.state.collectAsState()
@@ -82,16 +87,25 @@ fun MedicineDetailScreen(
     }
 
     if (state.isLoading) {
-        AutoText("Loading...")
+        AutoText(
+            text = "Loading...",
+            color = MaterialTheme.colorScheme.onSurface
+        )
         return
     }
 
     state.error?.let {
-        AutoText(it)
+        AutoText(
+            text = it,
+            color = MaterialTheme.colorScheme.error
+        )
         return
     }
 
     val medicine = state.selectedMedicine ?: return
+    val isWishlisted = wishlistState.items.any {
+        it.productId == medicine.id
+    }
 
     Scaffold(
         bottomBar = {
@@ -111,152 +125,206 @@ fun MedicineDetailScreen(
                             qty = medicine.quantity
                         ),
                     )
-            navController.navigate(Screen.CartScreen.route)
-        },
+                    navController.navigate(Screen.CartScreen.route)
+                },
                 onBuyNow = {
                     orderViewModel.setMedicine(medicine)
                     navController.navigate(
-                        "manage_addresses?checkout=true"
+                        "${Screen.ManageAddresses.route}?checkout=true&home=false"
                     )
                 }
-    )
-}
-) {
-    padding ->
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)
-            .verticalScroll(rememberScrollState())
-    ) {
-
-        // ── Top Bar: Back + Wishlist + Share ──
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color(0xFF00C853)
-                )
-            }
-            AutoText(
-                text = "Back to Medicines",
-                color = Color(0xFF00C853),
-                fontWeight = FontWeight.Medium,
-                fontSize = 15.sp,
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable { navController.popBackStack() }
             )
-            IconButton(onClick = {}) {
-                Icon(
-                    imageVector = Icons.Default.FavoriteBorder,
-                    contentDescription = "Wishlist",
-                    tint = Color(0xFF1A1A1A)
-                )
-            }
-            IconButton(onClick = {}) {
-                Icon(
-                    imageVector = Icons.Default.Share,
-                    contentDescription = "Share",
-                    tint = Color(0xFF1A1A1A)
-                )
-            }
         }
+    ) { padding ->
 
-        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+        ) {
 
-            MedicineCard(medicine = medicine)
+            // ── Top Bar: Back + Wishlist + Share ──
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                AutoText(
+                    text = "Back to Medicines",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 15.sp,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { navController.popBackStack() }
+                )
+                IconButton(
+                    onClick = {
+                        wishlistViewModel.addToWishlist(
+                            productId = medicine.id,
+                            productName = medicine.name,
+                            price = medicine.price,
+                            image = medicine.image
+                        )
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (isWishlisted)
+                            Icons.Default.Favorite
+                        else
+                            Icons.Default.FavoriteBorder,
 
-            Spacer(Modifier.height(12.dp))
+                        contentDescription = "Wishlist",
 
-            MedicinePriceCard(
-                price = medicine.price,
-                mrp = medicine.mrp
-            )
+                        tint = if (isWishlisted)
+                            MaterialTheme.colorScheme.error
+                        else
+                            MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                val context = LocalContext.current
 
-            Spacer(Modifier.height(12.dp))
+                IconButton(
+                    onClick = {
 
-            MedicineStockCard(stock = medicine.stock)
+                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
 
-            Spacer(Modifier.height(16.dp))
+                            type = "text/plain"
 
-            MedicineTabSection(
-                description = medicine.description,
-                specifications = medicine.specifications,
-                safetyInformation = medicine.safetyInformation
-            )
+                            putExtra(
+                                Intent.EXTRA_SUBJECT,
+                                medicine.name
+                            )
 
-            Spacer(Modifier.height(24.dp))
-
-            RatingSummaryCard(
-                rating = medicine.rating,
-                reviews = medicine.reviews
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            when {
-                reviewState.isLoading -> AutoText("Loading reviews...")
-                reviewState.error != null -> AutoText(reviewState.error!!)
-                else -> {
-                    ReviewSection(
-                        reviews = reviewState.reviews,
-                        currentUserId = currentUserId,
-                        onAddReview = { showReviewDialog = true },
-                        onEditReview = { review ->
-                            selectedReview = review
-                            showEditReviewDialog = true
+                            putExtra(
+                                Intent.EXTRA_TEXT,
+                                """
+                ${medicine.name}
+                
+                Price: ₹${medicine.price}
+                
+                Check this medicine on MySanjeevni:
+                https://www.mysanjeevni.com/medicine/${medicine.id}
+                Download MySanjeevni:
+                https://www.mysanjeevni.com
+                """.trimIndent()
+                            )
                         }
+                        context.startActivity(
+                            Intent.createChooser(
+                                shareIntent,
+                                "Share Medicine"
+                            )
+                        )
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Share"
                     )
                 }
             }
 
-            if (showReviewDialog) {
-                AddReviewDialog(
-                    onSubmit = { rating, title, comment ->
-                        showReviewDialog = false
-                        reviewViewModel.addReview(
-                            userId = sessionManager.getUserId() ?: "",
-                            productId = medicine.id,
-                            rating = rating,
-                            title = title,
-                            comment = comment,
-                            userName = sessionManager.getUserName() ?: "User"
-                        )
-                    },
-                    onDismiss = { showReviewDialog = false }
-                )
-            }
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
 
-            if (showEditReviewDialog && selectedReview != null) {
-                AddReviewDialog(
-                    initialRating = selectedReview!!.rating,
-                    initialTitle = selectedReview!!.title,
-                    initialComment = selectedReview!!.comment,
-                    onSubmit = { rating, title, comment ->
-                        reviewViewModel.updateReview(
-                            reviewId = selectedReview?.id ?: "",
-                            userId = currentUserId ?: "",
-                            productId = selectedReview?.productId ?: "",
-                            rating = rating,
-                            title = title,
-                            comment = comment
-                        )
-                        showEditReviewDialog = false
-                    },
-                    onDismiss = { showEditReviewDialog = false }
-                )
-            }
+                MedicineCard(medicine = medicine)
 
-            Spacer(Modifier.height(80.dp))
+                Spacer(Modifier.height(12.dp))
+
+                MedicinePriceCard(
+                    price = medicine.price,
+                    mrp = medicine.mrp
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                MedicineStockCard(stock = medicine.stock)
+
+                Spacer(Modifier.height(16.dp))
+
+                MedicineTabSection(
+                    description = medicine.description,
+                    specifications = medicine.specifications,
+                    safetyInformation = medicine.safetyInformation
+                )
+
+                Spacer(Modifier.height(24.dp))
+
+                RatingSummaryCard(
+                    rating = medicine.rating,
+                    reviews = medicine.reviews
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                when {
+                    reviewState.isLoading -> AutoText(
+                        text = "Loading reviews...",
+                        color = MaterialTheme.colorScheme.onSurface)
+                    reviewState.error != null -> AutoText(
+                        text = reviewState.error!!,
+                        color = MaterialTheme.colorScheme.error)
+                    else -> {
+                        ReviewSection(
+                            reviews = reviewState.reviews,
+                            currentUserId = currentUserId,
+                            onAddReview = { showReviewDialog = true },
+                            onEditReview = { review ->
+                                selectedReview = review
+                                showEditReviewDialog = true
+                            }
+                        )
+                    }
+                }
+
+                if (showReviewDialog) {
+                    AddReviewDialog(
+                        onSubmit = { rating, title, comment ->
+                            showReviewDialog = false
+                            reviewViewModel.addReview(
+                                userId = sessionManager.getUserId() ?: "",
+                                productId = medicine.id,
+                                rating = rating,
+                                title = title,
+                                comment = comment,
+                                userName = sessionManager.getUserName() ?: "User"
+                            )
+                        },
+                        onDismiss = { showReviewDialog = false }
+                    )
+                }
+
+                if (showEditReviewDialog && selectedReview != null) {
+                    AddReviewDialog(
+                        initialRating = selectedReview!!.rating,
+                        initialTitle = selectedReview!!.title,
+                        initialComment = selectedReview!!.comment,
+                        onSubmit = { rating, title, comment ->
+                            reviewViewModel.updateReview(
+                                reviewId = selectedReview?.id ?: "",
+                                userId = currentUserId ?: "",
+                                productId = selectedReview?.productId ?: "",
+                                rating = rating,
+                                title = title,
+                                comment = comment
+                            )
+                            showEditReviewDialog = false
+                        },
+                        onDismiss = { showEditReviewDialog = false }
+                    )
+                }
+
+                Spacer(Modifier.height(80.dp))
+            }
         }
     }
-}
 }

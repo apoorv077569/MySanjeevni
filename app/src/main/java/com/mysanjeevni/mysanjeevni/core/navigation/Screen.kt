@@ -61,15 +61,15 @@ sealed class Screen(val route: String) {
     object SettingScreen : Screen("setting_screen")
     object MyConsultScreen : Screen("my_consult_screen")
     object WalletScreen : Screen("wallet_screen")
-    object DoctorDashboard : Screen("doctor_dashboard")
     object ReferralScreen : Screen("wallet_screen")
     object TransactionHistoryScreen : Screen("transaction_history_screen")
     object SummaryScreen : Screen("summary_screen?address={address}") {
-
         fun createRoute(address: String): String {
             return "summary_screen?address=${Uri.encode(address)}"
         }
     }
+
+    object TicketScreen : Screen("ticket_screen")
 
     object PaymentScreen : Screen("payment_screen/{address}") {
         fun createRoute(address: String) = "payment_screen/$address"
@@ -91,4 +91,27 @@ sealed class Screen(val route: String) {
             return "order_detail/$id"
         }
     }
+
+    object UploadPrescription : Screen("upload_prescription")
+    object WishlistScreen : Screen("wishlist_screen")
+    object BookLabTestScreen {
+        const val route =
+            "book_lab_test/{testId}/{testName}/{testPrice}"
+    }
+
+    object NotificationScreen : Screen("notification_screen")
+    object BookingHistoryScreen : Screen("booking_history")
+    object LabBookingDetail : Screen("lab_booking_detail")
+    object PaymentSuccess : Screen(
+        "payment_success/{paymentId}/{razorpayOrderId}/{signature}"
+    ) {
+        fun createRoute(
+            paymentId: String,
+            razorpayOrderId: String,
+            signature: String
+        ) =
+            "payment_success/$paymentId/$razorpayOrderId/$signature"
+    }
+
+    object PaymentFailed : Screen("payment_failed")
 }

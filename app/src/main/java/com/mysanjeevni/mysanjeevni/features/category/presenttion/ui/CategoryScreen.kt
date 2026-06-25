@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -34,120 +35,82 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
-import com.mysanjeevni.mysanjeevni.features.category.presenttion.data.categoryList
-import com.mysanjeevni.mysanjeevni.features.category.presenttion.model.CategoryModel
+import com.mysanjeevni.mysanjeevni.features.category.presenttion.viewmodel.CategoryViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
-fun CategoryScreen(navController: NavController) {
-
+fun CategoryScreen(navController: NavController, viewModel: CategoryViewModel = hiltViewModel()) {
+    val state = viewModel.state
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
+            .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 8.dp,
+                    bottom = 100.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(18.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                items(state.categories) { category ->
+                    CategoryItem(
+                        name = category.name,
+                        onClick = {
 
-        // 🔝 HEADER
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF38D6C6))
-                .statusBarsPadding()
-                .height(50.dp)
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            AutoText(
-                text = "All categories",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
-            )
-
-            Icon(Icons.Default.Search, contentDescription = null)
-        }
-
-
-        // 🔥 GRID
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = 8.dp,
-                bottom = 100.dp // ✅ bottom bar safe
-            ),
-            verticalArrangement = Arrangement.spacedBy(18.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            items(categoryList) { item ->
-                CategoryItem(item, onClick = {
-
-                    val section = when (item.name.lowercase()) {
-
-                        "medicines", "pharmacy" -> "medicines"
-                        "lab tests", "diagnostics" -> "lab"
-                        "doctor consult", "consult" -> "doctor"
-                        "health care", "health" -> "health"
-
-                        else -> "medicines" // fallback
-                    }
-
-                    navController.navigate(Screen.Home.withScrollTo(section))
-                })
+                        }
+                    )
+                }
             }
         }
     }
 }
-
 @Composable
-fun CategoryItem(item: CategoryModel, onClick: () -> Unit) {
-
+fun CategoryItem(name: String, onClick: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .padding(vertical = 8.dp)
-            .clickable { onClick() }
+        modifier = Modifier.clickable { onClick() }
     ) {
-
         Card(
+            modifier = Modifier.size(70.dp),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
                 containerColor = Color(0xFFEDE3EC)
-            ),
-            elevation = CardDefaults.cardElevation(0.dp),
-            modifier = Modifier.size(70.dp)
+            )
         ) {
             Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = item.imgUrl,
+                Icon(
+                    imageVector = Icons.Default.Search,
                     contentDescription = null,
-                    modifier = Modifier.size(60.dp),
-                    contentScale = ContentScale.Fit
+                    tint = Color(0xFF38D6C6)
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
+        Spacer(modifier = Modifier.height(8.dp))
         AutoText(
-            text = item.name,
+            text = name,
             fontSize = 13.sp,
-            fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
-            maxLines = 2,
-            lineHeight = 15.sp
+            maxLines = 2
         )
     }
 }

@@ -7,15 +7,18 @@ import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.state.Pharamcy
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PharmacyViewModel @Inject constructor(
-    private val getMedicineUseCase: GetMedicineUseCase
-): ViewModel(){
+class PharmacyViewModel @Inject constructor(private val getMedicineUseCase: GetMedicineUseCase): ViewModel(){
     private val _state = MutableStateFlow(PharamcyState())
     val state: StateFlow<PharamcyState> =_state
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+    private val _userCity = MutableStateFlow("India")
+    val userCity: StateFlow<String> = _userCity.asStateFlow()
 
     init {
         loadMedicines()
@@ -37,5 +40,9 @@ class PharmacyViewModel @Inject constructor(
                 _state.value  = PharamcyState(error = e.message?:"Unknown Error")
             }
         }
+    }
+
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
     }
 }

@@ -3,10 +3,12 @@ package com.mysanjeevni.mysanjeevni.di
 import android.app.Application
 import androidx.room.Room
 import com.mysanjeevni.mysanjeevni.core.Constants
-import com.mysanjeevni.mysanjeevni.data.local.cart.CartDao
+import com.mysanjeevni.mysanjeevni.data.local.dao.CartDao
+import com.mysanjeevni.mysanjeevni.data.local.dao.NotificationDao
 import com.mysanjeevni.mysanjeevni.data.local.db.AppDatabase
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
 import com.mysanjeevni.mysanjeevni.data.remote.api.AuthApiService
+import com.mysanjeevni.mysanjeevni.features.labs.data.remote.LabPaymentApi
 import com.mysanjeevni.mysanjeevni.features.payment.data.remote.PaymentApi
 import com.mysanjeevni.mysanjeevni.features.pharmacy.data.remote.PharmacyApi
 import dagger.Module
@@ -25,7 +27,6 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    // 🔵 AUTH RETROFIT
     @Provides
     @Singleton
     @AuthRetrofit
@@ -92,6 +93,12 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideNotificationDao(db: AppDatabase): NotificationDao{
+        return db.notificationDao()
+    }
+
+    @Provides
+    @Singleton
     fun provideOkHttpClient(): OkHttpClient {
 
         val logging = HttpLoggingInterceptor().apply {
@@ -113,6 +120,12 @@ object AppModule {
     @Singleton
     fun providePaymentApi(@MainRetrofit retrofit: Retrofit): PaymentApi {
         return retrofit.create(PaymentApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLabPaymentApi(@AuthRetrofit retrofit: Retrofit): LabPaymentApi {
+        return retrofit.create(LabPaymentApi::class.java)
     }
 
 }

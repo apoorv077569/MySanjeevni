@@ -1,5 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.profile.presentation.ui
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -28,8 +29,10 @@ import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.CardGiftcard
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.Note
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VideoCall
@@ -197,23 +200,25 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
                 }
             )
             ProfileStatCard(
+
+
                 Icons.Default.Science,
                 "Lab Tests",
                 cardColor,
                 textColor,
                 Modifier.width(100.dp),
                 onClick = {
-                    navController.navigate(Screen.MyLabTestsScreen.route)
+                    navController.navigate(Screen.BookingHistoryScreen.route)
                 }
             )
             ProfileStatCard(
-                Icons.Default.VideoCall,
-                "Consults",
+                Icons.Default.Favorite,
+                "Wishlist",
                 cardColor,
                 textColor,
                 Modifier.width(100.dp),
                 onClick = {
-                    navController.navigate(Screen.MyConsultScreen.route)
+                    navController.navigate(Screen.WishlistScreen.route)
                 }
             )
         }
@@ -225,21 +230,29 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
                 .clip(RoundedCornerShape(12.dp))
                 .background(cardColor)
         ) {
-            ProfileMenuItem(
-                Icons.Default.MedicalServices, "My Health Records", textColor, secondaryText, onClick =
-                    { navController.navigate(Screen.HealthRecords.route) })
+//            ProfileMenuItem(
+//                Icons.Default.MedicalServices, "My Health Records", textColor, secondaryText, onClick =
+//                    { navController.navigate(Screen.HealthRecords.route) })
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
             ProfileMenuItem(Icons.Default.LocationOn, "Manage Addresses", textColor, secondaryText) {
                 navController
-                    .navigate(Screen.ManageAddresses.route)
+                    .navigate("${Screen.ManageAddresses.route}?checkout=false&home=false")
             }
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
             ProfileMenuItem(
-                Icons.Default.AccountBalanceWallet, "My Wallet", textColor, secondaryText, onClick =
-                    { navController.navigate(Screen.WalletScreen.route) })
+                Icons.Default.Note, "My Prescription", textColor, secondaryText, onClick =
+                    { navController.navigate(Screen.UploadPrescription.route) })
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
-            ProfileMenuItem(Icons.Default.CardGiftcard, "Refer & Earn", textColor, secondaryText, onClick = {
-                navController.navigate(Screen.ReferralScreen.route)
+            ProfileMenuItem(Icons.Default.CardGiftcard, "Share With Friends", textColor, secondaryText, onClick = {
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, "Check out this app!")
+                    putExtra(
+                        Intent.EXTRA_TEXT,
+                        "Hey! Check out this amazing app \nhttps://play.google.com/store/apps/details?id=${context.packageName}"
+                    )
+                }
+                context.startActivity(Intent.createChooser(shareIntent, "Share With Friends"))
             })
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -251,7 +264,9 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
                 .clip(RoundedCornerShape(12.dp))
                 .background(cardColor)
         ) {
-            ProfileMenuItem(Icons.AutoMirrored.Filled.Help, "Need Help?", textColor, secondaryText) {}
+            ProfileMenuItem(Icons.AutoMirrored.Filled.Help, "Need Help?", textColor, secondaryText, onClick = {
+                navController.navigate(Screen.TicketScreen.route)
+            })
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
             ProfileMenuItem(Icons.Default.Settings, "Settings", textColor, secondaryText, onClick = {
                 navController.navigate(Screen.SettingScreen.route)

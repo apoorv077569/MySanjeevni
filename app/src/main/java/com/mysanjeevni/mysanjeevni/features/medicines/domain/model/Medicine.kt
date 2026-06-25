@@ -5,6 +5,7 @@ data class Medicine(
     val id: String,
 
     val name: String,
+    val icon:String?,
 
     val description: String,
 

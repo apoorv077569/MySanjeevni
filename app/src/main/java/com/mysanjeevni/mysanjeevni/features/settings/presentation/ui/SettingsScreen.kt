@@ -145,16 +145,7 @@ fun SettingsScreen(
                     }
                 }
             )
-            HorizontalDivider(color = bgColor)
-            SettingsSwitchItem(
-                icon = Icons.Default.SupportAgent,
-                title = "WhatsApp Updates",
-                subtitle = "Get updates on WhatsApp",
-                checked = state.whatsappUpdatesEnabled,
-                textColor = textColor,
-                secondaryText = secondaryText,
-                onCheckedChange = viewModel::toggleWhatsappUpdates
-            )
+
             HorizontalDivider(color = bgColor)
             SettingsNavItem(
                 icon = Icons.Default.Language,

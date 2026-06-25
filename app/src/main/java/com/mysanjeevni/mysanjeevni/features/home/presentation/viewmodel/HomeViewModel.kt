@@ -4,11 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
-import com.mysanjeevni.mysanjeevni.features.cart.domain.usecase.AddToCartUseCase
 import com.mysanjeevni.mysanjeevni.features.home.data.repository.LocationRepository
-import com.mysanjeevni.mysanjeevni.features.home.model.FeaturedMedicine
 import com.mysanjeevni.mysanjeevni.features.medicines.domain.model.Medicine
-import com.mysanjeevni.mysanjeevni.features.medicines.data.mapper.toDomain
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,23 +20,21 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val locationRepository: LocationRepository,
-    private val addToCartUseCase: AddToCartUseCase,
     private val api: ApiService,
 
     ) : ViewModel() {
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
     private val _dealTimeLeft = MutableStateFlow(36000L)
-    val dealTimeLeft = _dealTimeLeft.asStateFlow()
     private val _popularProducts = MutableStateFlow<List<Medicine>>(emptyList())
     val popularProducts: StateFlow<List<Medicine>> =
         _popularProducts.asStateFlow()
 
     private val _allMedicines =
         MutableStateFlow<List<Medicine>>(emptyList())
-    private val _userCity = MutableStateFlow("India")
-    val userCity: StateFlow<String> = _userCity.asStateFlow()
 
+    val allMedicines: StateFlow<List<Medicine>> = _allMedicines
+    val userCity = locationRepository.city
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
@@ -61,12 +56,7 @@ class HomeViewModel @Inject constructor(
 
     fun fetchCurrentCity() {
         viewModelScope.launch {
-            try {
-                val city = locationRepository.getCurrentCity()
-                _userCity.value = city
-            } catch (e: Exception) {
-                _userCity.value = "India"
-            }
+            locationRepository.fetchCurrentCity()
         }
     }
 
@@ -86,7 +76,7 @@ class HomeViewModel @Inject constructor(
 
                     _allMedicines.value = data.map { dto ->
                         Medicine(
-                            id = dto._id.toString(),
+                            id = dto._id,
                             name = dto.name,
                             description = dto.description.orEmpty(),
                             price = dto.price,
@@ -107,7 +97,8 @@ class HomeViewModel @Inject constructor(
                             vendorName = dto.vendorName.orEmpty(),
                             vendorRating = dto.vendorRating ?: 0.0,
                             rating = dto.rating,
-                            reviews = dto.reviews
+                            reviews = dto.reviews,
+                            icon = dto.icon
                         )
                     }
                     Log.d("HOME_DEBUG", "Medicines set: ${_allMedicines.value.size}")
@@ -133,7 +124,7 @@ class HomeViewModel @Inject constructor(
                     val data = res.body()?.products ?: emptyList()
                     _popularProducts.value = data.map { dto ->
                         Medicine(
-                            id = dto._id.toString(),
+                            id = dto._id,
                             name = dto.name,
                             description = dto.description.orEmpty(),
                             price = dto.price,
@@ -154,7 +145,8 @@ class HomeViewModel @Inject constructor(
                             vendorName = dto.vendorName.orEmpty(),
                             vendorRating = dto.vendorRating ?: 0.0,
                             rating = dto.rating,
-                            reviews = dto.reviews
+                            reviews = dto.reviews,
+                            icon  = dto.icon
                         )
                     }
                     Log.d("HOME_DEBUG", "Popular loaded: ${data.size}")
@@ -186,12 +178,6 @@ class HomeViewModel @Inject constructor(
 
 
     fun updateCity(city: String) {
-        _userCity.value = city
+        locationRepository.updateCity(city)
     }
-
-    fun refresh() {
-        loadHomeData()
-    }
-
-
 }

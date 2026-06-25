@@ -5,37 +5,17 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -59,44 +39,51 @@ fun ResetPasswordScreen(navController: NavController, mobile: String) {
 
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-
-    var isLoading by remember { mutableStateOf(false) }
     val isFormValid = password.isNotBlank() && confirmPassword.isNotBlank()
-
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val viewModel: AuthViewModel = hiltViewModel()
-
     val uiState by viewModel.uiState.collectAsState()
+    val colorScheme = MaterialTheme.colorScheme
 
-    val buttonColor by animateColorAsState(
-        targetValue = if (isFormValid) Color(0XFFF97316) else Color.Gray
+    val buttonBg by animateColorAsState(
+        targetValue = if (isFormValid) colorScheme.primary
+        else colorScheme.onSurface.copy(alpha = 0.12f)
+    )
+
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = colorScheme.primary,
+        unfocusedBorderColor = colorScheme.outline,
+        focusedTextColor = colorScheme.onSurface,
+        unfocusedTextColor = colorScheme.onSurface,
+        cursorColor = colorScheme.primary,
+        focusedLabelColor = colorScheme.primary,
+        unfocusedLabelColor = colorScheme.onSurfaceVariant,
+        focusedLeadingIconColor = colorScheme.onSurfaceVariant,
+        unfocusedLeadingIconColor = colorScheme.onSurfaceVariant,
+        focusedTrailingIconColor = colorScheme.onSurfaceVariant,
+        unfocusedTrailingIconColor = colorScheme.onSurfaceVariant,
     )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF00C853))
+            .background(colorScheme.primary)
     ) {
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Spacer(modifier = Modifier.weight(1f))
+
+            // ── Card ─────────────────────────────────────────────────────
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        Color.White.copy(alpha = 0.95f),
-                        RoundedCornerShape(20.dp)
-                    )
+                    .background(colorScheme.surface, RoundedCornerShape(20.dp))
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -106,107 +93,93 @@ fun ResetPasswordScreen(navController: NavController, mobile: String) {
                     contentDescription = null,
                     modifier = Modifier.size(80.dp)
                 )
+
                 AutoText(
                     text = stringResource(R.string.reset_password),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF6A00C8)
+                    color = colorScheme.primary
                 )
+
                 AutoText(
                     text = "Create a new password",
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = colorScheme.onSurfaceVariant
                 )
+
+                // New Password
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
                     label = { AutoText("New Password") },
-                    leadingIcon = {
-                        Icon(Icons.Default.Lock, contentDescription = null)
+                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Default.Visibility
+                            else Icons.Default.VisibilityOff,
+                            contentDescription = if (passwordVisible) "Hide" else "Show",
+                            modifier = Modifier.clickable { passwordVisible = !passwordVisible }
+                        )
                     },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None
+                    else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Next
                     ),
-                    trailingIcon = {
-                        Icon(
-                            imageVector = if (passwordVisible)
-                                Icons.Default.Visibility
-                            else
-                                Icons.Default.VisibilityOff,
-                            contentDescription = null,
-                            modifier = Modifier.clickable {
-                                passwordVisible = !passwordVisible
-                            }
-                        )
-                    },
-                    visualTransformation =
-                        if (passwordVisible) VisualTransformation.None
-                        else PasswordVisualTransformation(),
+                    colors = fieldColors,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true
                 )
+
+                // Confirm Password
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
                     label = { AutoText("Confirm Password") },
-                    leadingIcon = {
-                        Icon(Icons.Default.Lock, contentDescription = null)
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Next
-                    ),
+                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     trailingIcon = {
                         Icon(
-                            imageVector = if (confirmPasswordVisible)
-                                Icons.Default.Visibility
-                            else
-                                Icons.Default.VisibilityOff,
-                            contentDescription = null,
-                            modifier = Modifier.clickable {
-                                confirmPasswordVisible = !confirmPasswordVisible
-                            }
+                            imageVector = if (confirmPasswordVisible) Icons.Default.Visibility
+                            else Icons.Default.VisibilityOff,
+                            contentDescription = if (confirmPasswordVisible) "Hide" else "Show",
+                            modifier = Modifier.clickable { confirmPasswordVisible = !confirmPasswordVisible }
                         )
                     },
-                    visualTransformation =
-                        if (confirmPasswordVisible) VisualTransformation.None
-                        else PasswordVisualTransformation(),
+                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None
+                    else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done
+                    ),
+                    colors = fieldColors,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     singleLine = true
                 )
+
                 Button(
                     onClick = {
-
                         if (password != confirmPassword) {
-
-                            Toast.makeText(
-                                context,
-                                "Passwords do not match",
-                                Toast.LENGTH_SHORT
-                            ).show()
-
+                            Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
-
-                        viewModel.resetPassword(
-                            mobile,
-                            password
-                        )
+                        viewModel.resetPassword(mobile, password)
                     },
-                    enabled =
-                        isFormValid && uiState !is AuthUiState.Loading,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
+                    enabled = isFormValid && uiState !is AuthUiState.Loading,
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = buttonColor)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = buttonBg,
+                        contentColor = colorScheme.onPrimary,
+                        disabledContainerColor = colorScheme.onSurface.copy(alpha = 0.12f),
+                        disabledContentColor = colorScheme.onSurface.copy(alpha = 0.38f)
+                    )
                 ) {
                     if (uiState is AuthUiState.Loading) {
                         CircularProgressIndicator(
-                            color = Color.White,
+                            color = colorScheme.onPrimary,
                             modifier = Modifier.size(22.dp),
                             strokeWidth = 2.dp
                         )
@@ -215,30 +188,20 @@ fun ResetPasswordScreen(navController: NavController, mobile: String) {
                     }
                 }
             }
+
             LaunchedEffect(uiState) {
                 when (val state = uiState) {
                     is AuthUiState.PasswordResetSuccess -> {
-                        Toast.makeText(
-                            context,
-                            "Password Updated",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        navController.navigate(
-                            Screen.Login.route
-                        ) {
-                            popUpTo(0)
-                        }
+                        Toast.makeText(context, "Password Updated", Toast.LENGTH_SHORT).show()
+                        navController.navigate(Screen.Login.route) { popUpTo(0) }
                     }
                     is AuthUiState.Error -> {
-                        Toast.makeText(
-                            context,
-                            state.message,
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
                     }
                     else -> {}
                 }
             }
+
             Spacer(modifier = Modifier.weight(1f))
         }
     }

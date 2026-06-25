@@ -15,13 +15,27 @@ class SessionManager @Inject constructor(@ApplicationContext context: Context) {
         private const val KEY_IS_LOGIN = "is_login"
         private const val KEY_ROLE = "role"
         private const val KEY_USER_NAME = "user_name"
+        private const val KEY_USER_PHONE = "user_phone"
+        private const val KEY_USER_ADDRESS = "user_address"
+        private const val KEY_USER_EMAIL = "user_email"
+        private const val KEY_SELECTED_CITY = "selected_city"
 
     }
 
     fun isNotificationEnabled(): Boolean {
         return prefs.getBoolean("notifications", true)
     }
-
+    fun saveSelectedCity(city: String) {
+        prefs.edit()
+            .putString(KEY_SELECTED_CITY, city)
+            .apply()
+    }
+    fun getSelectedCity(): String {
+        return prefs.getString(
+            KEY_SELECTED_CITY,
+            "India"
+        ) ?: "India"
+    }
     fun saveUserRole(role: String) {
         prefs.edit {
             putString(KEY_ROLE, role)
@@ -64,5 +78,27 @@ class SessionManager @Inject constructor(@ApplicationContext context: Context) {
 
     fun getUserName(): String? {
         return prefs.getString(KEY_USER_NAME, null)
+    }
+
+    fun saveUserEmail(userEmail: String){
+        prefs.edit {
+            putString(KEY_USER_EMAIL,userEmail)
+        }
+    }
+    fun getUserEmail(): String?{
+        return prefs.getString(KEY_USER_EMAIL,null)
+    }
+    fun saveUserAddress(userAddress:String){
+        prefs.edit{
+            putString(KEY_USER_ADDRESS,userAddress)
+        }
+    }
+
+    fun getUserAddress():String?{
+        return prefs.getString(KEY_USER_ADDRESS,null)
+    }
+
+    fun getPhone(): String? {
+        return prefs.getString(KEY_USER_PHONE,null)
     }
 }

@@ -74,11 +74,6 @@ fun SplashScreen(navController: NavController) {
                     popUpTo(Screen.Splash.route){inclusive = true}
                 }
             }
-            role == "Doctor" ->{
-                navController.navigate(Screen.DoctorDashboard.route){
-                    popUpTo(Screen.Splash.route){inclusive = true}
-                }
-            }
             else ->{
                 navController.navigate(Screen.Home.route){
                     popUpTo(Screen.Splash.route){inclusive = true}

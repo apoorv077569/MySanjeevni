@@ -3,9 +3,12 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 
+
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     id("com.google.gms.google-services")
+    id("kotlin-parcelize")
+
 }
 
 android {
@@ -25,9 +28,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "RAZORPAY_KEY", "\"rzp_live_SUcsurW9fkbXe3\"")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            buildConfigField("String", "RAZORPAY_KEY", "\"rzp_live_SUcsurW9fkbXe3\"")
         }
     }
     compileOptions {
@@ -39,6 +46,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -57,6 +65,7 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.compose.foundation)
     implementation(libs.ui)
+    implementation(libs.androidx.hilt.common)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -84,9 +93,9 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.6.0")
 
     // room
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    kapt("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-runtime:2.7.1")
+    implementation("androidx.room:room-ktx:2.7.1")
+    kapt("androidx.room:room-compiler:2.7.1")
     implementation("com.airbnb.android:lottie-compose:6.1.0")
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.android.gms:play-services-maps:20.0.0")
@@ -109,6 +118,14 @@ dependencies {
 //    Pagination
     implementation("androidx.paging:paging-runtime-ktx:3.3.0")
     implementation("androidx.paging:paging-compose:3.3.0")
+
+//    animation
+    implementation("androidx.compose.animation:animation-graphics:1.6.0")
+
+//    work-manager
+    implementation("androidx.work:work-runtime-ktx:2.10.1")
+//    Material Icon
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
 
 }
 

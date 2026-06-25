@@ -8,32 +8,47 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.ShoppingBag
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,7 +57,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.core.location.LocationHelper
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
+import com.mysanjeevni.mysanjeevni.core.presentation.StylishHeader
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
+import com.mysanjeevni.mysanjeevni.features.home.presentation.viewmodel.HomeViewModel
 import com.mysanjeevni.mysanjeevni.features.location.ui.LocationSearchSDialog
 import com.mysanjeevni.mysanjeevni.features.pharmacy.data.mapper.toCartItem
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui.components.MedicineItem
@@ -50,84 +67,118 @@ import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.viewmodel.Phar
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 // --- THEME COLORS ---
+val TealPrimary = Color(0xFF38D6C6)
 val LavenderPrimary = Color(0xFF7E57C2)
 val BackgroundColor = Color(0xFFF5F5F5)
+
+private val SortOptions = listOf("Relevance", "Price: Low to High", "Price: High to Low", "Discount")
+
 
 @Composable
 fun PharmacyScreen(
     navController: NavController,
-    viewModel: PharmacyViewModel = hiltViewModel()
+    viewModel: PharmacyViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel = hiltViewModel()
 ) {
     val cartViewModel: CartViewModel =
         hiltViewModel(LocalContext.current as ComponentActivity)
     val state by viewModel.state.collectAsState()
-    val isDark = isSystemInDarkTheme()
-    val bgColor = if (isDark) Color(0xFF121212) else BackgroundColor
+    val colorScheme = MaterialTheme.colorScheme
+    val bgColor = colorScheme.background
+    val city by homeViewModel.userCity.collectAsState()
 
-    // --- 1. LOCATION & PERMISSION LOGIC (ADDED) ---
-    val context = LocalContext.current
-    val locationHelper = remember { LocationHelper(context) }
 
-    // Local state for city (since PharmacyViewModel might not have updateCity)
-    var userCity by remember { mutableStateOf("Detecting...") }
-    var showLocationDialog by remember { mutableStateOf(false) }
 
-    // Permission Launcher
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) {
-            locationHelper.getCurrentCity { city -> userCity = city }
-        } else {
-            userCity = "Location Denied"
-        }
-    }
-
-    // Fetch Location on Start
-    LaunchedEffect(Unit) {
-        if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            locationHelper.getCurrentCity { city -> userCity = city }
-        } else {
-            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-    }
-
-    // Location Dialog Popup
-    if (showLocationDialog) {
-        LocationSearchSDialog(
-            onConfirm = { selectedCity ->
-                userCity = selectedCity
-                showLocationDialog = false
-            },
-            onDismiss = { showLocationDialog = false }
-        )
-    }
-    // ---------------------------------------------
-
-    // Header States
-    var searchQuery by remember { mutableStateOf("") }
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    var selectedFilter by remember { mutableStateOf("All") }
+    var selectedSort by remember { mutableStateOf("Relevance") }
     val focusRequester = remember { FocusRequester() }
+
+    val availableCategories: List<String> = remember(state.medicines) {
+        state.medicines
+            .mapNotNull { it.category?.takeIf { c -> c.isNotBlank() } }
+            .distinct()
+    }
+
+    LaunchedEffect(city) {
+        Log.d("CITY_DEBUG", "Pharmacy City = $city")
+    }
+    val displayedMedicines = remember(
+        state.medicines,
+        selectedFilter,
+        selectedSort,
+        searchQuery
+    ) {
+
+        var filtered = state.medicines
+
+        // Category Filter
+        if (selectedFilter != "All") {
+            filtered = filtered.filter {
+                it.category?.equals(
+                    selectedFilter,
+                    ignoreCase = true
+                ) == true
+            }
+        }
+
+        // Search Filter
+        if (searchQuery.isNotBlank()) {
+
+            filtered = filtered.filter { medicine ->
+
+                medicine.name.contains(
+                    searchQuery,
+                    ignoreCase = true
+                )
+            }
+        }
+
+        // Sorting
+        when (selectedSort) {
+
+            "Price: Low to High" ->
+                filtered.sortedBy { it.price }
+
+            "Price: High to Low" ->
+                filtered.sortedByDescending { it.price }
+
+            "Discount" ->
+                filtered.sortedByDescending {
+                    val mrp = it.mrp
+                    val price = it.price
+
+                    if (mrp > 0) {
+                        ((mrp - price) / mrp) * 100
+                    } else {
+                        0.0
+                    }
+                }
+
+            else -> filtered
+        }
+    }    // ─────────────────────────────────────────────────────────────────────────
 
     Scaffold(
         containerColor = bgColor,
         topBar = {
             Column {
-                // Header with Real Location & Cart Navigation
-                PharmacyHeader(
+                StylishHeader(
                     query = searchQuery,
-                    onQueryChange = { searchQuery = it },
-                    onClear = { searchQuery = "" },
+                    onQueryChange = { viewModel.onSearchQueryChanged(it) },
+                    onClear = { viewModel.onSearchQueryChanged("") },
                     focusRequester = focusRequester,
-                    location = userCity, // Pass real location
-                    onLocationClick = { showLocationDialog = true }, // Open Dialog
-                    onCartClick = { navController.navigate(Screen.CartScreen.route) } // Real Navigation
+                    location = city,
+                        onLocationClick = { navController.navigate("${Screen.ManageAddresses.route}?checkout=false&home=true") },
+                    onNotificationClick = { navController.navigate(Screen.NotificationScreen.route) }
                 )
-
-                FilterOptionsRow()
+                FilterAndSortRow(
+                    categories = availableCategories,
+                    selectedFilter = selectedFilter,
+                    onFilterSelected = { selectedFilter = it },
+                    selectedSort = selectedSort,
+                    onSortSelected = { selectedSort = it }
+                )
             }
         }
     ) { paddingValues ->
@@ -136,55 +187,49 @@ fun PharmacyScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Success State
             if (!state.isLoading && state.error.isBlank()) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     item {
                         AutoText(
-                            text = "${state.medicines.size} Products found",
+                            text = "${displayedMedicines.size} Products found",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
 
-                    items(state.medicines) { medicine ->
-                        MedicineItem(medicine = medicine,
+                    // ✅ Using displayedMedicines (filtered + sorted) instead of state.medicines
+                    items(displayedMedicines) { medicine ->
+                        MedicineItem(
+                            medicine = medicine,
                             onAddToCart = {
-
-
                                 val cartItem = medicine.toCartItem()
                                 Log.d("CART_DEBUG", "Pharmacy → Adding: ${cartItem.name}")
-
-                                cartViewModel.addToCart(
-                                    cartItem,
+                                cartViewModel.addToCart(cartItem)
+                                Log.d(
+                                    "CART_DEBUG",
+                                    "Pharmacy → After Add Size: ${cartViewModel.state.value.cartItem.size}"
                                 )
-
-                                Log.d("CART_DEBUG", "Pharmacy → After Add Size: ${cartViewModel.state.value.cartItem.size}")
-
-
                                 navController.navigate(Screen.CartScreen.route)
-                            })
+                            }
+                        )
                     }
 
                     item { Spacer(modifier = Modifier.height(80.dp)) }
                 }
             }
 
-            // Loading State
             if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = LavenderPrimary
+                    color = TealPrimary
                 )
             }
 
-            // Error State
             if (state.error.isNotBlank()) {
                 Column(
                     modifier = Modifier.align(Alignment.Center),
@@ -192,206 +237,195 @@ fun PharmacyScreen(
                 ) {
                     Icon(Icons.Default.Close, null, tint = Color.Red, modifier = Modifier.size(48.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    AutoText(
-                        text = state.error,
-                        color = Color.Red,
-                        fontWeight = FontWeight.Medium
+                    AutoText(text = state.error, color = Color.Red, fontWeight = FontWeight.Medium)
+                }
+            }
+
+            if (
+                !state.isLoading &&
+                displayedMedicines.isEmpty() &&
+                state.error.isBlank()
+            ) {
+
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null,
+                            modifier = Modifier.size(90.dp),
+                            tint = Color.Gray
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(12.dp)
+                        )
+
+                        AutoText(
+                            text = "Product Not Found",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(4.dp)
+                        )
+
+                        AutoText(
+                            text = "Try another medicine name",
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FilterAndSortRow(
+    categories: List<String>,
+    selectedFilter: String,
+    onFilterSelected: (String) -> Unit,
+    selectedSort: String,
+    onSortSelected: (String) -> Unit
+) {
+    var showSortDropdown by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable { },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.FilterList,
+                        contentDescription = "Filter",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
 
-            // Empty State
-            if (!state.isLoading && state.medicines.isEmpty() && state.error.isBlank()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    AutoText("No medicines found", color = Color.Gray)
-                }
+            item {
+                FilterChipItem(
+                    label = "All",
+                    isSelected = selectedFilter == "All",
+                    onClick = { onFilterSelected("All") }
+                )
+            }
+
+            items(categories) { category ->
+                FilterChipItem(
+                    label = category,
+                    isSelected = selectedFilter == category,
+                    onClick = { onFilterSelected(category) }
+                )
             }
         }
-    }
-}
 
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
 
-@Composable
-fun FilterOptionsRow() {
-    val filters = listOf("All", "Syrups", "Tablets", "Injections", "Ayurvedic")
-    var selectedFilter by remember { mutableStateOf("All") }
-
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = Modifier.background(Color.White)
-    ) {
-        item {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFF5F5F5))
-                    .clickable { },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.FilterList, null, tint = Color.Black, modifier = Modifier.size(20.dp))
-            }
-        }
-        items(filters) { filter ->
-            val isSelected = filter == selectedFilter
-            val bg = if (isSelected) LavenderPrimary else Color(0xFFF5F5F5)
-            val textColor = if (isSelected) Color.White else Color.Black
-
-            Box(
-                modifier = Modifier
-                    .height(36.dp)
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(bg)
-                    .clickable { selectedFilter = filter }
-                    .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                AutoText(text = filter, color = textColor, fontSize = 13.sp, fontWeight = FontWeight.Medium)
-            }
-        }
-    }
-}
-
-@Composable
-fun PharmacyHeader(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onClear: () -> Unit,
-    focusRequester: FocusRequester,
-    location: String,
-    onLocationClick: () -> Unit,
-    onCartClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(bottomStart = 15.dp, bottomEnd = 15.dp))
-            .background(Color(0xFF38D6C6)) // ✅ Same teal color
-            .statusBarsPadding()
-            .padding(bottom = 6.dp)
-    ) {
-        // 🔹 TOP ROW
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // 📍 LOCATION
-            Column(modifier = Modifier.clickable { onLocationClick() }) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(14.dp)
+            AutoText(text = "Sort by", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+            Box {
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable { showSortDropdown = true }
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    AutoText(
+                        text = selectedSort,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TealPrimary
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    AutoText(text = "Delivering to", fontSize = 11.sp, color = Color.White)
                     Icon(
                         Icons.Default.KeyboardArrowDown,
                         contentDescription = null,
-                        tint = Color.White.copy(alpha = 0.8f),
-                        modifier = Modifier.size(14.dp)
-                    )
-                }
-                AutoText(
-                    text = location.ifEmpty { "Select Location" },
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    maxLines = 1
-                )
-            }
-
-            // 🔔 ICONS ROW
-            Row(verticalAlignment = Alignment.CenterVertically) {
-
-                // 🔔 NOTIFICATION
-                Box {
-                    Icon(
-                        Icons.Outlined.Notifications,
-                        contentDescription = "Alerts",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .background(Color.Red, CircleShape)
-                            .align(Alignment.TopEnd)
+                        tint = TealPrimary,
+                        modifier = Modifier.size(16.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
-
-                // 🛒 CART
-                Icon(
-                    Icons.Outlined.ShoppingBag,
-                    contentDescription = "Cart",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .size(22.dp)
-                        .clickable { onCartClick() }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        // 🔍 SEARCH BAR
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .height(44.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(4.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable { focusRequester.requestFocus() }
-                    .padding(horizontal = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Default.Search,
-                    contentDescription = null,
-                    tint = Color.Gray,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Box(modifier = Modifier.weight(1f)) {
-                    if (query.isEmpty()) {
-                        AutoText(
-                            text = "Search medicines...",
-                            color = Color.LightGray,
-                            fontSize = 13.sp
+                DropdownMenu(
+                    expanded = showSortDropdown,
+                    onDismissRequest = { showSortDropdown = false }
+                ) {
+                    SortOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = {
+                                AutoText(
+                                    text = option,
+                                    fontSize = 13.sp,
+                                    color = if (option == selectedSort) TealPrimary else MaterialTheme.colorScheme.onSurface
+                                )
+                            },
+                            onClick = {
+                                onSortSelected(option)
+                                showSortDropdown = false
+                            }
                         )
                     }
-                    BasicTextField(
-                        value = query,
-                        onValueChange = onQueryChange,
-                        singleLine = true,
-                        textStyle = TextStyle(color = Color.Black, fontSize = 14.sp),
-                        modifier = Modifier.focusRequester(focusRequester)
-                    )
-                }
-                if (query.isNotEmpty()) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "Clear",
-                        tint = Color.Gray,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .clickable { onClear() }
-                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+fun FilterChipItem(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val bg = if (isSelected) LavenderPrimary else MaterialTheme.colorScheme.surfaceVariant
+
+    val textColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
+
+    Box(
+        modifier = Modifier
+            .height(36.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(bg)
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        AutoText(
+            text = label,
+            color = textColor,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }

@@ -1,22 +1,24 @@
 package com.mysanjeevni.mysanjeevni.features.orders.presntation.ui
 
 import android.util.Log
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,142 +26,448 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.orders.presntation.viewmodel.OrderViewModel
+import androidx.core.graphics.toColorInt
+
+private val PurpleLight  = Color(0xFFEEEDFE)
+private val PurpleMid    = Color(0xFFAFA9EC)
+private val PurpleDark   = Color(0xFF534AB7)
+private val TealButton   = Color(0xFF1A9B82)
 
 @Composable
 fun OrderSummaryScreen(
     navController: NavController,
     orderViewModel: OrderViewModel
 ) {
+    val medicine   by orderViewModel.selectedMedicine.collectAsState()
+    val address    by orderViewModel.selectedAddress.collectAsState()
+    val cartItems  by orderViewModel.cartItems.collectAsState()
 
-    val medicine by orderViewModel
-        .selectedMedicine
-        .collectAsState()
+    val isCartCheckout = cartItems.isNotEmpty()
 
-    val address by orderViewModel.selectedAddress.collectAsState()
-    Log.d(
-        "ORDER_VM",
-        "Summary VM = ${orderViewModel.hashCode()}"
-    )
+    val subtotal = if (isCartCheckout) {
+        cartItems.sumOf { it.price * it.qty }
+    } else {
+        medicine?.price ?: 0.0
+    }
+
+    val deliveryFee = when {
+        subtotal == 0.0    -> 0.0
+        subtotal >= 299.0  -> 0.0
+        else               -> 50.0
+    }
+
+    val totalAmount = subtotal + deliveryFee
+
+    Log.d("ORDER_VM", "Summary VM = ${orderViewModel.hashCode()}")
 
     LaunchedEffect(Unit) {
         Log.d("SUMMARY_DEBUG", "Address = $address")
     }
 
+    LaunchedEffect(cartItems) {
+        Log.d("SUMMARY", "Received Cart = ${cartItems.size}")
+        cartItems.forEach {
+            Log.d(
+                "SUMMARY_ITEM",
+                """
+                Name=${it.name}
+                Price=${it.price}
+                Qty=${it.qty}
+                OriginalPrice=${it.originalPrice}
+                """.trimIndent()
+            )
+        }
+    }
+    // ── End business logic ────────────────────────────────────────────────────
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(MaterialTheme.colorScheme.background)
     ) {
-
-        Text(
-            text = "Order Summary",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth()
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+            contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(12.dp)
-            ) {
 
+            // ── Delivery Address card ─────────────────────────────────────────
+            item {
+                SummaryCard {
+                    // Header row
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    ) {
+                        IconCircle(icon = Icons.Outlined.LocationOn)
+                        Text(
+                            text = "Delivery Address",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    // Address rows + map illustration side-by-side
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        // Left: address fields
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            AddressRow(Icons.Outlined.Person,   address?.fullName ?: "", bold = true)
+                            AddressRow(Icons.Outlined.Phone,    address?.phone ?: "")
+                            AddressRow(Icons.Outlined.Home,     address?.addressLine1 ?: "")
+                            AddressRow(Icons.Outlined.Business, address?.addressLine2 ?: "")
+                            AddressRow(Icons.Outlined.LocationOn,
+                                "${address?.city},  ${address?.state}")
+                            AddressRow(Icons.Outlined.MailOutline, address?.pincode ?: "")
+                        }
+                        // Right: decorative map SVG placeholder
+                        MapIllustration(
+                            modifier = Modifier
+                                .size(110.dp)
+                                .align(Alignment.Bottom)
+                        )
+                    }
+                }
+            }
+
+            // ── Product(s) card ───────────────────────────────────────────────
+            if (isCartCheckout) {
+                items(cartItems) { item ->
+                    ProductCard(
+                        imageUrl  = item.imageUrl,
+                        name      = item.name,
+                        qty       = item.qty,
+                        price     = item.price,
+                        subtotal  = subtotal,
+                        deliveryFee = deliveryFee
+                    )
+                }
+            } else {
+                item {
+                    ProductCard(
+                        imageUrl    = medicine?.image,
+                        name        = medicine?.name ?: "",
+                        qty         = 1,
+                        price       = medicine?.price ?: 0.0,
+                        subtotal    = subtotal,
+                        deliveryFee = deliveryFee
+                    )
+                }
+            }
+
+            // ── Total Amount card ─────────────────────────────────────────────
+            item {
+                SummaryCard {
+
+                    Text(
+                        text = "Payment Summary",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    PriceRow(
+                        label = "Subtotal",
+                        value = "₹$subtotal",
+                        bold = false
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    PriceRow(
+                        label = "Delivery Fee",
+                        value = "₹$deliveryFee",
+                        bold = false
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp)
+                    )
+
+                    PriceRow(
+                        label = "Total Amount",
+                        value = "₹$totalAmount",
+                        bold = true
+                    )
+                }
+            }        }
+
+        // ── Proceed To Payment button ─────────────────────────────────────────
+        Button(
+            onClick = { navController.navigate(Screen.PaymentScreen.route) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .height(56.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = TealButton)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Lock,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier
+                    .size(20.dp)
+                    .padding(end = 0.dp)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = "Proceed To Payment",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            )
+        }
+    }
+}
+
+// ── Product card composable ────────────────────────────────────────────────────
+@Composable
+private fun ProductCard(
+    imageUrl: Any?,
+    name: String,
+    qty: Int,
+    price: Double,
+    subtotal: Double,
+    deliveryFee: Double
+) {
+    SummaryCard {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            // Left: product image
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .width(120.dp)
+                    .height(160.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            )
+
+            // Right: details
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Text(
-                    text = "Delivery Address",
-                    fontWeight = FontWeight.Bold
+                    text = name,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-
+                // Qty pill
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
                     Text(
-                        text = address?.fullName ?: ""
-                    )
-
-                    Text(
-                        text = address?.phone ?: ""
-                    )
-
-                    Text(
-                        text = address?.addressLine1 ?: ""
-                    )
-
-                    Text(
-                        text = address?.addressLine2 ?: ""
-                    )
-
-                    Text(
-                        text = "${address?.city}, ${address?.state}"
-                    )
-
-                    Text(
-                        text = address?.pincode ?: ""
+                        text = "Qty : $qty",
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-            }
+                Spacer(modifier = Modifier.height(4.dp))
 
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-
-            Column(
-                modifier = Modifier.padding(12.dp)
-            ) {
-
-                AsyncImage(
-                    model = medicine?.image,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = medicine?.name ?: "",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text("Qty : 1")
-
-                Text("Price : ₹${medicine?.price ?: 0}")
-
-                Text(
-                    text = "Subtotal : ₹${medicine?.price ?: 0}",
-                    fontWeight = FontWeight.SemiBold
-                )
+                PriceRow(label = "Price",    value = "₹$price",    bold = false)
+//                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+//                PriceRow(label = "Subtotal", value = "₹$subtotal", bold = true)
+//                HorizontalDivider(color = Color(0xFFEEEEEE))
+//                PriceRow(label = "Delivery Fee", value = "₹$deliveryFee", bold = false)
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        Text(
-            text = "Total : ₹${medicine?.price ?: 0}",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .clip(RoundedCornerShape(10.dp))
+//                .background(PurpleLight)
+//                .padding(horizontal = 14.dp, vertical = 10.dp),
+//            horizontalArrangement = Arrangement.SpaceBetween,
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Row(
+//                horizontalArrangement = Arrangement.spacedBy(10.dp),
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Outlined.LocalShipping,
+//                    contentDescription = null,
+//                    tint = PurpleDark,
+//                    modifier = Modifier.size(22.dp)
+//                )
+//                Text(
+//                    text = "Delivery Fee",
+//                    fontSize = 14.sp,
+//                    color = Color(0xFF444466)
+//                )
+//            }
+//            Text(
+//                text = "₹$deliveryFee",
+//                fontSize = 15.sp,
+//                fontWeight = FontWeight.Bold,
+//                color = PurpleDark
+//            )
+//        }
+    }
+}
+
+
+@Composable
+private fun SummaryCard(content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            content = content
+        )
+    }
+}
+
+@Composable
+private fun IconCircle(icon: ImageVector) {
+    val colorScheme = MaterialTheme.colorScheme
+
+    Box(
+        modifier = Modifier
+            .size(42.dp)
+            .clip(CircleShape)
+            .background(colorScheme.primaryContainer),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = colorScheme.primary,
+            modifier = Modifier.size(22.dp)
+        )
+    }
+}
+@Composable
+private fun AddressRow(
+    icon: ImageVector,
+    text: String,
+    bold: Boolean = false
+) {
+    val colorScheme = MaterialTheme.colorScheme
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = colorScheme.primary,
+            modifier = Modifier.size(18.dp)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = text,
+            fontSize = 13.sp,
+            fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,
+            color = if (bold)
+                colorScheme.onSurface
+            else
+                colorScheme.onSurfaceVariant
+        )
+    }
+}
+@Composable
+private fun PriceRow(
+    label: String,
+    value: String,
+    bold: Boolean
+) {
+    val colorScheme = MaterialTheme.colorScheme
 
-        Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                navController.navigate(
-                    Screen.PaymentScreen.route
-                )
-            }
-        ) {
-            Text("Proceed To Payment")
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            fontSize = 13.sp,
+            fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,
+            color = colorScheme.onSurfaceVariant
+        )
+
+        Text(
+            text = value,
+            fontSize = 13.sp,
+            fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,
+            color = colorScheme.onSurface
+        )
+    }
+}
+@Composable
+private fun MapIllustration(modifier: Modifier = Modifier) {
+    // A simple Compose-drawn map pin + grid illustration matching the image style
+    androidx.compose.foundation.Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val purple50  = "#EEEDFE".toColorInt()
+        val purplePin = "#AFA9EC".toColorInt()
+
+        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+
+        // Grid lines (very light)
+        paint.color = purplePin
+        paint.alpha = 60
+        paint.strokeWidth = 1.5f
+        for (i in 0..4) {
+            val x = w * i / 4f
+            drawContext.canvas.nativeCanvas.drawLine(x, h * 0.3f, x + w * 0.25f, h, paint)
         }
+        for (i in 0..4) {
+            val y = h * 0.3f + (h * 0.7f) * i / 4f
+            drawContext.canvas.nativeCanvas.drawLine(0f, y + w * 0.1f, w, y - w * 0.1f, paint)
+        }
+
+        // Pin circle (body)
+        paint.color = purplePin
+        paint.alpha = 200
+        val cx = w * 0.65f
+        val cy = h * 0.38f
+        val r  = w * 0.22f
+        drawContext.canvas.nativeCanvas.drawCircle(cx, cy, r, paint)
+
+        // Pin inner white dot
+        paint.color = android.graphics.Color.WHITE
+        paint.alpha = 255
+        drawContext.canvas.nativeCanvas.drawCircle(cx, cy, r * 0.45f, paint)
+
+        // Pin tail
+        paint.color = purplePin
+        paint.alpha = 200
+        val path = android.graphics.Path()
+        path.moveTo(cx - r * 0.5f, cy + r * 0.7f)
+        path.lineTo(cx + r * 0.5f, cy + r * 0.7f)
+        path.lineTo(cx, cy + r * 1.6f)
+        path.close()
+        drawContext.canvas.nativeCanvas.drawPath(path, paint)
     }
 }

@@ -1,84 +1,165 @@
 package com.mysanjeevni.mysanjeevni.features.orders.presntation.ui
 
+import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.mysanjeevni.mysanjeevni.features.orders.domain.model.Order
+import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.orders.presntation.state.OrderState
+import com.mysanjeevni.mysanjeevni.features.orders.presntation.ui.components.EmptyOrdersView
+import com.mysanjeevni.mysanjeevni.features.orders.presntation.ui.components.ErrorView
+import com.mysanjeevni.mysanjeevni.features.orders.presntation.ui.components.OrderCard
 import com.mysanjeevni.mysanjeevni.features.orders.presntation.viewmodel.OrderViewModel
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
-import java.text.SimpleDateFormat
-import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrdersScreen(
     navController: NavController,
-    address: String,
-    onOrderClick: (orderId: String) -> Unit,   // ← add karo
     viewModel: OrderViewModel = hiltViewModel()
 ) {
+
     val sessionManager = SessionManager(LocalContext.current)
     val orderState by viewModel.orderState.collectAsStateWithLifecycle()
     val userId = sessionManager.getUserId()
 
+    var selectedStatus by remember { mutableStateOf<String?>(null) }
+    var showFilterSheet by remember { mutableStateOf(false) }
+
     LaunchedEffect(userId) {
         viewModel.getOrders(userId)
     }
+    LaunchedEffect(orderState) {
+        Log.d("ORDER_TIME","UI Received State = ${System.currentTimeMillis()}")
+    }
+
+
+    when (orderState) {
+
+        is OrderState.Loading -> {
+
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    CircularProgressIndicator()
+
+                    Spacer(
+                        modifier = Modifier.height(12.dp)
+                    )
+
+                    Text(
+                        text = "Loading Orders..."
+                    )
+                }
+            }
+
+            return
+        }
+
+        else -> Unit
+    }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(title = { Text("My Orders") })
+            OrdersHeader(
+                onBackClick = { navController.popBackStack() },
+                isFilterActive = selectedStatus != null,
+                onFilterClick = { showFilterSheet = true }
+            )
         }
     ) { paddingValues ->
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+
             when (val state = orderState) {
-                is OrderState.Loading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
 
                 is OrderState.Success -> {
-                    if (state.orders.isEmpty()) {
-                        EmptyOrdersView(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(state.orders) { order ->
-                                OrderCard(order = order)
+                    val filteredOrders = remember(state.orders, selectedStatus) {
+                        if (selectedStatus == null) {
+                            state.orders
+                        } else {
+                            state.orders.filter {
+                                it.order.status.equals(selectedStatus, ignoreCase = true)
                             }
                         }
                     }
-                }
+
+                    when {
+                        state.orders.isEmpty() -> {
+                            EmptyOrdersView(modifier = Modifier.align(Alignment.Center))
+                        }
+
+                        filteredOrders.isEmpty() -> {
+                            EmptyOrdersView(
+                                modifier = Modifier.align(Alignment.Center),
+                                title = "No matching orders",
+                                subtitle = "Try a different filter"
+                            )
+                        }
+
+                        else -> {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(filteredOrders, key = { it.order.id }) { order ->
+                                    OrderCard(orderUi = order, onClick = {
+                                        navController.navigate(
+                                            Screen.OrderDetailScreen.createRoute(order.order.id)
+                                        )
+                                    })
+                                }
+                            }
+                        }
+                    }
+
+                    if (showFilterSheet) {
+                        OrderFilterSheet(
+                            statuses = state.orders.map { it.order.status }.distinct(),
+                            selectedStatus = selectedStatus,
+                            onStatusSelected = { selectedStatus = it },
+                            onDismiss = { showFilterSheet = false }
+                        )
+                    }                }
 
                 is OrderState.Error -> {
                     ErrorView(
                         message = state.message,
-                        onRetry = { viewModel.getOrders(userId) },
+                        onRetry = {
+                            viewModel.getOrders(userId)
+                        },
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -88,126 +169,167 @@ fun OrdersScreen(
         }
     }
 }
-
 @Composable
-private fun OrderCard(order: Order) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
+private fun OrdersHeader(
+    onBackClick: () -> Unit,
+    isFilterActive: Boolean,
+    onFilterClick: () -> Unit
+) {
+    Surface(color = MaterialTheme.colorScheme.background) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            CircleIconButton(
+                icon = Icons.AutoMirrored.Outlined.ArrowBack,
+                contentDescription = "Back",
+                onClick = onBackClick
+            )
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 12.dp)
             ) {
                 Text(
-                    text = "Order #${order.id.takeLast(6).uppercase()}",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-                OrderStatusChip(status = order.status)
-            }
-
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "₹${order.totalPrice}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium
+                    text = "My Orders",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
-                    text = formatDate(order.createdAt),
+                    text = "Track and manage all your orders",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            Box {
+                CircleIconButton(
+                    icon = Icons.Outlined.FilterList,
+                    contentDescription = "Filter orders",
+                    onClick = onFilterClick
+                )
+                if (isFilterActive) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .align(Alignment.TopEnd)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.error)
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun OrderStatusChip(status: String) {
-    val (bgColor, textColor) = when (status.lowercase()) {
-        "delivered"  -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
-        "cancelled"  -> Color(0xFFFFEBEE) to Color(0xFFC62828)
-        "processing" -> Color(0xFFFFF8E1) to Color(0xFFF57F17)
-        else         -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
-    }
-
-    Surface(
-        shape = RoundedCornerShape(50),
-        color = bgColor
-    ) {
-        Text(
-            text = status.replaceFirstChar { it.uppercase() },
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelSmall,
-            color = textColor,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-@Composable
-private fun EmptyOrdersView(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = "No orders yet",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = "Your orders will appear here",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
-private fun ErrorView(
-    message: String,
-    onRetry: () -> Unit,
-    modifier: Modifier = Modifier
+private fun CircleIconButton(
+    icon: ImageVector,
+    contentDescription: String?,
+    onClick: () -> Unit
 ) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    Box(
+        modifier = Modifier
+            .size(44.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer
         )
-        Button(onClick = onRetry) {
-            Text("Retry")
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun OrderFilterSheet(
+    statuses: List<String>,
+    selectedStatus: String?,
+    onStatusSelected: (String?) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 24.dp)
+        ) {
+            Text(
+                text = "Filter by status",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(Modifier.height(12.dp))
+
+            FilterOptionRow(
+                label = "All Orders",
+                selected = selectedStatus == null,
+                onClick = {
+                    onStatusSelected(null)
+                    onDismiss()
+                }
+            )
+
+            statuses.forEach { status ->
+                FilterOptionRow(
+                    label = status.replaceFirstChar { it.uppercase() },
+                    selected = selectedStatus.equals(status, ignoreCase = true),
+                    onClick = {
+                        onStatusSelected(status)
+                        onDismiss()
+                    }
+                )
+            }
         }
     }
 }
 
-private fun formatDate(dateString: String): String {
-    return try {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-        val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-        val date = inputFormat.parse(dateString)
-        outputFormat.format(date ?: return dateString)
-    } catch (e: Exception) {
-        dateString
+@Composable
+private fun FilterOptionRow(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .background(
+                if (selected) MaterialTheme.colorScheme.primaryContainer
+                else Color.Transparent
+            )
+            .padding(horizontal = 12.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
+            else MaterialTheme.colorScheme.onSurface
+        )
+        if (selected) {
+            Icon(
+                imageVector = Icons.Outlined.Check,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
     }
 }

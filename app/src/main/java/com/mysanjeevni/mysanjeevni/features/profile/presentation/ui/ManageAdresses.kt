@@ -58,6 +58,7 @@ import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.data.remote.model.AddressModel
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
+import com.mysanjeevni.mysanjeevni.features.home.presentation.viewmodel.HomeViewModel
 import com.mysanjeevni.mysanjeevni.features.orders.presntation.viewmodel.OrderViewModel
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressItem
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.AddressViewModel
@@ -71,7 +72,9 @@ fun ManageAddresses(
     viewModel: AddressViewModel = hiltViewModel(),
     cartViewModel: CartViewModel,
     isCheckout: Boolean = false,
-    orderViewModel: OrderViewModel
+    orderViewModel: OrderViewModel,
+    isHome:Boolean = false,
+    homeViewModel: HomeViewModel = hiltViewModel()
 
 ) {
     val state by viewModel.state.collectAsState()
@@ -79,6 +82,10 @@ fun ManageAddresses(
     val snackbarHostState = remember { SnackbarHostState() }
     var showDialog by remember { mutableStateOf(false) }
     var selectedAddressForEdit by remember { mutableStateOf<AddressItem?>(null) }
+    LaunchedEffect(Unit) {
+        Log.d("ADDRESS_DEBUG", "isHome = $isHome")
+        Log.d("ADDRESS_DEBUG", "isCheckout = $isCheckout")
+    }
 
     state.error?.let { error ->
         LaunchedEffect(error) {
@@ -210,7 +217,7 @@ fun ManageAddresses(
                         },
                         onSetDefault = {
                             val addressModel = AddressModel(
-                                userId = "", // temporary placeholder (overwrite hoga)
+                                userId = "",
                                 type = address.type,
                                 fullName = address.fullName,
                                 phone = address.phone,
@@ -224,18 +231,56 @@ fun ManageAddresses(
 
                             viewModel.updateAddress(address.id, addressModel)
                         },
+
                         onSelect = {
+                            Log.d(
+                                "ADDRESS_DEBUG",
+                                "CLICK -> isHome=$isHome isCheckout=$isCheckout"
+                            )
+                            Log.d(
+                                "ADDRESS_DEBUG",
+                                "Selected Address = ${address.addressLine1}"
+                            )
+
+                            Log.d(
+                                "ADDRESS_DEBUG",
+                                "City = ${address.city}"
+                            )
+
+                            Log.d(
+                                "ADDRESS_DEBUG",
+                                "Pincode = ${address.pincode}"
+                            )
+
+                            Log.d(
+                                "ADDRESS_DEBUG",
+                                "Full Address = ${address.city} - ${address.pincode}"
+                            )
+
                             if (isCheckout) {
                                 val selectedAddress = "${address.fullName},${address.type}, ${
                                     address
                                         .city
                                 }, ${address.phone}"
                                 orderViewModel.setAddress(address)
+                                orderViewModel.setCartItems(cartState.cartItem)
                                 Log.d("ADDRESS_DEBUG", "Selected Address = $selectedAddress")
                                 navController.navigate(Screen.SummaryScreen.route)
                             }
+                            else if(isHome){
+
+                                homeViewModel.updateCity(
+                                    "${address.city}-${address.pincode}"
+                                )
+                                Log.d(
+                                    "ADDRESS_DEBUG",
+                                    "Updated Home City = ${address.city} - ${address.pincode}"
+                                )
+                                navController.popBackStack()
+                            }
                         },
-                        isCheckOut = isCheckout
+                        isCheckOut = isCheckout,
+                        isHome = isHome
                     )
                 }
             }
@@ -256,11 +301,12 @@ fun AddressCardItem(
     onDelete: () -> Unit,
     onSetDefault: () -> Unit,
     onSelect: () -> Unit,
-    isCheckOut: Boolean
+    isCheckOut: Boolean,
+    isHome:Boolean
 ) {
     Card(
         modifier = Modifier.clickable {
-            if (isCheckOut) onSelect()
+            onSelect()
         },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = cardColor),
