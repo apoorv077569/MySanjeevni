@@ -6,7 +6,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import java.util.Calendar
-import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -20,10 +19,10 @@ fun DatePickerField(
         selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                 val calendar = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"))
-                calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
-                calendar.set(java.util.Calendar.MINUTE, 0)
-                calendar.set(java.util.Calendar.SECOND, 0)
-                calendar.set(java.util.Calendar.MILLISECOND, 0)
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
                 return utcTimeMillis >= calendar.timeInMillis
             }
         }
@@ -32,7 +31,7 @@ fun DatePickerField(
     OutlinedTextField(
         value = selectedDate,
         onValueChange = { },
-        label = { Text("Collection Date") },
+        label = { AutoText("Collection Date") },
         modifier = Modifier.fillMaxWidth(),
         readOnly = true,
         trailingIcon = {
@@ -52,7 +51,7 @@ fun DatePickerField(
                         onDateSelected(formatted)
                     }
                     showDialog = false
-                }) { Text("OK") }
+                }) { AutoText("OK") }
             },
             dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel") } }
         ) {

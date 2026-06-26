@@ -23,7 +23,7 @@ fun FooterTextInfo(isDark: Boolean) {
             fontSize = 16.sp,
             color = MaterialTheme.colorScheme.onSurface        )
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
+        AutoText(
             "MySanjeevni is India's most preferred online healthcare portal that offers end-to-end solutions for many of the pressing health issues faced by Indians today.",
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

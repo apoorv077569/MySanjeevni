@@ -111,6 +111,9 @@ dependencies {
     implementation("com.google.firebase:firebase-messaging")
 //    google auth
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
     implementation("com.hbb20:ccp:2.7.0")
 //    ml kit translator

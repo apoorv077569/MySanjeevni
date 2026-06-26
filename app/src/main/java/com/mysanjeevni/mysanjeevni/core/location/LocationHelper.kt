@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.util.Locale
+import kotlin.coroutines.resume
 
 class LocationHelper(private val context: Context) {
 
@@ -233,15 +234,15 @@ class LocationHelper(private val context: Context) {
     }
 }
 
-// Extension function for Task.await()
+
 suspend fun <T> com.google.android.gms.tasks.Task<T>.await(): T? {
     return kotlinx.coroutines.suspendCancellableCoroutine { continuation ->
         addOnSuccessListener { result ->
-            continuation.resume(result) {}
+            if (continuation.isActive) continuation.resume(result)
         }
         addOnFailureListener { exception ->
             Log.e("TaskAwait", "Task failed", exception)
-            continuation.resume(null) {}
+            if (continuation.isActive) continuation.resume(null)
         }
     }
 }

@@ -102,15 +102,17 @@ sealed class Screen(val route: String) {
     object NotificationScreen : Screen("notification_screen")
     object BookingHistoryScreen : Screen("booking_history")
     object LabBookingDetail : Screen("lab_booking_detail")
+
     object PaymentSuccess : Screen(
-        "payment_success/{paymentId}/{razorpayOrderId}/{signature}"
+        "payment_success/{flow}/{paymentId}/{razorpayOrderId}/{signature}"
     ) {
         fun createRoute(
+            flow: String,
             paymentId: String,
             razorpayOrderId: String,
             signature: String
         ) =
-            "payment_success/$paymentId/$razorpayOrderId/$signature"
+            "payment_success/$flow/$paymentId/$razorpayOrderId/$signature"
     }
 
     object PaymentFailed : Screen("payment_failed")

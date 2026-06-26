@@ -73,6 +73,12 @@ class PaymentViewModel @Inject constructor(
         }
     }
 
+    fun getRazorpayOrderId() = razorpayOrderId
+
+    fun getRazorpayPaymentId() = razorpayPaymentId
+
+    fun getRazorpaySignature() = razorpaySignature
+
     fun verifyPayment(
         razorpayOrderId: String,
         razorpayPaymentId: String,

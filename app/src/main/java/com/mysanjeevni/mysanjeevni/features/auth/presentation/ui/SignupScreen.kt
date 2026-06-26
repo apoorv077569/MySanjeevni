@@ -61,14 +61,14 @@ fun OtpVerificationDialog(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
+            AutoText(
                 text = "Verify OTP",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.primary
             )
 
-            Text(
+            AutoText(
                 text = "Enter the OTP sent to\n$phone",
                 fontSize = 14.sp,
                 color = colorScheme.onSurfaceVariant,
@@ -83,8 +83,8 @@ fun OtpVerificationDialog(
                         errorMessage = ""
                     }
                 },
-                label = { Text("Enter OTP") },
-                placeholder = { Text("000000", color = colorScheme.onSurfaceVariant) },
+                label = { AutoText("Enter OTP") },
+                placeholder = { AutoText("000000", color = colorScheme.onSurfaceVariant) },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.NumberPassword,
                     imeAction = ImeAction.Done
@@ -104,7 +104,7 @@ fun OtpVerificationDialog(
             )
 
             if (errorMessage.isNotEmpty()) {
-                Text(
+                AutoText(
                     text = errorMessage,
                     color = colorScheme.error,
                     fontSize = 12.sp,
@@ -126,7 +126,7 @@ fun OtpVerificationDialog(
                         contentColor = colorScheme.onSurfaceVariant
                     )
                 ) {
-                    Text("Cancel", fontSize = 15.sp)
+                    AutoText("Cancel", fontSize = 15.sp)
                 }
 
                 // Verify
@@ -158,7 +158,7 @@ fun OtpVerificationDialog(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("Verify", fontSize = 15.sp)
+                        AutoText("Verify", fontSize = 15.sp)
                     }
                 }
             }
@@ -242,14 +242,14 @@ fun SignupScreen(navController: NavController) {
                     modifier = Modifier.size(80.dp)
                 )
 
-                Text(
+                AutoText(
                     text = stringResource(R.string.app_name),
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.primary
                 )
 
-                Text(
+                AutoText(
                     text = stringResource(R.string.signup),
                     fontSize = 14.sp,
                     color = colorScheme.onSurfaceVariant
@@ -259,7 +259,7 @@ fun SignupScreen(navController: NavController) {
                 OutlinedTextField(
                     value = fullName,
                     onValueChange = { fullName = it },
-                    label = { Text("Full Name") },
+                    label = { AutoText("Full Name") },
                     leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
                     colors = fieldColors,
@@ -272,7 +272,7 @@ fun SignupScreen(navController: NavController) {
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    label = { Text("Email") },
+                    label = { AutoText("Email") },
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                     colors = fieldColors,
@@ -309,13 +309,13 @@ fun SignupScreen(navController: NavController) {
                     OutlinedTextField(
                         value = phoneNumber,
                         onValueChange = { phoneNumber = it },
-                        placeholder = { Text("Phone Number", color = colorScheme.onSurfaceVariant) },
+                        placeholder = { AutoText("Phone Number", color = colorScheme.onSurfaceVariant) },
                         trailingIcon = {
                             TextButton(onClick = {
                                 if (phoneNumber.length == 10) showOtpDialog = true
                                 viewModel.sendOtpBeforeSignup(countryCode + phoneNumber, fullName)
                             }) {
-                                Text("Verify", color = colorScheme.tertiary)
+                                AutoText("Verify", color = colorScheme.tertiary)
                             }
                         },
                         colors = fieldColors,
@@ -330,7 +330,7 @@ fun SignupScreen(navController: NavController) {
                 OutlinedTextField(
                     value = fullAddress,
                     onValueChange = { fullAddress = it },
-                    label = { Text("Full Address") },
+                    label = { AutoText("Full Address") },
                     leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
                     colors = fieldColors,
@@ -343,7 +343,7 @@ fun SignupScreen(navController: NavController) {
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password") },
+                    label = { AutoText("Password") },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     trailingIcon = {
                         Icon(
@@ -364,7 +364,7 @@ fun SignupScreen(navController: NavController) {
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
-                    label = { Text("Confirm Password") },
+                    label = { AutoText("Confirm Password") },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     trailingIcon = {
                         Icon(
@@ -405,7 +405,7 @@ fun SignupScreen(navController: NavController) {
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("Sign Up", fontSize = 16.sp)
+                        AutoText("Sign Up", fontSize = 16.sp)
                     }
                 }
 
@@ -421,8 +421,8 @@ fun SignupScreen(navController: NavController) {
                 }
 
                 Row {
-                    Text("Already have an account? ", color = colorScheme.onSurface)
-                    Text(
+                    AutoText("Already have an account? ", color = colorScheme.onSurface)
+                    AutoText(
                         "Login",
                         color = colorScheme.primary,
                         fontWeight = FontWeight.Bold,
@@ -434,7 +434,6 @@ fun SignupScreen(navController: NavController) {
             Spacer(modifier = Modifier.weight(1f))
         }
 
-        // ── Side effects ──────────────────────────────────────────────────
         LaunchedEffect(uiState) {
             when (val state = uiState) {
                 is AuthUiState.SignupOtpSent -> { showOtpDialog = true }

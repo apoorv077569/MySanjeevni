@@ -1,11 +1,13 @@
 package com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel
 
+import androidx.compose.material3.FilterChip
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mysanjeevni.mysanjeevni.features.labs.domain.repository.BookingHistoryRepository
 import com.mysanjeevni.mysanjeevni.features.labs.domain.usecase.CancelBookingUseCase
 import com.mysanjeevni.mysanjeevni.features.labs.domain.usecase.SyncBookingUseCase
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.state.BookingHistoryState
+import com.mysanjeevni.mysanjeevni.utils.FcmHelper
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -67,6 +69,7 @@ class BookingHistoryViewModel @Inject constructor(
     }
 
     fun cancelBooking(bookingId: String) {
+        val userId = sessionManager.getUserId()
         viewModelScope.launch {
             _state.update {
                 it.copy(
@@ -84,6 +87,11 @@ class BookingHistoryViewModel @Inject constructor(
                         cancelSuccess = true
                     )
                 }
+                FcmHelper.sendNotification(
+                    userId.toString(),
+                    "Booking Cancelled",
+                    "Your booking for lab test has been cancelled"
+                )
 
                 getBookingHistory()
             }
@@ -95,6 +103,11 @@ class BookingHistoryViewModel @Inject constructor(
                             error = e.message
                         )
                     }
+                    FcmHelper.sendNotification(
+                        userId.toString(),
+                        "Cancellation Failed",
+                        "We couldn't cancel your booking: ${e.localizedMessage}"
+                    )
                 }
         }
     }
@@ -111,6 +124,7 @@ class BookingHistoryViewModel @Inject constructor(
         bookingId: String
     ) {
         viewModelScope.launch {
+            val userId = sessionManager.getUserId()
             _state.update {
                 it.copy(
                     isSyncing = true
@@ -124,6 +138,11 @@ class BookingHistoryViewModel @Inject constructor(
                         isSyncing = false
                     )
                 }
+                FcmHelper.sendNotification(
+                    userId.toString(),
+                    "Booking Synced",
+                    "Your booking information has been updated successfully"
+                )
                 getBookingHistory()
             }
                 .onFailure { e ->
@@ -133,6 +152,11 @@ class BookingHistoryViewModel @Inject constructor(
                             error = e.message
                         )
                     }
+                    FcmHelper.sendNotification(
+                        userId.toString(),
+                        "Sync Failed",
+                        "Could not sync booking: ${e.message}"
+                    )
                 }
         }
     }

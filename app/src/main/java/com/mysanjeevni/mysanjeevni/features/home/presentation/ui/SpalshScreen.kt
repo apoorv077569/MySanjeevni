@@ -32,6 +32,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.FcmHelper
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import kotlinx.coroutines.Dispatchers
@@ -102,7 +103,7 @@ fun SplashScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
+            AutoText(
                 text = stringResource(R.string.app_name),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,

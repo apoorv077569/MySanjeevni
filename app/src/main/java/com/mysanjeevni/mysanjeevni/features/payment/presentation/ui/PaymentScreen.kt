@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import com.mysanjeevni.mysanjeevni.features.orders.data.mapper.toDomain
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -134,9 +133,10 @@ fun PaymentScreen(
 
                 navController.navigate(
                     Screen.PaymentSuccess.createRoute(
-                        paymentId,
-                        orderId,
-                        signature
+                        flow = "medicine",
+                        paymentId = paymentId,
+                        razorpayOrderId = orderId,
+                        signature = signature
                     )
                 ) {
                     popUpTo(Screen.PaymentScreen.route) {
@@ -176,6 +176,7 @@ fun PaymentScreen(
 
                             navController.navigate(
                                 Screen.PaymentSuccess.createRoute(
+                                    flow ="medicine",
                                     paymentId,
                                     orderId,
                                     signature

@@ -179,7 +179,7 @@ fun PopularProductCard(
 
                     } else {
 
-                        Text(
+                        AutoText(
                             text = item.icon ?: "💊",
                             fontSize = 32.sp
                         )

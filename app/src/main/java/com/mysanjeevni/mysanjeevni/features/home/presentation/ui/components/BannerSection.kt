@@ -71,7 +71,7 @@ fun PrescriptionActionCard(navController: NavController) {
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),  // ✅ proper padding
                 modifier = Modifier.wrapContentSize()
             ) {
-                Text("Upload Now", fontSize = 12.sp, maxLines = 1, color = Color.White)  // ✅ maxLines = 1
+                AutoText("Upload Now", fontSize = 12.sp, maxLines = 1, color = Color.White)  // ✅ maxLines = 1
             }
         }
     }

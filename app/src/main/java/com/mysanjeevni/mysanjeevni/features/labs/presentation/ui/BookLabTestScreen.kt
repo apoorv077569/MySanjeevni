@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.mysanjeevni.mysanjeevni.app.MainActivity
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.CreateLabBookingRequestDto
 import com.mysanjeevni.mysanjeevni.features.labs.domain.model.SlotsRequestParams
@@ -37,7 +40,7 @@ fun BookTestScreen(
     testId: String,
     testName: String,
     testPrice: Double,
-    viewModel: BookLabTestViewModel = hiltViewModel(),
+    viewModel: BookLabTestViewModel,
     availabilityViewModel: LabAvailabilityViewModel = hiltViewModel()
 ) {
     var collectionType by remember { mutableStateOf("Home Collection") }
@@ -106,64 +109,108 @@ fun BookTestScreen(
         mutableStateOf(false)
     }
 
-    LaunchedEffect(paymentState) {
+    // --- REPLACE START ---
+    LaunchedEffect(Unit) {
+//        MainActivity.Companion.RazorpayCallbackHolder.onSuccess = { paymentId, orderId, signature ->
+//            Log.d("RZP_CHECK", "Global Callback Success - Creating Booking")
+//            checkoutOpened = false
+//
+//            viewModel.bookLabTest(
+//                CreateLabBookingRequestDto(
+//                    testId = testId,
+//                    testName = testName,
+//                    testPrice = testPrice,
+//                    collectionType = if (collectionType == "Home Collection") "home" else "center",
+//                    collectionDate = collectionDate,
+//                    collectionTime = collectionTime,
+//                    address = address,
+//                    notes = instructions,
+//                    razorpayOrderId = orderId,
+//                    razorpayPaymentId = paymentId,
+//                    razorpaySignature = signature,
+//                    patientPincode = pincode,
+//                    patientAge = age.toIntOrNull() ?: 0,
+//                    patientGender = gender
+//                )
+//            )
+//        }
 
-        val ps = paymentState
+        MainActivity.Companion.RazorpayCallbackHolder.onSuccess = { paymentId, orderId, signature ->
 
-        if (ps is PaymentState.RazorpayOrderCreated && !checkoutOpened) {
+            Log.d("RZP_CHECK", "Payment Success Callback: $paymentId, $orderId, $signature")
+            Log.d("RZP_CHECK", "Payment Success - Navigating to payment success screen")
 
-            checkoutOpened = true
-
-            Log.d(
-                "RZP_CHECK",
-                "OPENING CHECKOUT ${ps.order.id}"
+            viewModel.setPendingRequest(
+                CreateLabBookingRequestDto(
+                    testId = testId,
+                    testName = testName,
+                    testPrice = testPrice,
+                    collectionType = if (collectionType == "Home Collection") "home" else "center",
+                    collectionDate = collectionDate,
+                    collectionTime = collectionTime,
+                    address = address,
+                    notes = instructions,
+                    razorpayOrderId = orderId,
+                    razorpayPaymentId = paymentId,
+                    razorpaySignature = signature,
+                    patientPincode = pincode,
+                    patientAge = age.toIntOrNull() ?: 0,
+                    patientGender = gender
+                )
             )
+            navController.navigate(
+                Screen.PaymentSuccess.createRoute(
+                    flow = "lab",
+                    paymentId = paymentId,
+                    razorpayOrderId = orderId,
+                    signature = signature
+                )
+            ) {
+                popUpTo(Screen.BookLabTestScreen.route) { inclusive = true }
+            }
+
+        }
+
+        MainActivity.Companion.RazorpayCallbackHolder.onFailure = { error ->
+            checkoutOpened = false
+            Log.e("RZP_CHECK", "Payment Failed Callback: $error")
+            navController.navigate(Screen.PaymentFailed.route) {
+                popUpTo(navController.graph.startDestinationId) {
+                    inclusive = false
+                }
+                launchSingleTop = true
+            }
+        }
+    }
+
+    // 2. Clean up callbacks when screen is disposed to prevent memory leaks
+    DisposableEffect(Unit) {
+        onDispose {
+            MainActivity.Companion.RazorpayCallbackHolder.onSuccess = null
+            MainActivity.Companion.RazorpayCallbackHolder.onFailure = null
+        }
+    }
+
+    // 3. Launch the Checkout UI
+    LaunchedEffect(paymentState) {
+        val ps = paymentState
+        if (ps is PaymentState.RazorpayOrderCreated && !checkoutOpened) {
+            checkoutOpened = true
+            Log.d("RZP_CHECK", "OPENING CHECKOUT ${ps.order.id}")
 
             startRazorpayCheckout(
                 activity = activity,
                 order = ps.order,
-
-                onSuccess = { paymentId, orderId, signature ->
-
-                    checkoutOpened = false
-
-                    Log.d(
-                        "RZP_CHECK",
-                        "PAYMENT SUCCESS"
-                    )
-
-                    viewModel.bookLabTest(
-                        CreateLabBookingRequestDto(
-                            testId = testId,
-                            testName = testName,
-                            testPrice = testPrice,
-                            collectionType = if (collectionType == "Home Collection") "home" else "center",
-                            collectionDate = collectionDate,
-                            collectionTime = collectionTime,
-                            address = address,
-                            notes = instructions,
-                            razorpayOrderId = orderId,
-                            razorpayPaymentId = paymentId,
-                            razorpaySignature = signature,
-                            patientPincode = pincode,
-                            patientAge = age.toIntOrNull() ?: 0,
-                            patientGender = gender
-                        )
-                    )
+                onSuccess = { _, _, _ ->
+                    // This local lambda is usually ignored by the SDK
                 },
-
-                onFailure = { error ->
-
+                onFailure = { _ ->
                     checkoutOpened = false
-
-                    Log.e(
-                        "RZP_CHECK",
-                        "PAYMENT FAILED = $error"
-                    )
                 }
             )
         }
     }
+    // --- REPLACE END ---
 
 
     val colorScheme = MaterialTheme.colorScheme
@@ -263,14 +310,19 @@ fun BookTestScreen(
                 when {
                     collectionDate.isBlank() ->
                         showValidationError = "Please select collection date"
+
                     collectionTime.isBlank() ->
                         showValidationError = "Please select collection time"
+
                     collectionType == "Home Collection" && address.isBlank() ->
                         showValidationError = "Please enter address"
+
                     pincode.length != 6 ->
                         showValidationError = "Please enter valid pincode"
+
                     age.isBlank() ->
                         showValidationError = "Please enter age"
+
                     else -> {
                         showValidationError = null
                         Log.d("LAB_BOOKING_UI", "Creating Razorpay Order for ₹$testPrice")

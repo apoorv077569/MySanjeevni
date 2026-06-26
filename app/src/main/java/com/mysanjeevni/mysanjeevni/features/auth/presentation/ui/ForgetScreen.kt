@@ -111,7 +111,7 @@ fun ForgetScreen(navController: NavController) {
                     OutlinedTextField(
                         value = phoneNumber,
                         onValueChange = { phoneNumber = it },
-                        placeholder = { Text("Phone Number", color = colorScheme.onSurfaceVariant) },
+                        placeholder = { AutoText("Phone Number", color = colorScheme.onSurfaceVariant) },
                         modifier = Modifier.weight(1f).height(56.dp),
                         shape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

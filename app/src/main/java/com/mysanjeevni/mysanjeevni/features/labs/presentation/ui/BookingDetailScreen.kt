@@ -73,7 +73,6 @@ private val Purple = Color(0xFF7B61FF)
 private val Orange = Color(0xFFFF9800)
 private val GreenText = Color(0xFF4CAF50)
 
-/** All surface/text colors this screen needs, resolved once per theme. */
 private data class BookingTheme(
     val screenBg: Color,
     val cardBg: Color,

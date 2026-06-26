@@ -1,7 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.profile.presentation.ui
 
 import android.content.Intent
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -27,15 +26,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.automirrored.filled.Note
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.MedicalServices
-import androidx.compose.material.icons.filled.Note
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -46,12 +42,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,19 +58,13 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
-import com.mysanjeevni.mysanjeevni.data.remote.ApiClient
-import com.mysanjeevni.mysanjeevni.data.remote.AuthApiClient
-import com.mysanjeevni.mysanjeevni.data.remote.model.User
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.ProfileViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
-import com.mysanjeevni.mysanjeevni.utils.SessionManager
-import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val isDark = isSystemInDarkTheme()
-    val scope = rememberCoroutineScope()
     val bgColor = if (isDark) Color(0xFF121212) else Color(0xFFF5F7FA)
     val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDark) Color.White else Color.Black
@@ -87,11 +72,8 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
     val state by viewModel.state.collectAsState()
 
     val user = state.user
-//    var user by remember { mutableStateOf<User?>(null) }
     val context = LocalContext.current
-    val sessionManager = SessionManager(context)
 
-    val token = sessionManager.getToken()
 
     val initials = user?.fullName
         ?.split(" ")
@@ -240,7 +222,7 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
             }
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
             ProfileMenuItem(
-                Icons.Default.Note, "My Prescription", textColor, secondaryText, onClick =
+                Icons.AutoMirrored.Filled.Note, "My Prescription", textColor, secondaryText, onClick =
                     { navController.navigate(Screen.UploadPrescription.route) })
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
             ProfileMenuItem(Icons.Default.CardGiftcard, "Share With Friends", textColor, secondaryText, onClick = {

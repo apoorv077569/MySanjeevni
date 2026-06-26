@@ -57,6 +57,7 @@ import com.mysanjeevni.mysanjeevni.features.home.presentation.ui.sekeleton.HomeS
 import com.mysanjeevni.mysanjeevni.features.home.presentation.viewmodel.HomeViewModel
 import com.mysanjeevni.mysanjeevni.features.location.ui.LocationSearchSDialog
 import com.mysanjeevni.mysanjeevni.features.medicines.presentation.components.MedicineCard
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -178,7 +179,7 @@ fun HomeScreen(
 
                         item {
 
-                            Text(
+                            AutoText(
                                 text = "${searchResults.size} Products Found",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,

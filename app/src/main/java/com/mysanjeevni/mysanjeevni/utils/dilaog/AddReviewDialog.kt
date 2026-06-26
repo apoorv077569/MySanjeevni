@@ -16,7 +16,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -31,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 private val ReviewGreen = Color(0xFF00897B)
 
@@ -67,7 +67,7 @@ fun AddReviewDialog(
                 ),
                 shape = RoundedCornerShape(50.dp)
             ) {
-                Text(
+                AutoText(
                     text = "Submit",
                     color = colorScheme.onPrimary,
                     fontWeight = FontWeight.SemiBold,
@@ -80,7 +80,7 @@ fun AddReviewDialog(
             TextButton(
                 onClick = onDismiss
             ) {
-                Text(
+                AutoText(
                     text = "Cancel",
                     color = colorScheme.onSurfaceVariant,
                     fontSize = 15.sp
@@ -89,7 +89,7 @@ fun AddReviewDialog(
         },
 
         title = {
-            Text(
+            AutoText(
                 text = "Review Product",
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 20.sp,
@@ -100,7 +100,7 @@ fun AddReviewDialog(
         text = {
             Column {
 
-                Text(
+                AutoText(
                     text = "Your Rating",
                     fontSize = 14.sp,
                     color = colorScheme.onSurfaceVariant
@@ -139,7 +139,7 @@ fun AddReviewDialog(
                         title = it
                     },
                     placeholder = {
-                        Text(
+                        AutoText(
                             text = "Title",
                             color = colorScheme.onSurfaceVariant,
                             fontSize = 15.sp
@@ -168,7 +168,7 @@ fun AddReviewDialog(
                         comment = it
                     },
                     placeholder = {
-                        Text(
+                        AutoText(
                             text = "Comment",
                             color = colorScheme.onSurfaceVariant,
                             fontSize = 15.sp

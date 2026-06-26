@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.CreateLabBookingRequestDto
 import com.mysanjeevni.mysanjeevni.features.labs.domain.usecase.BookLabTestUseCase
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.state.LabBookingState
+import com.mysanjeevni.mysanjeevni.utils.FcmHelper
+import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,12 +18,47 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BookLabTestViewModel @Inject constructor(
-    private val bookLabTestUseCase: BookLabTestUseCase
+    private val bookLabTestUseCase: BookLabTestUseCase,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LabBookingState())
     val state: StateFlow<LabBookingState> = _state.asStateFlow()
+    private var pendingRequest: CreateLabBookingRequestDto? = null
 
+
+    fun setPendingRequest(request: CreateLabBookingRequestDto) {
+
+        Log.d("LAB_PENDING", "setPendingRequest()")
+        Log.d("LAB_PENDING", "Request = $request")
+
+        pendingRequest = request
+    }
+
+    fun bookPendingLabTest(
+        paymentId: String,
+        orderId: String,
+        signature: String
+    ) {
+
+        Log.d("LAB_PENDING", "bookPendingLabTest() called")
+        Log.d("LAB_PENDING", "Pending Request = $pendingRequest")
+
+        if (pendingRequest == null) {
+            Log.e("LAB_PENDING", "Pending request is NULL")
+            return
+        }
+
+        val finalRequest = pendingRequest!!.copy(
+            razorpayPaymentId = paymentId,
+            razorpayOrderId = orderId,
+            razorpaySignature = signature
+        )
+
+        Log.d("LAB_PENDING", "Final Request = $finalRequest")
+
+        bookLabTest(finalRequest)
+    }
     fun bookLabTest(
         request: CreateLabBookingRequestDto
     ) {
@@ -30,6 +67,7 @@ class BookLabTestViewModel @Inject constructor(
         Log.d("LAB_BOOKING_VM", "Request = $request")
 
         viewModelScope.launch {
+            val userId = sessionManager.getUserId()
 
             _state.update {
                 it.copy(
@@ -40,9 +78,7 @@ class BookLabTestViewModel @Inject constructor(
             }
 
             try {
-
                 Log.d("LAB_BOOKING_VM", "Calling UseCase")
-
                 bookLabTestUseCase(request)
                     .onSuccess { booking ->
 
@@ -58,6 +94,11 @@ class BookLabTestViewModel @Inject constructor(
                                 successMessage = "Lab Test Booked Successfully"
                             )
                         }
+                        FcmHelper.sendNotification(
+                            userId.toString(),
+                            "Lab Test Booked",
+                            "Your booking for ${request.testName} is confirmed"
+                        )
                     }
                     .onFailure { exception ->
 
@@ -73,6 +114,11 @@ class BookLabTestViewModel @Inject constructor(
                                 error = exception.message ?: "Booking failed"
                             )
                         }
+                        FcmHelper.sendNotification(
+                            userId.toString(),
+                            "Error",
+                            "A technical error occurred while booking your lab test"
+                        )
                     }
 
             } catch (e: Exception) {
