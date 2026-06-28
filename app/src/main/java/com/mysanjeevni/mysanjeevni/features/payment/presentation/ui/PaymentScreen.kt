@@ -172,8 +172,8 @@ fun PaymentScreen(
                     startRazorpayCheckout(
                         activity = activity,
                         order = state.order,
+                        description = "Medicine Order",
                         onSuccess = { paymentId, orderId, signature ->
-
                             navController.navigate(
                                 Screen.PaymentSuccess.createRoute(
                                     flow ="medicine",
@@ -422,54 +422,3 @@ private fun PaymentBottomBar(
         }
     }
 }
-
-//private fun startRazorpayCheckout(
-//    activity: Activity,
-//    order: RazorpayOrder,
-//    userId: String?,
-//    onSuccess: (String, String, String) -> Unit,
-//    onFailure: (String) -> Unit
-//) {
-//    val checkout = Checkout()
-////    checkout.setKeyID("rzp_live_SUcsurW9fkbXe3")
-////    checkout.setKeyID("rzp_test_1DP5mmOlF5G5ag")
-//
-//    checkout.setKeyID("rzp_test_T4zV3iEH7GKUvL")
-//
-//    val options = JSONObject().apply {
-//        put("name", R.string.app_name)
-//        put("description", "Order Payment")
-//        put("order_id", order.id)
-//        put("amount", order.amount)
-//        put("currency", order.currency)
-//        put("prefill", JSONObject().apply {
-//            put("contact", "")
-//            put("email", "")
-//        })
-//    }
-//
-//    checkout.open(activity, options)
-//
-//    activity.let {
-//        object : PaymentResultWithDataListener {
-//            override fun onPaymentSuccess(
-//                razorpayPaymentId: String?,
-//                paymentData: PaymentData?
-//            ) {
-//                onSuccess(
-//                    razorpayPaymentId ?: "",
-//                    paymentData?.orderId ?: "",
-//                    paymentData?.signature ?: ""
-//                )
-//            }
-//
-//            override fun onPaymentError(
-//                errorCode: Int,
-//                errorDescription: String?,
-//                paymentData: PaymentData?
-//            ) {
-//                onFailure(errorDescription ?: "Payment failed")
-//            }
-//        }
-//    }
-//}

@@ -141,8 +141,8 @@ fun BookTestScreen(
             startRazorpayCheckout(
                 activity = activity,
                 order = ps.order,
+                description = "Lab Test Booking",
                 onSuccess = { _, _, _ ->
-                    // This local lambda is usually ignored by the SDK
                 },
                 onFailure = { _ ->
                     checkoutOpened = false
