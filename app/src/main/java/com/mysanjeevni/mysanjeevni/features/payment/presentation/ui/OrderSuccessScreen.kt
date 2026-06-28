@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.CurrencyRupee
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Schedule
@@ -57,7 +56,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.mysanjeevni.mysanjeevni.features.orders.presntation.viewmodel.OrderViewModel
+import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

@@ -3,9 +3,8 @@ package com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mysanjeevni.mysanjeevni.data.local.entity.CartEntity
+import com.mysanjeevni.mysanjeevni.features.cart.data.local.entity.CartEntity
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
-import com.mysanjeevni.mysanjeevni.data.remote.model.UpdateCartRequest
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartItem
 import com.mysanjeevni.mysanjeevni.features.cart.domain.repository.CartRepository
 import com.mysanjeevni.mysanjeevni.features.cart.domain.usecase.AddToCartUseCase

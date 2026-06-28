@@ -57,7 +57,7 @@ import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.app.MainActivity
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.OrderItemDto
-import com.mysanjeevni.mysanjeevni.features.orders.presntation.viewmodel.OrderViewModel
+import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
 import com.mysanjeevni.mysanjeevni.features.payment.domain.model.PaymentMethod
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.state.PaymentState
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.viewmodel.PaymentViewModel

@@ -1,10 +1,8 @@
 package com.mysanjeevni.mysanjeevni.features.payment.presentation.ui.result
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,8 +24,8 @@ import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel.BookLabTestViewModel
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.OrderItemDto
-import com.mysanjeevni.mysanjeevni.features.orders.presntation.state.OrderState
-import com.mysanjeevni.mysanjeevni.features.orders.presntation.viewmodel.OrderViewModel
+import com.mysanjeevni.mysanjeevni.features.orders.presentation.state.OrderState
+import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.state.PaymentState
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.viewmodel.PaymentViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
@@ -35,6 +33,7 @@ import com.mysanjeevni.mysanjeevni.utils.FcmHelper
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun PaymentSuccessScreen(
@@ -122,7 +121,7 @@ fun PaymentSuccessScreen(
     }
     LaunchedEffect(labState.successMessage) {
         if (labState.successMessage != null) {
-            delay(1500)
+            delay(1500.milliseconds)
             navController.navigate(Screen.BookingHistoryScreen.route) {
                 popUpTo(Screen.PaymentSuccess.route) { inclusive = true }
             }
@@ -139,7 +138,7 @@ fun PaymentSuccessScreen(
 
     LaunchedEffect(Unit) {
 
-        delay(3000)
+        delay(3000.milliseconds)
 
         when(flow){
 

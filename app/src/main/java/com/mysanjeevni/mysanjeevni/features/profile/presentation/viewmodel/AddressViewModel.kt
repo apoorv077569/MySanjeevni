@@ -4,9 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.mysanjeevni.mysanjeevni.data.remote.model.AddressModel
-import com.mysanjeevni.mysanjeevni.data.remote.model.CreateAddressRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.UpdateAddressRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.address.AddressModel
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressItem
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressState
 import com.mysanjeevni.mysanjeevni.features.profile.data.repository.AddressRepository

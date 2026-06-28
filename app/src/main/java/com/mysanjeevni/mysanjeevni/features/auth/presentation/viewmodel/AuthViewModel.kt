@@ -3,7 +3,7 @@ package com.mysanjeevni.mysanjeevni.features.auth.presentation.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mysanjeevni.mysanjeevni.data.remote.model.AuthResponse
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.AuthResponse
 import com.mysanjeevni.mysanjeevni.features.auth.data.repository.AuthRepository
 import com.mysanjeevni.mysanjeevni.features.auth.presentation.state.AuthUiState
 import dagger.hilt.android.lifecycle.HiltViewModel

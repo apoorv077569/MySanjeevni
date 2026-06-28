@@ -46,7 +46,7 @@ import com.mysanjeevni.mysanjeevni.features.medicines.presentation.components.Me
 import com.mysanjeevni.mysanjeevni.features.medicines.presentation.components.MedicineTabSection
 import com.mysanjeevni.mysanjeevni.features.medicines.presentation.components.RatingSummaryCard
 import com.mysanjeevni.mysanjeevni.features.medicines.presentation.viewmodel.MedicineViewModel
-import com.mysanjeevni.mysanjeevni.features.orders.presntation.viewmodel.OrderViewModel
+import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
 import com.mysanjeevni.mysanjeevni.features.review.domain.model.Review
 import com.mysanjeevni.mysanjeevni.features.review.presentation.ui.ReviewSection
 import com.mysanjeevni.mysanjeevni.features.review.presentation.viewmodel.ReviewViewModel

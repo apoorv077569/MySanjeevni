@@ -3,7 +3,7 @@ package com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mysanjeevni.mysanjeevni.data.remote.ApiClient
+import com.mysanjeevni.mysanjeevni.data.remote.client.ApiClient
 import com.mysanjeevni.mysanjeevni.features.profile.data.repository.ProfileRepository
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.ProfileState
 import com.mysanjeevni.mysanjeevni.utils.SessionManager

@@ -1,6 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.cart.domain.usecase
 
-import com.mysanjeevni.mysanjeevni.data.local.entity.CartEntity
+import com.mysanjeevni.mysanjeevni.features.cart.data.local.entity.CartEntity
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartItem
 import com.mysanjeevni.mysanjeevni.features.cart.domain.repository.CartRepository
 import kotlinx.coroutines.flow.Flow

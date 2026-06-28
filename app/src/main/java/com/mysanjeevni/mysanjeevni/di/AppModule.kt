@@ -3,7 +3,7 @@ package com.mysanjeevni.mysanjeevni.di
 import android.app.Application
 import androidx.room.Room
 import com.mysanjeevni.mysanjeevni.core.Constants
-import com.mysanjeevni.mysanjeevni.data.local.dao.CartDao
+import com.mysanjeevni.mysanjeevni.features.cart.data.local.dao.CartDao
 import com.mysanjeevni.mysanjeevni.data.local.dao.NotificationDao
 import com.mysanjeevni.mysanjeevni.data.local.db.AppDatabase
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService

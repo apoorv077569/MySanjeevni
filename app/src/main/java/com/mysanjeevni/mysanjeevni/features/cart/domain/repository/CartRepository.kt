@@ -1,10 +1,10 @@
 package com.mysanjeevni.mysanjeevni.features.cart.domain.repository
 
 
-import com.mysanjeevni.mysanjeevni.data.local.dao.CartDao
-import com.mysanjeevni.mysanjeevni.data.local.entity.CartEntity
+import com.mysanjeevni.mysanjeevni.features.cart.data.local.dao.CartDao
+import com.mysanjeevni.mysanjeevni.features.cart.data.local.entity.CartEntity
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
-import com.mysanjeevni.mysanjeevni.data.remote.model.UpdateCartRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.cart.UpdateCartRequest
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartResponse
 import kotlinx.coroutines.flow.Flow
 import retrofit2.Response

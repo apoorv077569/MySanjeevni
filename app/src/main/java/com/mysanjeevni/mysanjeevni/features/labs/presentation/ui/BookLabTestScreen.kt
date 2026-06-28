@@ -44,7 +44,7 @@ fun BookTestScreen(
     availabilityViewModel: LabAvailabilityViewModel = hiltViewModel()
 ) {
     var collectionType by remember { mutableStateOf("Home Collection") }
-    var collectionDate by remember { mutableStateOf("16-06-2026") }
+    var collectionDate by remember { mutableStateOf("") }
     var collectionTime by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var pincode by remember { mutableStateOf("") }
@@ -69,71 +69,11 @@ fun BookTestScreen(
         Log.d("BOOK_SCREEN", "testId=$testId, testName=$testName, testPrice=$testPrice")
     }
 
-//    LaunchedEffect(paymentState) {
-//        when (val ps = paymentState) {
-//            is PaymentState.RazorpayOrderCreated -> {
-//                Log.d("RAZORPAY", "OrderId=${ps.order.id}, Amount=${ps.order.amount}")
-//                startRazorpayCheckout(
-//                    activity = activity,
-//                    order = ps.order,
-//                    onSuccess = { paymentId, orderId, signature ->
-//                        Log.d("LAB_PAYMENT", "SUCCESS paymentId=$paymentId orderId=$orderId")
-//                        viewModel.bookLabTest(
-//                            CreateLabBookingRequestDto(
-//                                testId = testId,
-//                                testName = testName,
-//                                testPrice = testPrice,
-//                                collectionType = if (collectionType == "Home Collection") "home" else "lab",
-//                                collectionDate = collectionDate,
-//                                collectionTime = collectionTime,
-//                                address = address,
-//                                notes = instructions,
-//                                razorpayOrderId = orderId,
-//                                razorpayPaymentId = paymentId,
-//                                razorpaySignature = signature,
-//                                patientPincode = pincode,
-//                                patientAge = age.toIntOrNull() ?: 0,
-//                                patientGender = gender
-//                            )
-//                        )
-//                    },
-//                    onFailure = { error -> Log.e("LAB_PAYMENT", error) }
-//                )
-//            }
-//            is PaymentState.Error -> Log.e("LAB_PAYMENT", "Error=${ps.message}")
-//            else -> Unit
-//        }
-//    }
-
     var checkoutOpened by remember {
         mutableStateOf(false)
     }
 
-    // --- REPLACE START ---
     LaunchedEffect(Unit) {
-//        MainActivity.Companion.RazorpayCallbackHolder.onSuccess = { paymentId, orderId, signature ->
-//            Log.d("RZP_CHECK", "Global Callback Success - Creating Booking")
-//            checkoutOpened = false
-//
-//            viewModel.bookLabTest(
-//                CreateLabBookingRequestDto(
-//                    testId = testId,
-//                    testName = testName,
-//                    testPrice = testPrice,
-//                    collectionType = if (collectionType == "Home Collection") "home" else "center",
-//                    collectionDate = collectionDate,
-//                    collectionTime = collectionTime,
-//                    address = address,
-//                    notes = instructions,
-//                    razorpayOrderId = orderId,
-//                    razorpayPaymentId = paymentId,
-//                    razorpaySignature = signature,
-//                    patientPincode = pincode,
-//                    patientAge = age.toIntOrNull() ?: 0,
-//                    patientGender = gender
-//                )
-//            )
-//        }
 
         MainActivity.Companion.RazorpayCallbackHolder.onSuccess = { paymentId, orderId, signature ->
 

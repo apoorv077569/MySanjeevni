@@ -3,8 +3,7 @@ package com.mysanjeevni.mysanjeevni.features.prescription.data.repository
 import android.net.Uri
 import com.mysanjeevni.mysanjeevni.features.prescription.domain.repository.PrescriptionRepository
 import android.content.Context
-import com.mysanjeevni.mysanjeevni.data.remote.ApiClient
-import com.mysanjeevni.mysanjeevni.data.remote.AuthApiClient
+import com.mysanjeevni.mysanjeevni.data.remote.client.AuthApiClient
 import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody

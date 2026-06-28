@@ -2,9 +2,9 @@ package com.mysanjeevni.mysanjeevni.utils
 
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
-import com.mysanjeevni.mysanjeevni.data.remote.AuthApiClient
-import com.mysanjeevni.mysanjeevni.data.remote.model.SaveTokenRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.SendNotificationRequest
+import com.mysanjeevni.mysanjeevni.data.remote.client.AuthApiClient
+import com.mysanjeevni.mysanjeevni.data.remote.model.notification.SaveTokenRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.notification.SendNotificationRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

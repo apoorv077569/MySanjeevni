@@ -2,9 +2,9 @@ package com.mysanjeevni.mysanjeevni.features.profile.data.repository
 
 import android.util.Log
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
-import com.mysanjeevni.mysanjeevni.data.remote.model.AddressModel
-import com.mysanjeevni.mysanjeevni.data.remote.model.toCreateRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.toUpdateRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.address.AddressModel
+import com.mysanjeevni.mysanjeevni.data.remote.model.address.toCreateRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.address.toUpdateRequest
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressItem
 import javax.inject.Inject
 

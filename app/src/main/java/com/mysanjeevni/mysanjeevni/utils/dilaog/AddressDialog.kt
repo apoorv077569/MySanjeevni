@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.mysanjeevni.mysanjeevni.data.remote.model.AddressModel
+import com.mysanjeevni.mysanjeevni.data.remote.model.address.AddressModel
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressItem
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 

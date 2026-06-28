@@ -1,18 +1,19 @@
 package com.mysanjeevni.mysanjeevni.data.remote.api
 
-import com.mysanjeevni.mysanjeevni.data.remote.model.AddToCartRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.AuthResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.CreateAddressRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.GenericResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.LoginRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.ProfileResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.RegisterRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.ResetPasswordRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.SendOtpBeforeSignupRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.SendOtpRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.UpdateAddressRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.UpdateCartRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.VerifyOtpRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.cart.AddToCartRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.AuthResponse
+import com.mysanjeevni.mysanjeevni.data.remote.model.address.CreateAddressRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.notification.GenericResponse
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.LoginRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.user.ProfileResponse
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.RegisterRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.ResetPasswordRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.SendOtpBeforeSignupRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.SendOtpRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.address.UpdateAddressRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.cart.UpdateCartRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.VerifyOtpRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.notification.NotificationResponse
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartResponse
 import com.mysanjeevni.mysanjeevni.features.category.data.dto.CategoryResponseDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.CreateLabBookingRequestDto
@@ -64,6 +65,11 @@ interface ApiService {
     suspend fun loginUser(
         @Body request: LoginRequest
     ): Response<AuthResponse>
+
+    @GET("api/notifications")
+    suspend fun getNotifications(
+        @Query("userId") userId: String
+    ): Response<NotificationResponse>
 
     @POST("api/user/support/chat")
     suspend fun sendChatMessage(

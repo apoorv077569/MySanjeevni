@@ -3,7 +3,7 @@ package com.mysanjeevni.mysanjeevni.features.wishlist.presentation.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mysanjeevni.mysanjeevni.data.local.entity.CartEntity
+import com.mysanjeevni.mysanjeevni.features.cart.data.local.entity.CartEntity
 import com.mysanjeevni.mysanjeevni.features.cart.domain.usecase.AddToCartUseCase
 import com.mysanjeevni.mysanjeevni.features.wishlist.data.dto.AddWishlistRequest
 import com.mysanjeevni.mysanjeevni.features.wishlist.domain.model.WishlistItem

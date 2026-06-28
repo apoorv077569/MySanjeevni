@@ -1,15 +1,14 @@
 package com.mysanjeevni.mysanjeevni.features.auth.data.repository
 
-import com.mysanjeevni.mysanjeevni.data.remote.ApiClient
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
 import com.mysanjeevni.mysanjeevni.data.remote.api.AuthApiService
-import com.mysanjeevni.mysanjeevni.data.remote.model.GoogleLoginRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.LoginRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.RegisterRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.ResetPasswordRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.SendOtpBeforeSignupRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.SendOtpRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.VerifyOtpRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.GoogleLoginRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.LoginRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.RegisterRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.ResetPasswordRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.SendOtpBeforeSignupRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.SendOtpRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.auth.VerifyOtpRequest
 import javax.inject.Inject
 
 class AuthRepository @Inject constructor(

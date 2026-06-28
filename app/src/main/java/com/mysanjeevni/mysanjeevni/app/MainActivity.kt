@@ -26,7 +26,7 @@ import com.mysanjeevni.mysanjeevni.app.components.AppBottomBar
 import com.mysanjeevni.mysanjeevni.app.navigation.NavGraph
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel.BookLabTestViewModel
-import com.mysanjeevni.mysanjeevni.features.orders.presntation.viewmodel.OrderViewModel
+import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
 import com.mysanjeevni.mysanjeevni.features.settings.presentation.state.AppTheme
 import com.mysanjeevni.mysanjeevni.features.settings.presentation.viewmodel.SettingsViewModel
 import com.mysanjeevni.mysanjeevni.ui.theme.MySanjeevniTheme

@@ -4,8 +4,8 @@ package com.mysanjeevni.mysanjeevni.features.support.ticket.presentation.viewmod
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mysanjeevni.mysanjeevni.data.remote.AuthApiClient
-import com.mysanjeevni.mysanjeevni.data.remote.model.SendNotificationRequest
+import com.mysanjeevni.mysanjeevni.data.remote.client.AuthApiClient
+import com.mysanjeevni.mysanjeevni.data.remote.model.notification.SendNotificationRequest
 import com.mysanjeevni.mysanjeevni.features.support.ticket.domain.usecase.GetTicketsUseCase
 import com.mysanjeevni.mysanjeevni.features.support.ticket.domain.usecase.RaiseTicketUseCase
 import com.mysanjeevni.mysanjeevni.features.support.ticket.presentation.state.TicketUiState

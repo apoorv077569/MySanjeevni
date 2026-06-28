@@ -55,7 +55,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.mysanjeevni.mysanjeevni.core.location.LocationHelper
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.core.presentation.StylishHeader
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
@@ -96,7 +95,7 @@ fun PharmacyScreen(
 
     val availableCategories: List<String> = remember(state.medicines) {
         state.medicines
-            .mapNotNull { it.category?.takeIf { c -> c.isNotBlank() } }
+            .mapNotNull { it.category.takeIf { c -> c.isNotBlank() } }
             .distinct()
     }
 
@@ -115,7 +114,7 @@ fun PharmacyScreen(
         // Category Filter
         if (selectedFilter != "All") {
             filtered = filtered.filter {
-                it.category?.equals(
+                it.category.equals(
                     selectedFilter,
                     ignoreCase = true
                 ) == true

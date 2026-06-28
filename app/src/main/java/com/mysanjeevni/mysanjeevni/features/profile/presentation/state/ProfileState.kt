@@ -1,6 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.profile.presentation.state
 
-import com.mysanjeevni.mysanjeevni.data.remote.model.User
+import com.mysanjeevni.mysanjeevni.data.remote.model.user.User
 
 data class ProfileState (
 
