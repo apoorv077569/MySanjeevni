@@ -23,6 +23,20 @@ class NotificationViewModel @Inject constructor(
                 initialValue = emptyList()
             )
 
+    val unreadCount =
+        repository.getUnreadCount()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = 0
+            )
+
+    fun markAllAsRead() {
+        viewModelScope.launch {
+            repository.markAllAsRead()
+        }
+    }
+
     fun delete(notification: NotificationEntity) {
         viewModelScope.launch {
             repository.delete(notification)

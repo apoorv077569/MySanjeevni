@@ -86,7 +86,7 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
         modifier = Modifier
             .padding(top = 20.dp)
             .fillMaxSize()
-            .padding(bottom = 100.dp)
+            .padding(bottom = 8.dp)
             .background(bgColor)
             .verticalScroll(rememberScrollState())
     ) {

@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -91,64 +91,72 @@ fun MyLabTestsScreen(
             containerColor = screenBg
         ) { paddingValues ->
 
-            LazyColumn(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
+            ){
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            top = paddingValues.calculateTopPadding()
+                        ),
+                    contentPadding = PaddingValues(bottom = 16.dp)
+                ) {
 
-                items(count = labTests.itemCount) { index ->
+                    items(count = labTests.itemCount) { index ->
 
-                    labTests[index]?.let { test ->
+                        labTests[index]?.let { test ->
 
-                        LabTestCard(
-                            test = test,
-                            onViewDetails = { selectedTest ->
-                                navController.navigate(
-                                    Screen.LabTestDetail.createRoute(
-                                        selectedTest.id
+                            LabTestCard(
+                                test = test,
+                                onViewDetails = { selectedTest ->
+                                    navController.navigate(
+                                        Screen.LabTestDetail.createRoute(
+                                            selectedTest.id
+                                        )
                                     )
-                                )
-                            }
-                        )
-                    }
-                }
-
-                when (labTests.loadState.append) {
-
-                    is LoadState.Loading -> {
-
-                        item {
-
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-
-                                CircularProgressIndicator(
-                                    color = Teal,
-                                    modifier = Modifier.size(28.dp),
-                                    strokeWidth = 2.dp
-                                )
-                            }
-                        }
-                    }
-
-                    is LoadState.Error -> {
-
-                        item {
-
-                            Text(
-                                text = "Failed to load more",
-                                color = Color.Red,
-                                modifier = Modifier.padding(16.dp)
+                                }
                             )
                         }
                     }
 
-                    else -> Unit
+                    when (labTests.loadState.append) {
+
+                        is LoadState.Loading -> {
+
+                            item {
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+
+                                    CircularProgressIndicator(
+                                        color = Teal,
+                                        modifier = Modifier.size(28.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                }
+                            }
+                        }
+
+                        is LoadState.Error -> {
+
+                            item {
+
+                                Text(
+                                    text = "Failed to load more",
+                                    color = Color.Red,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+                        }
+
+                        else -> Unit
+                    }
                 }
             }
         }
@@ -188,7 +196,7 @@ fun LabTestsTopBar(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = textPrimary)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = textPrimary)
                 }
                 Text("Lab Tests", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = textPrimary)
             }

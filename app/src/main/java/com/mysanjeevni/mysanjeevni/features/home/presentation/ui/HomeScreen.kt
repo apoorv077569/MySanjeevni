@@ -56,9 +56,11 @@ import com.mysanjeevni.mysanjeevni.features.home.presentation.ui.sekeleton.HomeS
 import com.mysanjeevni.mysanjeevni.features.home.presentation.viewmodel.HomeViewModel
 import com.mysanjeevni.mysanjeevni.features.location.ui.LocationSearchSDialog
 import com.mysanjeevni.mysanjeevni.features.medicines.presentation.components.MedicineCard
+import com.mysanjeevni.mysanjeevni.features.notification.presentation.viewmodel.NotificationViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 val LavenderPrimary = Color(0xFF00C853)
 val TealAccent = Color(0xFF26A69A)
@@ -66,7 +68,9 @@ val TealAccent = Color(0xFF26A69A)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    navController: NavController, scrollTo: String? = null, viewModel: HomeViewModel = hiltViewModel(),
+    navController: NavController,
+    scrollTo: String? = null,
+    viewModel: HomeViewModel = hiltViewModel(),
     cartViewModel: CartViewModel
 ) {
     val isDark = isSystemInDarkTheme()
@@ -76,6 +80,8 @@ fun HomeScreen(
 
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
+    val notificationViewModel: NotificationViewModel = hiltViewModel()
+    val unreadCount by notificationViewModel.unreadCount.collectAsState()
     val context = LocalContext.current
     val city by viewModel.userCity.collectAsState()
     val popularProducts by viewModel.popularProducts.collectAsState()
@@ -91,6 +97,29 @@ fun HomeScreen(
         medicines.groupBy { it.productType }
     }
     val highlightBg = if (isDark) Color(0xFF16242B) else Color(0xFFE3F2FD)
+
+    LaunchedEffect(medicines) {
+        Log.d("HOME_DEBUG", "========== MEDICINES ==========")
+
+        medicines.forEach {
+            Log.d(
+                "HOME_DEBUG",
+                "Medicine=${it.name}, productType=${it.productType}, category=${it.category}"
+            )
+        }
+    }
+
+    LaunchedEffect(categoryState.categories) {
+
+        Log.d("HOME_DEBUG", "========== CATEGORIES ==========")
+
+        categoryState.categories.forEach {
+            Log.d(
+                "HOME_DEBUG",
+                "Category=${it.name}"
+            )
+        }
+    }
 
 
 
@@ -130,7 +159,7 @@ fun HomeScreen(
     }
     LaunchedEffect(scrollTo) {
         if (scrollTo == "medicines") {
-            delay(400)
+            delay(400.milliseconds)
             coroutineScope.launch {
                 scrollState.animateScrollTo(medicineOffset)
             }
@@ -155,6 +184,7 @@ fun HomeScreen(
                     onLocationClick = {
                         navController.navigate("${Screen.ManageAddresses.route}?checkout=false&home=true")
                     },
+                    unreadCount = unreadCount,
                     onNotificationClick = {
                         navController.navigate(
                             Screen.NotificationScreen.route
@@ -172,7 +202,9 @@ fun HomeScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(paddingValues),
+                            .padding(
+                                top = paddingValues.calculateTopPadding()
+                            ),
                         contentPadding = PaddingValues(12.dp)
                     ) {
 
@@ -198,7 +230,9 @@ fun HomeScreen(
 
                 Column(
                     modifier = Modifier
-                        .padding(paddingValues)
+                        .padding(
+                            top = paddingValues.calculateTopPadding()
+                        )
                         .fillMaxSize()
                         .verticalScroll(scrollState)
                 ) {
@@ -254,6 +288,8 @@ fun HomeScreen(
                             productsByType[category.name]
                                 ?: emptyList()
 
+
+
                         CategoryProductsSection(
                             title = category.name,
                             subCategories = category.children.map { it.name },
@@ -279,8 +315,6 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     FooterTextInfo(isDark)
-
-                    Spacer(modifier = Modifier.height(80.dp))
                 }
             }
         }

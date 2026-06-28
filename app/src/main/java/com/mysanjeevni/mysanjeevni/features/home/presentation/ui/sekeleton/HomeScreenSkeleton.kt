@@ -144,7 +144,6 @@ fun HomeScreenSkeleton() {
             // Diabetes Section Skeleton
             DiabetesSectionSkeleton(shimmerColor)
 
-            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }

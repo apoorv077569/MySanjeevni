@@ -27,4 +27,11 @@ class NotificationRepository @Inject constructor(
     suspend fun markAsRead(id: Int) {
         dao.markAsRead(id)
     }
+
+    fun getUnreadCount() =
+        dao.getUnreadCount()
+
+    suspend fun markAllAsRead() {
+        dao.markAllAsRead()
+    }
 }
