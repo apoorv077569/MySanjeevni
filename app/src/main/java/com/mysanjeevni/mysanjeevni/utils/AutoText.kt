@@ -78,35 +78,23 @@ fun AutoText(
 
 
 @Composable
-fun AutoText(
-    text: AnnotatedString,
-    modifier: Modifier = Modifier,
-    style: TextStyle = LocalTextStyle.current,
-    color: Color = Color.Unspecified,
-    fontWeight: FontWeight? = null,
-    textAlign: TextAlign = TextAlign.Unspecified,
-    maxLines: Int = Int.MAX_VALUE,
-    letterSpacing: TextUnit = TextUnit.Unspecified,
-    lineHeight: TextUnit = TextUnit.Unspecified,
-    overflow: TextOverflow = TextOverflow.Clip,
-    textDecoration: TextDecoration? = null,
-    fontSize: TextUnit = TextUnit.Unspecified
-) {
-    val finalStyle = style.copy(
-        textDecoration = textDecoration,
-        letterSpacing = letterSpacing,
-        lineHeight = lineHeight
-    )
+fun rememberTranslatedText(text: String): String {
 
-    Text(
-        text = text,
-        modifier = modifier,
-        color = color,
-        fontSize = fontSize,
-        fontWeight = fontWeight,
-        textAlign = textAlign,
-        maxLines = maxLines,
-        overflow = overflow,
-        style = finalStyle
-    )
+    val targetCode = LocalAppLanguage.current
+
+    var translated by remember(text, targetCode) {
+        mutableStateOf(text)
+    }
+
+    LaunchedEffect(text, targetCode) {
+        if (targetCode == "en") {
+            translated = text
+        } else {
+            TranslatorManager.translate(text, targetCode) {
+                translated = it
+            }
+        }
+    }
+
+    return translated
 }

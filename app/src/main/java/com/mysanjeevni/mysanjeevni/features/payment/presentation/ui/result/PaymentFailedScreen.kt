@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 import com.mysanjeevni.mysanjeevni.utils.AutoText
+import com.mysanjeevni.mysanjeevni.utils.rememberTranslatedText
 
 
 private val RedError       = Color(0xFFE53935)
@@ -225,14 +226,31 @@ fun PaymentFailedScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // ── Title ─────────────────────────────────────────────────────────
-            AutoText(
+            val payment = rememberTranslatedText("Payment")
+            val failed = rememberTranslatedText("Failed")
+
+            Text(
                 text = buildAnnotatedString {
-                    withStyle(SpanStyle(color = titleNavy))  { append("Payment ") }
-                    withStyle(SpanStyle(color = RedError))   { append("Failed") }
+                    withStyle(
+                        SpanStyle(
+                            color = titleNavy,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 28.sp
+                        )
+                    ) {
+                        append(payment)
+                        append(" ")
+                    }
+                    withStyle(
+                        SpanStyle(
+                            color = RedError,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 28.sp
+                        )
+                    ) {
+                        append(failed)
+                    }
                 },
-                fontSize = 28.sp,
-                fontWeight = FontWeight.ExtraBold,
                 textAlign = TextAlign.Center
             )
 
