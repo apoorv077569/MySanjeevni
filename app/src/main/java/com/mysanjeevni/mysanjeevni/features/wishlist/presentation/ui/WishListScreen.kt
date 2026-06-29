@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.features.wishlist.domain.model.WishlistItem
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 private val AccentPurple = Color(0xFF6C5CE7)
 private val SuccessGreen = Color(0xFF1B9C5A)
@@ -88,13 +89,13 @@ fun WishlistScreen(
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
+                    AutoText(
                         text = "My Wishlist",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground
                     )
-                    Text(
+                    AutoText(
                         text = "Your saved items",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -175,7 +176,7 @@ fun WishlistItemCard(
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
+                    AutoText(
                         text = item.productName,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
@@ -184,7 +185,7 @@ fun WishlistItemCard(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(
+                    AutoText(
                         text = "₹${item.price}",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
@@ -234,7 +235,7 @@ fun WishlistItemCard(
                         )
                     }
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(
+                    AutoText(
                         text = "Move to Cart",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
@@ -266,7 +267,7 @@ fun WishlistItemCard(
                         )
                     }
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(
+                    AutoText(
                         text = "View Details",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.SemiBold,
@@ -305,7 +306,7 @@ private fun WishlistReadyFooter(onContinueShopping: () -> Unit) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        Text(
+        AutoText(
             text = "Your wishlist is ready!",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
@@ -314,7 +315,7 @@ private fun WishlistReadyFooter(onContinueShopping: () -> Unit) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
+        AutoText(
             text = "Save items you love and shop them anytime you want.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -336,7 +337,7 @@ private fun WishlistReadyFooter(onContinueShopping: () -> Unit) {
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
+            AutoText(
                 text = "Continue Shopping",
                 fontWeight = FontWeight.Bold,
                 color = Color.White

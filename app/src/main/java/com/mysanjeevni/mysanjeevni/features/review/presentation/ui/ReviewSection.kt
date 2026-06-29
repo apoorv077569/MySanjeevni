@@ -1,7 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.review.presentation.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,8 +19,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mysanjeevni.mysanjeevni.features.review.domain.model.Review
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
-val ReviewGreen = Color(0xFF00897B)
 
 @Composable
 fun ReviewSection(
@@ -34,7 +33,7 @@ fun ReviewSection(
         modifier = Modifier.fillMaxWidth()
     ) {
 
-        Text(
+        AutoText(
             text = "Customer Reviews",
             fontWeight = FontWeight.ExtraBold,
             fontSize = 18.sp,
@@ -53,7 +52,7 @@ fun ReviewSection(
                 containerColor = MaterialTheme.colorScheme.primary
             )
         ) {
-            Text(
+            AutoText(
                 text = "✍ Write Review",
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 15.sp,
@@ -146,7 +145,7 @@ fun EmptyReviewSection(
 
             Spacer(Modifier.height(12.dp))
 
-            Text(
+            AutoText(
                 text = "No Reviews Yet",
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 16.sp,
@@ -156,7 +155,7 @@ fun EmptyReviewSection(
 
             Spacer(Modifier.height(6.dp))
 
-            Text(
+            AutoText(
                 text = "Be the first customer to review this product.",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -176,7 +175,7 @@ fun EmptyReviewSection(
                     .fillMaxWidth(0.65f)
                     .height(46.dp)
             ) {
-                Text(
+                AutoText(
                     text = "Write Review",
                     color = MaterialTheme.colorScheme.onPrimary,
                     fontWeight = FontWeight.SemiBold,
@@ -227,7 +226,7 @@ fun ReviewItem(
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
+                        AutoText(
                             text = review.userName
                                 .firstOrNull()
                                 ?.uppercase()
@@ -242,7 +241,7 @@ fun ReviewItem(
 
                     Column {
 
-                        Text(
+                        AutoText(
                             text = review.userName,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
@@ -285,7 +284,7 @@ fun ReviewItem(
 
             Spacer(Modifier.height(10.dp))
 
-            Text(
+            AutoText(
                 text = review.title,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 14.sp,
@@ -294,7 +293,7 @@ fun ReviewItem(
 
             Spacer(Modifier.height(4.dp))
 
-            Text(
+            AutoText(
                 text = review.comment,
                 fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import java.io.File
 
 @Composable
@@ -109,7 +110,7 @@ fun CameraGallerySection(
                 }
             }
         ) {
-            Text("Camera")
+            AutoText("Camera")
         }
         OutlinedButton(
             onClick = {galleryLauncher.launch("image/*")},
@@ -120,7 +121,7 @@ fun CameraGallerySection(
                 null
             )
             Spacer(Modifier.width(8.dp))
-            Text("Gallery")
+            AutoText("Gallery")
         }
     }
 }

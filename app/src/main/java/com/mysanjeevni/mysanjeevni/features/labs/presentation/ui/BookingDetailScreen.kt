@@ -1,7 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.labs.presentation.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +25,6 @@ import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CurrencyRupee
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Refresh
@@ -44,7 +42,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -65,8 +62,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 import com.mysanjeevni.mysanjeevni.features.labs.domain.model.BookingHistory
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel.BookingHistoryViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.getDaysRemaining
 
 private val Purple = Color(0xFF7B61FF)
@@ -88,7 +87,8 @@ private data class BookingTheme(
 
 @Composable
 private fun rememberBookingTheme(): BookingTheme {
-    val isDark = isSystemInDarkTheme()
+//    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current
     return if (isDark) {
         BookingTheme(
             screenBg = Color(0xFF121212),
@@ -136,7 +136,7 @@ fun BookingDetailScreen(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text("Booking Not Found", color = theme.textPrimary)
+            AutoText("Booking Not Found", color = theme.textPrimary)
         }
     } else {
 
@@ -155,13 +155,13 @@ fun BookingDetailScreen(
                     ),
                     title = {
                         Column {
-                            Text(
+                            AutoText(
                                 text = "Booking Details",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp,
                                 color = theme.textPrimary,
                             )
-                            Text(
+                            AutoText(
                                 text = "View all information about this booking",
                                 fontSize = 12.sp,
                                 color = theme.textMuted,
@@ -249,7 +249,7 @@ fun BookingDetailScreen(
                                 modifier = Modifier.size(18.dp),
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text(
+                            AutoText(
                                 text = "Cancel Booking",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -303,7 +303,7 @@ fun BookingDetailScreen(
                             }
                             Spacer(Modifier.width(16.dp))
                             Column {
-                                Text(
+                                AutoText(
                                     text = booking.testName,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 18.sp,
@@ -325,7 +325,7 @@ fun BookingDetailScreen(
                                             modifier = Modifier.size(14.dp),
                                         )
                                         Spacer(Modifier.width(4.dp))
-                                        Text(
+                                        AutoText(
                                             text = booking.status,
                                             color = Orange,
                                             fontSize = 12.sp,
@@ -371,7 +371,7 @@ fun BookingDetailScreen(
                                     color = theme.orangeChipBg,
                                     shape = RoundedCornerShape(20.dp),
                                 ) {
-                                    Text(
+                                    AutoText(
                                         text = booking.status,
                                         color = Orange,
                                         fontSize = 12.sp,
@@ -401,7 +401,7 @@ fun BookingDetailScreen(
                                     color = theme.greenChipBg,
                                     shape = RoundedCornerShape(12.dp),
                                 ) {
-                                    Text(
+                                    AutoText(
                                         text = getDaysRemaining(booking.collectionDate),
                                         color = GreenText,
                                         fontSize = 12.sp,
@@ -437,8 +437,8 @@ fun BookingDetailScreen(
         if (showCancelDialog) {
             AlertDialog(
                 onDismissRequest = { showCancelDialog = false },
-                title = { Text("Cancel Booking") },
-                text = { Text("Are you sure you want to cancel this booking?") },
+                title = { AutoText("Cancel Booking") },
+                text = { AutoText("Are you sure you want to cancel this booking?") },
                 confirmButton = {
                     Button(
                         onClick = {
@@ -446,12 +446,12 @@ fun BookingDetailScreen(
                             historyViewModel.cancelBooking(booking.id)
                         }
                     ) {
-                        Text("Yes, Cancel")
+                        AutoText("Yes, Cancel")
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showCancelDialog = false }) {
-                        Text("No")
+                        AutoText("No")
                     }
                 }
             )
@@ -489,14 +489,14 @@ private fun DetailRow(
         }
         Spacer(Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
+            AutoText(
                 text = label,
                 fontSize = 12.sp,
                 color = theme.textMuted,
             )
             if (value.isNotEmpty()) {
                 Spacer(Modifier.height(2.dp))
-                Text(
+                AutoText(
                     text = value,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,

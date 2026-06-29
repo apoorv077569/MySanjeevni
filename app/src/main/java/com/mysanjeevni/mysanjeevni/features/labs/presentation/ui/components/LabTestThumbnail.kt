@@ -14,24 +14,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 
 @Composable
 fun LabTestThumbnail(imageRes: Int, category: String) {
+    val isDark = LocalIsDarkTheme.current
     val bgColor = when {
         category.contains("THYROID", true) ->
-            if (isSystemInDarkTheme())
+            if (isDark)
                 Color(0xFF3A2345)
             else
                 Color(0xFFF3E8FF)
 
         category.contains("DIABETES", true) ->
-            if (isSystemInDarkTheme())
+            if (isDark)
                 Color(0xFF4A3415)
             else
                 Color(0xFFFFF3E0)
 
         else ->
-            if (isSystemInDarkTheme())
+            if (isDark)
                 Color(0xFF123C39)
             else
                 Color(0xFFE8F5F3)

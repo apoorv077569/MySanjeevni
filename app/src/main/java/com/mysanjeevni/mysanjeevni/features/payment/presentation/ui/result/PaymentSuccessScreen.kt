@@ -113,8 +113,6 @@ fun PaymentSuccessScreen(
             }
 
     } else {
-
-        subtotal = 0.0
         shippingCharge = 0.0
         total = 0.0
         orderItems = emptyList()

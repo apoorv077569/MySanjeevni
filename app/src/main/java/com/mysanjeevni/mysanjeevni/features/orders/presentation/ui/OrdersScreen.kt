@@ -31,6 +31,7 @@ import com.mysanjeevni.mysanjeevni.features.orders.presentation.ui.components.Em
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.ui.components.ErrorView
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.ui.components.OrderCard
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 
 @Composable
@@ -73,7 +74,7 @@ fun OrdersScreen(
                         modifier = Modifier.height(12.dp)
                     )
 
-                    Text(
+                    AutoText(
                         text = "Loading Orders..."
                     )
                 }
@@ -193,13 +194,13 @@ private fun OrdersHeader(
                     .weight(1f)
                     .padding(horizontal = 12.dp)
             ) {
-                Text(
+                AutoText(
                     text = "My Orders",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
-                Text(
+                AutoText(
                     text = "Track and manage all your orders",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -268,7 +269,7 @@ private fun OrderFilterSheet(
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 24.dp)
         ) {
-            Text(
+            AutoText(
                 text = "Filter by status",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
@@ -318,7 +319,7 @@ private fun FilterOptionRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
+        AutoText(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
             color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer

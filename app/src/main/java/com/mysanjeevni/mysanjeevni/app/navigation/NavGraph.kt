@@ -46,7 +46,7 @@ import com.mysanjeevni.mysanjeevni.features.payment.presentation.ui.result.Payme
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.ui.result.PaymentSuccessScreen
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui.PharmacyScreen
 import com.mysanjeevni.mysanjeevni.features.prescription.presentation.screen.UploadPrescriptionScreen
-import com.mysanjeevni.mysanjeevni.features.privacy.PrivacyScreen
+import com.mysanjeevni.mysanjeevni.features.privacy.presentation.ui.PrivacyScreen
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.EditProfileScreen
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.HealthRecordsScreen
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.ManageAddresses

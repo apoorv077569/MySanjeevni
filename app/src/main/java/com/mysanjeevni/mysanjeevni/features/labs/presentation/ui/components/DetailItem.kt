@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun DetailItem(
@@ -25,7 +26,7 @@ fun DetailItem(
             .padding(vertical = 8.dp)
     ) {
 
-        Text(
+        AutoText(
             text = title,
             style = MaterialTheme.typography.labelMedium
         )
@@ -34,7 +35,7 @@ fun DetailItem(
             modifier = Modifier.height(4.dp)
         )
 
-        Text(
+        AutoText(
             text = value,
             fontWeight = FontWeight.SemiBold
         )

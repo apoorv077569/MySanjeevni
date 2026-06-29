@@ -25,7 +25,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 
 private val RedError       = Color(0xFFE53935)
@@ -53,8 +54,8 @@ fun PaymentFailedScreen(
     reason: String,
     onHome: () -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
-
+//    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current
     // Resolved colors
     val bgColor         = if (isDark) Color(0xFF121212)   else Color.White
     val titleNavy       = if (isDark) Color(0xFFE8EAF6)   else Color(0xFF1A2340)
@@ -119,7 +120,7 @@ fun PaymentFailedScreen(
                 modifier = Modifier.size(220.dp)
             ) {
                 // Decorative ✕ (top-left)
-                Text(
+                AutoText(
                     text = "✕",
                     color = decorColor,
                     fontSize = 16.sp,
@@ -169,7 +170,7 @@ fun PaymentFailedScreen(
                     }
                 }
                 // Warning triangle (right-mid)
-                Text(
+                AutoText(
                     text = "⚠",
                     color = decorColor,
                     fontSize = 20.sp,
@@ -213,7 +214,7 @@ fun PaymentFailedScreen(
                         )
                 ) {
                     // Bold white X
-                    Text(
+                    AutoText(
                         text = "✕",
                         color = Color.White,
                         fontSize = 44.sp,
@@ -225,7 +226,7 @@ fun PaymentFailedScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             // ── Title ─────────────────────────────────────────────────────────
-            Text(
+            AutoText(
                 text = buildAnnotatedString {
                     withStyle(SpanStyle(color = titleNavy))  { append("Payment ") }
                     withStyle(SpanStyle(color = RedError))   { append("Failed") }
@@ -238,7 +239,7 @@ fun PaymentFailedScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             // ── Subtitle ──────────────────────────────────────────────────────
-            Text(
+            AutoText(
                 text = "We couldn't process your payment.\nPlease try again or use another\npayment method.",
                 fontSize = 14.sp,
                 color = subtitleGray,
@@ -271,7 +272,7 @@ fun PaymentFailedScreen(
                                 )
                             }
                     ) {
-                        Text(
+                        AutoText(
                             text = "!",
                             color = errorIconStroke,
                             fontWeight = FontWeight.Bold,
@@ -282,12 +283,12 @@ fun PaymentFailedScreen(
                     Spacer(modifier = Modifier.width(14.dp))
 
                     Column {
-                        Text(
+                        AutoText(
                             text = "Error Code",
                             fontSize = 12.sp,
                             color = subtitleGray
                         )
-                        Text(
+                        AutoText(
                             text = reason,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
@@ -324,7 +325,7 @@ fun PaymentFailedScreen(
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
-                Text(
+                AutoText(
                     text = "Go Home",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,

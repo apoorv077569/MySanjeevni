@@ -23,9 +23,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.components.LabFilterBottomSheet
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel.LabTestViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 val Teal = Color(0xFF00897B)
 
@@ -40,7 +42,8 @@ fun MyLabTestsScreen(
     val isInitialLoading = labTests.loadState.refresh is LoadState.Loading
     var showFilterSheet by remember { mutableStateOf(false) }
 
-    val isDark = isSystemInDarkTheme()
+//    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current
     val screenBg = if (isDark) Color(0xFF121212) else Color(0xFFF5F5F5)
     val textMuted = if (isDark) Color(0xFFAAAAAA) else Color(0xFF757575)
 
@@ -64,7 +67,7 @@ fun MyLabTestsScreen(
                     modifier = Modifier.height(12.dp)
                 )
 
-                Text(
+                AutoText(
                     text = "Loading tests...",
                     fontSize = 13.sp,
                     color = textMuted
@@ -147,7 +150,7 @@ fun MyLabTestsScreen(
 
                             item {
 
-                                Text(
+                                AutoText(
                                     text = "Failed to load more",
                                     color = Color.Red,
                                     modifier = Modifier.padding(16.dp)
@@ -177,7 +180,8 @@ fun LabTestsTopBar(
     onFilter: () -> Unit,
     isFilterActive: Boolean = false
 ) {
-    val isDark = isSystemInDarkTheme()
+//    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current
     val barBg = if (isDark) Color(0xFF1E1E1E) else Color.White
     val textPrimary = if (isDark) Color.White else Color(0xFF1A1A1A)
     val textMuted = if (isDark) Color(0xFFAAAAAA) else Color(0xFF757575)
@@ -198,7 +202,7 @@ fun LabTestsTopBar(
                 IconButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = textPrimary)
                 }
-                Text("Lab Tests", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = textPrimary)
+                AutoText("Lab Tests", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = textPrimary)
             }
 
             Row(
@@ -217,7 +221,7 @@ fun LabTestsTopBar(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(Modifier.width(6.dp))
-                Text(
+                AutoText(
                     text = "Filter",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -226,7 +230,7 @@ fun LabTestsTopBar(
             }
         }
 
-        Text(
+        AutoText(
             text = "Choose the right test package for your health",
             fontSize = 13.sp,
             color = textMuted,

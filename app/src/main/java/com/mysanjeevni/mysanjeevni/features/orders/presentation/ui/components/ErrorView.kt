@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun ErrorView(
@@ -30,13 +31,13 @@ fun ErrorView(
             contentDescription = null,
             tint = MaterialTheme.colorScheme.error
         )
-        Text(
+        AutoText(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
         Button(onClick = onRetry) {
-            Text("Retry")
+            AutoText("Retry")
         }
     }
 }

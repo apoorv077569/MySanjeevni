@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -41,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.core.presentation.StylishHeader
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartItem
@@ -73,7 +73,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     cartViewModel: CartViewModel
 ) {
-    val isDark = isSystemInDarkTheme()
+//    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current
     val backgroundColor = if (isDark) Color(0xFF121212) else Color.White
 
     val isLoading by viewModel.isLoading.collectAsState()

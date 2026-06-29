@@ -7,7 +7,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,7 +39,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -57,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.R
+import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.ProfileViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
@@ -64,7 +63,8 @@ import com.mysanjeevni.mysanjeevni.utils.AutoText
 @Composable
 fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val isDark = isSystemInDarkTheme()
+//    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current
     val bgColor = if (isDark) Color(0xFF121212) else Color(0xFFF5F7FA)
     val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDark) Color.White else Color.Black
@@ -270,7 +270,7 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
                 .height(50.dp)
 
         ) {
-            Text(stringResource(R.string.logout), color = Color.Red, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            AutoText(stringResource(R.string.logout), color = Color.Red, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
         Spacer(modifier = Modifier.height(30.dp))
     }
@@ -301,7 +301,7 @@ fun ProfileStatCard(
         ) {
             Icon(imageVector = icon, contentDescription = null, tint = Color(0xFF26A69A))
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = title, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = textColor)
+            AutoText(text = title, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = textColor)
         }
     }
 }
@@ -323,7 +323,7 @@ fun ProfileMenuItem(
     ) {
         Icon(imageVector = icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.width(16.dp))
-        Text(text = title, fontSize = 16.sp, color = textColor, modifier = Modifier.weight(1f))
+        AutoText(text = title, fontSize = 16.sp, color = textColor, modifier = Modifier.weight(1f))
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,

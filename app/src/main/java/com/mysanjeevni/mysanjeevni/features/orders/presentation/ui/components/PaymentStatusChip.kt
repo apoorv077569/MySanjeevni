@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun PaymentStatusChip(
@@ -22,7 +23,7 @@ fun PaymentStatusChip(
         shape = RoundedCornerShape(20.dp),
         modifier = modifier
     ) {
-        Text(
+        AutoText(
             text = paymentStatus.uppercase(),
             color = colors.content,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),

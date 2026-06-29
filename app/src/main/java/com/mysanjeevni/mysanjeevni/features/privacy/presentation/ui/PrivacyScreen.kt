@@ -1,4 +1,4 @@
-package com.mysanjeevni.mysanjeevni.features.privacy
+package com.mysanjeevni.mysanjeevni.features.privacy.presentation.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

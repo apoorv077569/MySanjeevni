@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import kotlin.math.roundToInt
 
 @Composable
@@ -43,7 +44,7 @@ fun LabBottomBar(
         ) {
             // Left: price + test count + discount
             Column {
-                Text(
+                AutoText(
                     text = "₹$price",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
@@ -54,7 +55,7 @@ fun LabBottomBar(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Text(
+                    AutoText(
                         text = "$testCount Tests",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant                    )
@@ -66,7 +67,7 @@ fun LabBottomBar(
                                 .background(Color(0xFFFFD600))
                                 .padding(horizontal = 5.dp, vertical = 1.dp)
                         ) {
-                            Text(
+                            AutoText(
                                 text = "$discountPercent% OFF",
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
@@ -97,7 +98,7 @@ fun LabBottomBar(
                     tint = Color.White
                 )
                 Spacer(Modifier.width(8.dp))
-                Text(
+                AutoText(
                     text = "Add To Cart",
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp,

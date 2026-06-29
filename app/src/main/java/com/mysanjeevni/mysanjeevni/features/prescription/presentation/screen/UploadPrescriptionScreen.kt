@@ -47,6 +47,7 @@ import com.mysanjeevni.mysanjeevni.features.prescription.presentation.components
 import com.mysanjeevni.mysanjeevni.features.prescription.presentation.components.PrescriptionImagePreview
 import com.mysanjeevni.mysanjeevni.features.prescription.presentation.components.UploadGuidelinesCard
 import com.mysanjeevni.mysanjeevni.features.prescription.presentation.viewmodel.PrescriptionViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +68,7 @@ fun UploadPrescriptionScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Upload Prescription")
+                    AutoText("Upload Prescription")
                 },
                 navigationIcon = {
                     IconButton(
@@ -94,7 +95,7 @@ fun UploadPrescriptionScreen(
 
         ) {
 
-            Text(
+            AutoText(
                 text = "Upload Your Prescription",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
@@ -133,7 +134,7 @@ fun UploadPrescriptionScreen(
                         modifier = Modifier.size(24.dp)
                     )
                 } else {
-                    Text("Upload Prescription")
+                    AutoText("Upload Prescription")
                 }
             }
             LaunchedEffect(state.isUploaded) {

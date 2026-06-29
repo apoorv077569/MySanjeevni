@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun OrderStatusChip(
@@ -49,7 +50,7 @@ fun OrderStatusChip(
                 tint = colors.content,
                 modifier = Modifier.size(14.dp)
             )
-            Text(
+            AutoText(
                 text = status.replaceFirstChar { it.uppercase() },
                 style = MaterialTheme.typography.labelSmall,
                 color = colors.content,

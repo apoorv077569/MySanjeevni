@@ -26,10 +26,9 @@ import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
 import androidx.core.graphics.toColorInt
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
-private val PurpleLight  = Color(0xFFEEEDFE)
-private val PurpleMid    = Color(0xFFAFA9EC)
-private val PurpleDark   = Color(0xFF534AB7)
+
 private val TealButton   = Color(0xFF1A9B82)
 
 @Composable
@@ -102,7 +101,7 @@ fun OrderSummaryScreen(
                         modifier = Modifier.padding(bottom = 16.dp)
                     ) {
                         IconCircle(icon = Icons.Outlined.LocationOn)
-                        Text(
+                        AutoText(
                             text = "Delivery Address",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
@@ -164,7 +163,7 @@ fun OrderSummaryScreen(
             item {
                 SummaryCard {
 
-                    Text(
+                    AutoText(
                         text = "Payment Summary",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
@@ -218,7 +217,7 @@ fun OrderSummaryScreen(
                     .padding(end = 0.dp)
             )
             Spacer(modifier = Modifier.width(10.dp))
-            Text(
+            AutoText(
                 text = "Proceed To Payment",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -260,7 +259,7 @@ private fun ProductCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
+                AutoText(
                     text = name,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
@@ -272,7 +271,7 @@ private fun ProductCard(
                     color = MaterialTheme.colorScheme.primaryContainer,
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(
+                    AutoText(
                         text = "Qty : $qty",
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                         fontSize = 13.sp,
@@ -284,47 +283,11 @@ private fun ProductCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 PriceRow(label = "Price",    value = "₹$price",    bold = false)
-//                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-//                PriceRow(label = "Subtotal", value = "₹$subtotal", bold = true)
-//                HorizontalDivider(color = Color(0xFFEEEEEE))
-//                PriceRow(label = "Delivery Fee", value = "₹$deliveryFee", bold = false)
             }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .clip(RoundedCornerShape(10.dp))
-//                .background(PurpleLight)
-//                .padding(horizontal = 14.dp, vertical = 10.dp),
-//            horizontalArrangement = Arrangement.SpaceBetween,
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Row(
-//                horizontalArrangement = Arrangement.spacedBy(10.dp),
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Outlined.LocalShipping,
-//                    contentDescription = null,
-//                    tint = PurpleDark,
-//                    modifier = Modifier.size(22.dp)
-//                )
-//                Text(
-//                    text = "Delivery Fee",
-//                    fontSize = 14.sp,
-//                    color = Color(0xFF444466)
-//                )
-//            }
-//            Text(
-//                text = "₹$deliveryFee",
-//                fontSize = 15.sp,
-//                fontWeight = FontWeight.Bold,
-//                color = PurpleDark
-//            )
-//        }
     }
 }
 
@@ -384,7 +347,7 @@ private fun AddressRow(
             modifier = Modifier.size(18.dp)
         )
 
-        Text(
+        AutoText(
             text = text,
             fontSize = 13.sp,
             fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,
@@ -407,14 +370,14 @@ private fun PriceRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
+        AutoText(
             text = label,
             fontSize = 13.sp,
             fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,
             color = colorScheme.onSurfaceVariant
         )
 
-        Text(
+        AutoText(
             text = value,
             fontSize = 13.sp,
             fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,

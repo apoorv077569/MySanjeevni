@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun AppBottomBar(
@@ -193,7 +194,7 @@ fun BottomNavItem(
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        Text(
+        AutoText(
             text = label,
             fontSize = 10.sp,
             color = contentColor,

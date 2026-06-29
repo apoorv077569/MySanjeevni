@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun PrescriptionImagePreview(
@@ -50,7 +51,7 @@ fun PrescriptionImagePreview(
                         modifier = Modifier.size(70.dp)
                     )
                     Spacer(Modifier.height(10.dp))
-                    Text(
+                    AutoText(
                         text = "No Prescription Selected",
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

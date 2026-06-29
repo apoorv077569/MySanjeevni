@@ -34,11 +34,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreenSkeleton() {
-    val isDark = isSystemInDarkTheme()
+//    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current
     val backgroundColor = if (isDark) Color(0xFF121212) else Color.White
     val shimmerColor = if (isDark) Color(0xFF2A2A2A) else Color(0xFFE0E0E0)
 

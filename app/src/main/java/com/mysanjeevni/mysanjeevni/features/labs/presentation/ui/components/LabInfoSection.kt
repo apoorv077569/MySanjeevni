@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mysanjeevni.mysanjeevni.features.labs.domain.model.LabTestDetail
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun LabInfoSection(test: LabTestDetail) {
@@ -87,12 +88,12 @@ fun InfoTile(
                 .background(iconBg),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = icon, fontSize = 18.sp)
+            AutoText(text = icon, fontSize = 18.sp)
         }
 
         Spacer(Modifier.height(8.dp))
 
-        Text(
+        AutoText(
             text = label,
             fontSize = 11.sp,
             fontWeight = FontWeight.Medium,
@@ -109,7 +110,7 @@ fun InfoTile(
                 .verticalScroll(rememberScrollState()),
             contentAlignment = Alignment.TopCenter
         ) {
-            Text(
+            AutoText(
                 text = value,
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

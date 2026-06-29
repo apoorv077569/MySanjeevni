@@ -81,7 +81,7 @@ fun MedicineItem(
 
                 } else {
 
-                    Text(
+                    AutoText(
                         text = medicine.icon ?: "💊",
                         fontSize = 36.sp
                     )
@@ -108,7 +108,7 @@ fun MedicineItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
-                    Text(
+                    AutoText(
                         text = "₹${medicine.price}",
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,

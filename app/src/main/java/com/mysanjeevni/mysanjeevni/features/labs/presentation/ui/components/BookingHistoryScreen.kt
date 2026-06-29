@@ -35,6 +35,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel.BookingHistoryViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun BookingHistoryScreen(
@@ -95,7 +96,7 @@ fun BookingHistoryScreen(
                                         colorScheme.outline.copy(alpha = 0.4f)
                                     )
                             ) {
-                                Text(
+                                AutoText(
                                     text = filter.replaceFirstChar { it.uppercase() },
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                                     fontSize = 13.sp,

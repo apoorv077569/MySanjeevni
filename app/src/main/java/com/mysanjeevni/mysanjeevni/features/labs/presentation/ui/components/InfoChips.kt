@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 val Teal = Color(0xFF00897B)
 @Composable
@@ -41,14 +42,14 @@ fun ProviderBadge(provider: String) {
             modifier = Modifier.size(13.dp)
         )
         Spacer(Modifier.width(4.dp))
-        Text(
+        AutoText(
             text = provider.replaceFirstChar { it.uppercase() },
             fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
             color = Teal
         )
         Spacer(Modifier.width(3.dp))
-        Text(text = "Partner", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        AutoText(text = "Partner", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -79,7 +80,7 @@ fun CategoryChip(category: String) {
 
         Spacer(Modifier.width(5.dp))
 
-        Text(
+        AutoText(
             text = category.uppercase(),
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
@@ -99,14 +100,14 @@ fun TestCountPill(count: Int) {
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        Text(
+        AutoText(
             text = "🧪",
             fontSize = 11.sp
         )
 
         Spacer(Modifier.width(4.dp))
 
-        Text(
+        AutoText(
             text = "$count Tests",
             fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
@@ -135,7 +136,7 @@ fun RatingPill(rating: Double) {
 
         Spacer(Modifier.width(3.dp))
 
-        Text(
+        AutoText(
             text = rating.toString(),
             fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
@@ -165,7 +166,7 @@ fun HomeCollectionTag() {
 
         Spacer(modifier = Modifier.width(4.dp))
 
-        Text(
+        AutoText(
             text = "Free Home Collection",
             fontSize = 10.sp,
             fontWeight = FontWeight.SemiBold,

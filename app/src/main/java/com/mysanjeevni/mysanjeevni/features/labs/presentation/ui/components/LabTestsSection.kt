@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
@@ -16,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun LabTestsSection(tests: List<String>) {
@@ -35,7 +35,7 @@ fun LabTestsSection(tests: List<String>) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            AutoText(
                 text = "Tests Included (${tests.size})",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
@@ -43,7 +43,7 @@ fun LabTestsSection(tests: List<String>) {
 
             if (tests.size > 3) {
                 TextButton(onClick = { showAll = !showAll }) {
-                    Text(
+                    AutoText(
                         text = if (showAll) "Show less" else "View all",
                         color = Color(0xFF00897B),
                         fontWeight = FontWeight.SemiBold,
@@ -106,7 +106,7 @@ fun TestRow(name: String, index: Int) {
                 .background(iconBgColors[index % iconBgColors.size]),
             contentAlignment = Alignment.Center
         ) {
-            Text(
+            AutoText(
                 text = testIcons[index % testIcons.size],
                 fontSize = 16.sp
             )
@@ -114,7 +114,7 @@ fun TestRow(name: String, index: Int) {
 
         Spacer(Modifier.width(12.dp))
 
-        Text(
+        AutoText(
             text = name,
             modifier = Modifier.weight(1f),
             fontSize = 14.sp,

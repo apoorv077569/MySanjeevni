@@ -62,6 +62,7 @@ import com.mysanjeevni.mysanjeevni.features.payment.domain.model.PaymentMethod
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.state.PaymentState
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.viewmodel.PaymentViewModel
 import com.mysanjeevni.mysanjeevni.features.payment.utils.startRazorpayCheckout
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.FcmHelper
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 
@@ -235,7 +236,7 @@ fun PaymentScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Payment") },
+                title = { AutoText("Payment") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -285,7 +286,7 @@ fun PaymentScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
+            AutoText(
                 text = "Select Payment Method",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
@@ -300,7 +301,7 @@ fun PaymentScreen(
             }
 
             if (paymentState is PaymentState.Error) {
-                Text(
+                AutoText(
                     text = (paymentState as PaymentState.Error).message,
                     color = colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
@@ -351,12 +352,12 @@ private fun PaymentBottomBar(
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text(
+                        AutoText(
                             text = "Total Amount",
                             style = MaterialTheme.typography.bodySmall,
                             color = colorScheme.onSurfaceVariant
                         )
-                        Text(
+                        AutoText(
                             text = "₹$totalPrice",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
@@ -389,7 +390,7 @@ private fun PaymentBottomBar(
                             tint = Color.White
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(
+                        AutoText(
                             text = "Proceed to Pay",
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White
@@ -413,7 +414,7 @@ private fun PaymentBottomBar(
                     modifier = Modifier.size(13.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
+                AutoText(
                     text = "100% Secure Payments",
                     fontSize = 11.sp,
                     color = colorScheme.onSurfaceVariant
