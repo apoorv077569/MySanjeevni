@@ -25,6 +25,7 @@ import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel.BookLabTestViewModel
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.OrderItemDto
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.state.OrderState
+import com.mysanjeevni.mysanjeevni.features.orders.presentation.ui.components.formatDate
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.state.PaymentState
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.viewmodel.PaymentViewModel
@@ -184,19 +185,24 @@ fun PaymentSuccessScreen(
                     }
                 }
             }
+
             is PaymentState.PaymentSuccess -> {
-                FcmHelper.sendNotification(
-                    userId = userId ?: "",
-                    title = "Order Confirmed 🎉",
-                    body = "Your order has been placed successfully."
-                )
+
                 orderViewModel.getOrders(userId)
+
                 orderViewModel.orderState
                     .first { it is OrderState.Success }
                     .let {
                         val orders = (it as OrderState.Success).orders
                         orders.firstOrNull()?.let { latest ->
                             orderViewModel.setRecentOrder(latest.order)
+                            val shortOrderId = latest.order.id.takeLast(8).uppercase()
+                            val orderDate = formatDate(latest.order.createdAt)
+                            FcmHelper.sendNotification(
+                                userId = userId ?: "",
+                                title = "Order Confirmed 🎉",
+                                body = "Your order #$shortOrderId has been placed successfully.\nDate: $orderDate"
+                            )
                         }
                     }
                 viewModel.resetState()
@@ -204,7 +210,13 @@ fun PaymentSuccessScreen(
                     popUpTo(Screen.PaymentSuccess.route) { inclusive = true }
                 }
             }
+
             is PaymentState.Error -> {
+                FcmHelper.sendNotification(
+                    userId = userId ?: "",
+                    title = "Payment Failed ❌",
+                    body = "Your payment could not be completed. Please try again."
+                )
                 navController.navigate(Screen.PaymentFailed.route) {
                     popUpTo(Screen.PaymentSuccess.route) { inclusive = true }
                 }

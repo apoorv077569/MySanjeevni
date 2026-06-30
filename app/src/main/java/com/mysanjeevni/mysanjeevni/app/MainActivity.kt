@@ -13,6 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -24,6 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.messaging.FirebaseMessaging
 import com.mysanjeevni.mysanjeevni.app.components.AppBottomBar
 import com.mysanjeevni.mysanjeevni.app.navigation.NavGraph
+import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel.BookLabTestViewModel
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
@@ -188,6 +190,7 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
                         NoInternetScreen(onRetry = {})
                     } else {
                         val navController = rememberNavController()
+                        val openNotification = intent?.getStringExtra("destination") == "notification"
                         val navBackStackEntry by navController.currentBackStackEntryAsState()
                         val currentRoute = navBackStackEntry?.destination?.route
                         val cartViewModel: CartViewModel = hiltViewModel(this@MainActivity)
@@ -199,13 +202,20 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
                                 AppBottomBar(navController, currentRoute)
                             }
                         ) { innerPadding ->
+                            LaunchedEffect(openNotification) {
+                                if (openNotification){
+                                    navController.navigate(Screen.NotificationScreen.route)
+                                    Log.d("NOTIFICATION","REDIRECTING TO NOTIFICATION SCREEN VIA NOTIFICATION CLICK")
+                                }
+                            }
                             NavGraph(
                                 navController = navController,
                                 paddingValues = innerPadding,
                                 cartViewModel = cartViewModel,
                                 orderViewModel = orderViewModel,
                                 settingsViewModel = settingsViewModel,
-                                labViewModel = labViewModel
+                                labViewModel = labViewModel,
+                                openNotification = openNotification
                             )
                         }
                     }

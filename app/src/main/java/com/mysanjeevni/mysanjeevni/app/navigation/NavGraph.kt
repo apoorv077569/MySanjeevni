@@ -71,6 +71,7 @@ fun NavGraph(navController: NavHostController,
              orderViewModel: OrderViewModel,
              settingsViewModel: SettingsViewModel,
              labViewModel: BookLabTestViewModel,
+             openNotification: Boolean,
              startDestination: String = Screen.Splash.route) {
     NavHost(
         navController = navController,
@@ -79,7 +80,10 @@ fun NavGraph(navController: NavHostController,
     ) {
 
         composable(Screen.Splash.route) {
-            SplashScreen(navController = navController)
+            SplashScreen(
+                navController = navController,
+                openNotification = openNotification
+                )
         }
 
         composable(

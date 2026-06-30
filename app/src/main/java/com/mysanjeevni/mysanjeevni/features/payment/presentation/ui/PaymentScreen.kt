@@ -57,6 +57,7 @@ import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.app.MainActivity
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.OrderItemDto
+import com.mysanjeevni.mysanjeevni.features.orders.presentation.ui.components.formatDate
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
 import com.mysanjeevni.mysanjeevni.features.payment.domain.model.PaymentMethod
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.state.PaymentState
@@ -205,6 +206,9 @@ fun PaymentScreen(
                 viewModel.resetState()
                 orderViewModel.setRecentOrder(state.order)
 
+                val shorterId = state.order.id.takeLast(8).uppercase()
+                val orderDate = formatDate(state.order.createdAt)
+
                 navController.navigate(
                     Screen.OrderSuccessScreen.createRoute(address!!.id)
                 ) {
@@ -216,8 +220,8 @@ fun PaymentScreen(
 
                 FcmHelper.sendNotification(
                     userId = userId ?: "",
-                    title = "Order Confirmed 🎉",
-                    body = "Your order has been placed successfully."
+                    title = "Order Confirmed 🎉 \t\t  $orderDate",
+                    body = "Your order #$shorterId has been placed successfully."
                 )
             }
 

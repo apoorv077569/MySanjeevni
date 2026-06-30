@@ -40,7 +40,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun SplashScreen(navController: NavController) {
+fun SplashScreen(navController: NavController,openNotification: Boolean) {
 
     val context = LocalContext.current
     val session = remember { SessionManager(context) }
@@ -72,6 +72,11 @@ fun SplashScreen(navController: NavController) {
         when{
             !isLoggedIn -> {
                 navController.navigate(Screen.OnBoarding.route){
+                    popUpTo(Screen.Splash.route){inclusive = true}
+                }
+            }
+            openNotification ->{
+                navController.navigate(Screen.NotificationScreen.route){
                     popUpTo(Screen.Splash.route){inclusive = true}
                 }
             }
