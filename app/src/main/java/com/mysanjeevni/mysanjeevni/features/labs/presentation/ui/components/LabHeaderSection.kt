@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mysanjeevni.mysanjeevni.features.labs.domain.model.LabTestDetail
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import kotlin.math.roundToInt
 
 @Composable
@@ -57,7 +58,7 @@ fun LabHeaderSection(test: LabTestDetail) {
                     )
                     .padding(horizontal = 8.dp, vertical = 3.dp)
             ) {
-                Text(
+                AutoText(
                     text = "PARTNER TEST",
                     color = Color.White,
                     fontSize = 10.sp,
@@ -68,7 +69,7 @@ fun LabHeaderSection(test: LabTestDetail) {
 
             Spacer(Modifier.height(8.dp))
 
-            Text(
+            AutoText(
                 text = test.name,
                 color = Color.White,
                 fontSize = 22.sp,
@@ -78,13 +79,13 @@ fun LabHeaderSection(test: LabTestDetail) {
 
             Spacer(Modifier.height(4.dp))
 
-            Text(
+            AutoText(
                 text = "Partner test by ${test.name}",
                 color = Color.White.copy(alpha = 0.85f),
                 fontSize = 12.sp
             )
 
-            Text(
+            AutoText(
                 text = "Includes ${test.testsIncluded.size} tests • ${if (test.fasting) "Fasting may be required" else "No fasting required"}",
                 color = Color.White.copy(alpha = 0.85f),
                 fontSize = 12.sp
@@ -92,16 +93,16 @@ fun LabHeaderSection(test: LabTestDetail) {
 
             Spacer(Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "⭐", fontSize = 14.sp)
+                AutoText(text = "⭐", fontSize = 14.sp)
                 Spacer(Modifier.width(4.dp))
-                Text(
+                AutoText(
                     text = "${test.rating}",
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp
                 )
                 Spacer(Modifier.width(12.dp))
-                Text(
+                AutoText(
                     text = "| ${test.testsIncluded.size} Tests",
                     color = Color.White.copy(alpha = 0.85f),
                     fontSize = 14.sp

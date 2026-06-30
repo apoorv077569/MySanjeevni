@@ -23,6 +23,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.state.LabAvailabilityState
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.DatePickerField
 import com.mysanjeevni.mysanjeevni.utils.TimeSlotDropdown
 
@@ -75,7 +76,7 @@ fun BookTestForm(
             ) {
                 IconBadge(icon = Icons.Default.LocalShipping)
                 Spacer(Modifier.width(12.dp))
-                Text(
+                AutoText(
                     "Collection Type",
                     color = colorScheme.onSurfaceVariant,
                     fontSize = 13.sp
@@ -118,13 +119,13 @@ fun BookTestForm(
                 }
                 Spacer(Modifier.width(14.dp))
                 Column {
-                    Text(
+                    AutoText(
                         text = testName,
                         color = colorScheme.onSurface,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
-                    Text(
+                    AutoText(
                         text = "₹$testPrice",
                         color = colorScheme.primary,
                         fontWeight = FontWeight.Bold,
@@ -242,7 +243,7 @@ fun BookTestForm(
                     value = instructions,
                     onValueChange = onInstructionsChange,
                     placeholder = {
-                        Text(
+                        AutoText(
                             "Special Instructions (Optional)",
                             color = colorScheme.onSurfaceVariant
                         )
@@ -261,7 +262,7 @@ fun BookTestForm(
 
         // ── Validation Error ──────────────────────────────────────────────
         showValidationError?.let {
-            Text(
+            AutoText(
                 text = it,
                 color = colorScheme.error,
                 fontSize = 12.sp,
@@ -300,7 +301,7 @@ fun BookTestForm(
                         strokeWidth = 2.5.dp
                     )
                     Spacer(Modifier.width(12.dp))
-                    Text(
+                    AutoText(
                         "Processing...",
                         color = colorScheme.onSurface.copy(alpha = 0.6f),
                         fontWeight = FontWeight.Bold,
@@ -315,7 +316,7 @@ fun BookTestForm(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    AutoText(
                         "Confirm Booking",
                         color = if (isButtonDisabled) colorScheme.onSurface.copy(alpha = 0.38f)
                         else colorScheme.onPrimary,
@@ -358,7 +359,7 @@ fun BookTestForm(
                 modifier = Modifier.size(16.dp)
             )
             Spacer(Modifier.width(6.dp))
-            Text(
+            AutoText(
                 "Your details are safe and secure with us.",
                 color = colorScheme.onSurfaceVariant,
                 fontSize = 12.sp
@@ -432,7 +433,7 @@ private fun DarkTextField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = { Text(placeholder, color = colorScheme.onSurfaceVariant) },
+            placeholder = { AutoText(placeholder, color = colorScheme.onSurfaceVariant) },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = colorScheme.primary,
                 unfocusedBorderColor = colorScheme.outline.copy(alpha = 0.3f),
@@ -481,13 +482,13 @@ private fun CollectionTypeOption(
         )
         Spacer(Modifier.width(6.dp))
         Column {
-            Text(
+            AutoText(
                 label,
                 color = colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 13.sp
             )
-            Text(subtitle, color = colorScheme.onSurfaceVariant, fontSize = 11.sp)
+            AutoText(subtitle, color = colorScheme.onSurfaceVariant, fontSize = 11.sp)
         }
     }
 }
@@ -495,7 +496,7 @@ private fun CollectionTypeOption(
 @Composable
 private fun StatusText(text: String, isError: Boolean = false) {
     val colorScheme = MaterialTheme.colorScheme
-    Text(
+    AutoText(
         text = text,
         color = if (isError) colorScheme.error else colorScheme.onSurfaceVariant,
         fontSize = 11.sp,
@@ -520,7 +521,7 @@ private fun GenderDropdown(
             value = selected,
             onValueChange = {},
             readOnly = true,
-            label = { Text("Select gender") },
+            label = { AutoText("Select gender") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -533,7 +534,7 @@ private fun GenderDropdown(
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(option) },
+                    text = { AutoText(option) },
                     onClick = {
                         onGenderSelected(option)
                         expanded = false

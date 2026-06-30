@@ -40,13 +40,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mysanjeevni.mysanjeevni.R
+import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 import com.mysanjeevni.mysanjeevni.features.payment.domain.model.PaymentMethod
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 private val PrimaryPurple = Color(0xFF4A3AFF)
 private val PurpleBg = Color(0xFFEBE9FF)
 private val PurpleIconBg = Color(0xFFD9D4FF)
-private val GrayIconBg = Color(0xFFEEEEEE)
-private val GreenBadge = Color(0xFF2ECC71)
+
 
 
 @Composable
@@ -65,8 +66,10 @@ fun PaymentOptionItem(
 @Composable
 private fun RazorpayOptionCard(selected: Boolean, onSelect: () -> Unit) {
     val colorScheme = MaterialTheme.colorScheme
+    val isDark = LocalIsDarkTheme.current
+
     val selectedBg =
-        if (androidx.compose.foundation.isSystemInDarkTheme())
+        if (isDark)
             MaterialTheme.colorScheme.primaryContainer
         else
             PurpleBg
@@ -109,13 +112,13 @@ private fun RazorpayOptionCard(selected: Boolean, onSelect: () -> Unit) {
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AutoText(
                     text = "Pay Online",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.onSurface
                 )
-                Text(
+                AutoText(
                     text = "UPI, Cards, NetBanking",
                     style = MaterialTheme.typography.bodySmall,
                     color = colorScheme.onSurfaceVariant
@@ -198,14 +201,14 @@ private fun CodOptionCard(
                 modifier = Modifier.weight(1f)
             ) {
 
-                Text(
+                AutoText(
                     text = "Cash on Delivery",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.onSurface
                 )
 
-                Text(
+                AutoText(
                     text = "Pay when order arrives",
                     style = MaterialTheme.typography.bodySmall,
                     color = colorScheme.onSurfaceVariant
@@ -226,7 +229,7 @@ private fun CodOptionCard(
 
                     Spacer(modifier = Modifier.width(4.dp))
 
-                    Text(
+                    AutoText(
                         text = "Safe & Secure",
                         fontSize = 12.sp,
                         color = Color(0xFF2ECC71),
@@ -266,7 +269,6 @@ private fun PaymentLogoBadges() {
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             LogoPillBadge(
                 painter = painterResource(id = R.drawable.mastercard),
-//                borderColor = Color(0xFFCC3333),
                 bgColor = Color(0xFFFFEEEE),
                 contentDescription = "Mastercard"
             )

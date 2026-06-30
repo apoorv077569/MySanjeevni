@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -151,7 +152,7 @@ fun OrderSuccessScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
+            AutoText(
                 text = "Order Placed Successfully! 🎉",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -159,7 +160,7 @@ fun OrderSuccessScreen(
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(6.dp))
-            Text(
+            AutoText(
                 text = "We've received your order and will keep you updated.",
                 fontSize = 13.sp,
                 color = colorScheme.onSurfaceVariant,
@@ -198,7 +199,7 @@ fun OrderSuccessScreen(
                                 modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(
+                            AutoText(
                                 text = "Pending",
                                 fontSize = 13.sp,
                                 color = OrangeBadge,
@@ -227,7 +228,7 @@ fun OrderSuccessScreen(
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(
+                            AutoText(
                                 text = timeStr,
                                 fontSize = 14.sp,
                                 color = colorScheme.onSurface,
@@ -274,7 +275,7 @@ fun OrderSuccessScreen(
 
                 Spacer(modifier = Modifier.width(10.dp))
 
-                Text(
+                AutoText(
                     text = "You will receive order updates on",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -312,7 +313,7 @@ fun OrderSuccessScreen(
                         tint = Color.White
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    AutoText(
                         text = "View Orders",
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp,
@@ -352,7 +353,7 @@ fun OrderSuccessScreen(
                         tint = TealDark
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    AutoText(
                         text = "Back to Home",
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp,
@@ -392,8 +393,8 @@ private fun OrderRow(
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = label, fontSize = 12.sp, color = colorScheme.onSurfaceVariant)
-            Text(text = value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color =colorScheme.onSurface)
+            AutoText(text = label, fontSize = 12.sp, color = colorScheme.onSurfaceVariant)
+            AutoText(text = value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color =colorScheme.onSurface)
         }
         trailing()
     }

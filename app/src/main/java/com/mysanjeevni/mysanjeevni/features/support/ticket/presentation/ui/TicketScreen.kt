@@ -70,6 +70,7 @@ import com.mysanjeevni.mysanjeevni.features.support.chat.presentation.viewmodel.
 import com.mysanjeevni.mysanjeevni.features.support.returns.data.dto.ReturnRequestDto
 import com.mysanjeevni.mysanjeevni.features.support.returns.presentation.viewmodel.ReturnViewModel
 import com.mysanjeevni.mysanjeevni.features.support.ticket.presentation.viewmodel.TicketViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 
 private val AccentTeal = Color(0xFF1E8F73)
@@ -114,13 +115,13 @@ fun SupportCenterScreen(navController: NavController, ticketViewModel: TicketVie
                 Spacer(modifier = Modifier.width(4.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
+                    AutoText(
                         text = "Support Center",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground
                     )
-                    Text(
+                    AutoText(
                         text = "We're here to help you",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -169,7 +170,7 @@ fun SupportCenterScreen(navController: NavController, ticketViewModel: TicketVie
                                 modifier = Modifier.size(26.dp)
                             )
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text(
+                            AutoText(
                                 text = title,
                                 color = tint,
                                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
@@ -346,7 +347,7 @@ fun ReturnsTab(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
+        AutoText(
             text = "Return History",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
@@ -362,7 +363,7 @@ fun ReturnsTab(
                 modifier = Modifier.fillMaxWidth()
             ) {
 
-                Text(
+                AutoText(
                     text = "No return requests found",
                     modifier = Modifier.padding(16.dp)
                 )
@@ -384,26 +385,26 @@ fun ReturnsTab(
                         modifier = Modifier.padding(14.dp)
                     ) {
 
-                        Text(
+                        AutoText(
                             text = item.productName,
                             fontWeight = FontWeight.Bold
                         )
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        Text(
+                        AutoText(
                             text = "Order ID: ${item.orderId}"
                         )
 
-                        Text(
+                        AutoText(
                             text = "Reason: ${item.reason}"
                         )
 
-                        Text(
+                        AutoText(
                             text = "Resolution: ${item.preferredResolution}"
                         )
 
-                        Text(
+                        AutoText(
                             text = "Status: ${item.status}",
                             color = AccentTeal,
                             fontWeight = FontWeight.Bold
@@ -413,7 +414,7 @@ fun ReturnsTab(
 
                             Spacer(modifier = Modifier.height(4.dp))
 
-                            Text(
+                            AutoText(
                                 text = "Support Note: ${item.supportNote}"
                             )
                         }
@@ -501,7 +502,7 @@ fun TicketsTab(
                 modifier = Modifier.padding(12.dp)
             ) {
 
-                Text(
+                AutoText(
                     text = "Category",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold
@@ -548,7 +549,7 @@ fun TicketsTab(
 
                             DropdownMenuItem(
                                 text = {
-                                    Text(category)
+                                    AutoText(category)
                                 },
                                 onClick = {
                                     selectedCategory = category
@@ -627,7 +628,7 @@ fun TicketsTab(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
+        AutoText(
             text = "Ticket History",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
@@ -644,7 +645,7 @@ fun TicketsTab(
                 modifier = Modifier.fillMaxWidth()
             ) {
 
-                Text(
+                AutoText(
                     text = "No tickets raised yet",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium,
@@ -670,7 +671,7 @@ fun TicketsTab(
                             modifier = Modifier.padding(14.dp)
                         ) {
 
-                            Text(
+                            AutoText(
                                 text = ticket.subject,
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.titleSmall
@@ -678,14 +679,14 @@ fun TicketsTab(
 
                             Spacer(modifier = Modifier.height(4.dp))
 
-                            Text(
+                            AutoText(
                                 text = "Category: ${ticket.category}",
                                 style = MaterialTheme.typography.bodyMedium
                             )
 
                             Spacer(modifier = Modifier.height(2.dp))
 
-                            Text(
+                            AutoText(
                                 text = "Status: ${ticket.status}",
                                 color = AccentTeal,
                                 fontWeight = FontWeight.SemiBold
@@ -693,7 +694,7 @@ fun TicketsTab(
 
                             Spacer(modifier = Modifier.height(4.dp))
 
-                            Text(
+                            AutoText(
                                 text = ticket.message,
                                 style = MaterialTheme.typography.bodySmall
                             )
@@ -760,7 +761,7 @@ fun ChatTab(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
+        AutoText(
             text = "Conversation",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
@@ -812,7 +813,7 @@ fun ChatTab(
                                     MaterialTheme.colorScheme.surfaceVariant
                         ) {
 
-                            Text(
+                            AutoText(
                                 text = chat.message,
                                 modifier = Modifier.padding(12.dp),
                                 color =
@@ -867,14 +868,14 @@ private fun BannerCard(
             Spacer(modifier = Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AutoText(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(
+                AutoText(
                     text = description,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -928,7 +929,7 @@ private fun SupportFieldCard(
 
             Column(modifier = Modifier.weight(1f)) {
 
-                Text(
+                AutoText(
                     text = label,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
@@ -941,7 +942,7 @@ private fun SupportFieldCard(
                     value = value,
                     onValueChange = onValueChange,
                     placeholder = {
-                        Text(
+                        AutoText(
                             text = placeholder,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1004,7 +1005,7 @@ private fun InfoNoteCard(icon: ImageVector, text: String) {
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            Text(
+            AutoText(
                 text = text,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
@@ -1036,7 +1037,7 @@ private fun PrimaryButton(
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
+        AutoText(
             text = text,
             fontWeight = FontWeight.Bold,
             color = Color.White

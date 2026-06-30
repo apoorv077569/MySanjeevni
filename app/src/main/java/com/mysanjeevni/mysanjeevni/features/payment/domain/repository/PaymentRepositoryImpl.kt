@@ -11,7 +11,7 @@ import com.mysanjeevni.mysanjeevni.features.payment.data.remote.VerifyResponse
 import javax.inject.Inject
 
 class PaymentRepositoryImpl @Inject constructor(
-    private val api: LabPaymentApi
+    private val api: PaymentApi
 ) : PaymentRepository {
 
     override suspend fun createRazorpayOrder(

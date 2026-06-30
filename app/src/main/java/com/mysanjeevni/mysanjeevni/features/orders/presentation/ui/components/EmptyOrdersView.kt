@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun EmptyOrdersView(
@@ -42,12 +43,12 @@ fun EmptyOrdersView(
                 modifier = Modifier.size(32.dp)
             )
         }
-        Text(
+        AutoText(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
-        Text(
+        AutoText(
             text = subtitle,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant

@@ -141,7 +141,7 @@ interface ApiService {
     suspend fun cancelBooking(
         @Path("id") bookingId: String,
         @Header("x-user-id") userId: String?
-    ): CancelBookingResponseDto
+    ): Response<CancelBookingResponseDto>
 
     @POST("api/lab-test-bookings/{id}/sync")
     suspend fun syncBooking(

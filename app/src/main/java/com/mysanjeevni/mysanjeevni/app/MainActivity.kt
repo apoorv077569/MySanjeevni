@@ -41,6 +41,7 @@ import java.util.Locale
 
 
 val LocalAppLanguage = staticCompositionLocalOf { "en" }
+val LocalIsDarkTheme = staticCompositionLocalOf { false }
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
@@ -171,7 +172,10 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
                 AppTheme.LIGHT -> false
                 AppTheme.SYSTEM -> isSystemInDarkTheme()
             }
-            CompositionLocalProvider(LocalAppLanguage provides currentLocaleCode) {
+            CompositionLocalProvider(
+                LocalAppLanguage provides currentLocaleCode,
+                LocalIsDarkTheme provides darkTheme
+            ) {
                 MySanjeevniTheme(darkTheme = darkTheme) {
 
 
@@ -192,7 +196,7 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
 
                         Scaffold(
                             bottomBar = {
-                                AppBottomBar(navController,currentRoute)
+                                AppBottomBar(navController, currentRoute)
                             }
                         ) { innerPadding ->
                             NavGraph(

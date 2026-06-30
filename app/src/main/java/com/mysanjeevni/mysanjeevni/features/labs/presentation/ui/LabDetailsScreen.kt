@@ -1,7 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.labs.presentation.ui
 
 import android.content.Intent
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -29,11 +27,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.state.LabDetailState
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.components.LabBottomBar
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.components.LabHeaderSection
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.components.LabInfoSection
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.components.LabTestsSection
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +42,8 @@ fun LabDetailScreen(
     state: LabDetailState,
     onAddToCart: () -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+
+    val isDark = LocalIsDarkTheme.current
 
     val screenBg =
         if (isDark) Color(0xFF121212)
@@ -71,7 +72,7 @@ fun LabDetailScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
+                AutoText(
                     text = "Loading test details...",
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -89,7 +90,7 @@ fun LabDetailScreen(
             contentAlignment = Alignment.Center
         ) {
 
-            Text(
+            AutoText(
                 text = state.error,
                 color = MaterialTheme.colorScheme.error
             )
@@ -104,7 +105,7 @@ fun LabDetailScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
+                    AutoText(
                         text = "Lab Test Details",
                         style = MaterialTheme.typography.titleMedium
                     )
@@ -134,19 +135,15 @@ fun LabDetailScreen(
                                 putExtra(
                                     Intent.EXTRA_TEXT,
                                     """
-🧪 ${labTest.name}
-
-Price: ₹${labTest.price}
-
-Book this test on MySanjeevni:
-https://www.mysanjeevni.com/labtest/${labTest.id}
-
-Download MySanjeevni:
-https://www.mysanjeevni.com
-                """.trimIndent()
+                                🧪 ${labTest.name}
+                                    Price: ₹${labTest.price}
+                                    Book this test on MySanjeevni:
+                                    https://www.mysanjeevni.com/labtest/${labTest.id}
+                                    Download MySanjeevni:
+                                    https://www.mysanjeevni.com
+                                    """.trimIndent()
                                 )
                             }
-
                             context.startActivity(
                                 Intent.createChooser(
                                     shareIntent,

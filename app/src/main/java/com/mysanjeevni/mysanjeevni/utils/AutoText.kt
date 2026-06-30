@@ -5,6 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -73,4 +74,27 @@ fun AutoText(
         overflow = overflow,
         style = finalStyle
     )
+}
+
+
+@Composable
+fun rememberTranslatedText(text: String): String {
+
+    val targetCode = LocalAppLanguage.current
+
+    var translated by remember(text, targetCode) {
+        mutableStateOf(text)
+    }
+
+    LaunchedEffect(text, targetCode) {
+        if (targetCode == "en") {
+            translated = text
+        } else {
+            TranslatorManager.translate(text, targetCode) {
+                translated = it
+            }
+        }
+    }
+
+    return translated
 }

@@ -9,6 +9,6 @@ data class OrderDto(
     @SerializedName("totalPrice") val totalPrice: Double,
     @SerializedName("deliveryAddress") val deliveryAddress: String,
     @SerializedName("status") val status: String,
-    @SerializedName("createdAt") val createdAt: String,
+    @SerializedName("createdAt") val createdAt: String? = null,
     @SerializedName("paymentStatus") val paymentStatus: String
 )

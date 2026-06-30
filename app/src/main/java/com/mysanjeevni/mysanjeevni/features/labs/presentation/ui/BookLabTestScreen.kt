@@ -31,6 +31,7 @@ import com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel.LabAvail
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.state.PaymentState
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.viewmodel.PaymentViewModel
 import com.mysanjeevni.mysanjeevni.features.payment.utils.startRazorpayCheckout
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.convertToApiDateFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -141,8 +142,8 @@ fun BookTestScreen(
             startRazorpayCheckout(
                 activity = activity,
                 order = ps.order,
+                description = "Lab Test Booking",
                 onSuccess = { _, _, _ ->
-                    // This local lambda is usually ignored by the SDK
                 },
                 onFailure = { _ ->
                     checkoutOpened = false
@@ -165,13 +166,13 @@ fun BookTestScreen(
                 ),
                 title = {
                     Column {
-                        Text(
+                        AutoText(
                             "Book This Test",
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = colorScheme.onBackground
                         )
-                        Text(
+                        AutoText(
                             "Fill in the details to schedule your test",
                             fontSize = 12.sp,
                             color = colorScheme.onSurfaceVariant

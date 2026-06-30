@@ -4,6 +4,11 @@ import com.mysanjeevni.mysanjeevni.features.orders.data.dto.OrderDto
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.OrderItemDto
 import com.mysanjeevni.mysanjeevni.features.orders.domain.model.Order
 import com.mysanjeevni.mysanjeevni.features.orders.domain.model.OrderItem
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+
 
 fun OrderItemDto.toDomain() = OrderItem(
     productId = productId,
@@ -19,6 +24,12 @@ fun OrderDto.toDomain() = Order(
     totalPrice = totalPrice,
     deliveryAddress = deliveryAddress,
     status = status,
-    createdAt = createdAt,
+
+    createdAt = createdAt ?: SimpleDateFormat(
+        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+        Locale.US
+    ).apply {
+        timeZone = TimeZone.getTimeZone("UTC")
+    }.format(Date()),
     paymentStatus = paymentStatus
 )

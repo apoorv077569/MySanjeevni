@@ -117,8 +117,9 @@ dependencies {
 
     implementation("com.hbb20:ccp:2.7.0")
 //    ml kit translator
-    implementation("com.google.mlkit:translate:17.0.1")
-//    Pagination
+    implementation("com.google.mlkit:translate:17.0.3")
+
+    //    Pagination
     implementation("androidx.paging:paging-runtime-ktx:3.3.0")
     implementation("androidx.paging:paging-compose:3.3.0")
 

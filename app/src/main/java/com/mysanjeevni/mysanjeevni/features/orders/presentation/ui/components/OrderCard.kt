@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.mysanjeevni.mysanjeevni.features.orders.domain.model.OrderUiModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import kotlin.math.abs
 
 @Composable
@@ -101,7 +102,7 @@ fun OrderCard(
                     modifier = Modifier.weight(1f)
                 ) {
 
-                    Text(
+                    AutoText(
                         text = "Order #${order.id.takeLast(8).uppercase()}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
@@ -117,80 +118,6 @@ fun OrderCard(
                 )
             }
 
-            // Header
-//            Row(
-//                modifier = Modifier.fillMaxWidth(),
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                if (!medicine?.image.isNullOrEmpty()) {
-//
-//                    AsyncImage(
-//                        model = medicine.image,
-//                        contentDescription = medicine.name,
-//                        modifier = Modifier
-//                            .size(60.dp)
-//                            .clip(RoundedCornerShape(14.dp))
-//                    )
-//
-//                } else {
-//                    Box(
-//                        modifier = Modifier
-//                            .size(60.dp)
-//                            .clip(RoundedCornerShape(14.dp))
-//                            .background(accentBg),
-//                        contentAlignment = Alignment.Center
-//                    ) {
-//                        Icon(
-//                            imageVector = Icons.Outlined.ShoppingBag,
-//                            contentDescription = null,
-//                            tint = accentFg,
-//                            modifier = Modifier.size(26.dp)
-//                        )
-//                    }
-//                }
-//                Spacer(modifier = Modifier.width(12.dp))
-//                Column(
-//                    modifier = Modifier.weight(1f)
-//                ) {
-//                    Text(
-//                        text = medicine?.name ?: "Medicine",
-//                        style = MaterialTheme.typography.titleSmall,
-//                        fontWeight = FontWeight.Bold,
-//                        color = MaterialTheme.colorScheme.onSurface,
-//                        maxLines = 2
-//                    )
-//                    Spacer(modifier = Modifier.height(4.dp))
-//                    Row(
-//                        verticalAlignment = Alignment.CenterVertically,
-//                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-//                    ) {
-//                        Icon(
-//                            imageVector = Icons.Outlined.Description,
-//                            contentDescription = null,
-//                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-//                            modifier = Modifier.size(13.dp)
-//                        )
-//                        Text(
-//                            text = "Order #${order.id.takeLast(6).uppercase()}",
-//                            style = MaterialTheme.typography.bodySmall,
-//                            color = MaterialTheme.colorScheme.onSurfaceVariant
-//                        )
-//                    }
-//
-//                    if (!medicine?.brand.isNullOrEmpty()) {
-//                        Spacer(modifier = Modifier.height(2.dp))
-//                        Text(
-//                            text = medicine.brand,
-//                            style = MaterialTheme.typography.bodySmall,
-//                            color = MaterialTheme.colorScheme.onSurfaceVariant
-//                        )
-//                    }
-//                }
-//
-//                OrderStatusChip(
-//                    status = order.status
-//                )
-//            }
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
@@ -210,12 +137,12 @@ fun OrderCard(
                         tint = accentFg
                     )
                     Column {
-                        Text(
+                        AutoText(
                             text = "Amount",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text(
+                        AutoText(
                             text = "₹${order.totalPrice}",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
@@ -234,12 +161,12 @@ fun OrderCard(
                         tint = accentFg
                     )
                     Column {
-                        Text(
+                        AutoText(
                             text = "Ordered On",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text(
+                        AutoText(
                             text = formatDate(order.createdAt),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
@@ -269,7 +196,7 @@ fun OrderCard(
                         size = 28.dp,
                         iconSize = 14.dp
                     )
-                    Text(
+                    AutoText(
                         text = "${order.items.size} ${if (order.items.size == 1) "Item" else "Items"}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface

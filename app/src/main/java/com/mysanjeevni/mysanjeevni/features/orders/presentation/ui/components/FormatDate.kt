@@ -5,6 +5,7 @@ import java.util.Locale
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 
 fun formatDate(dateString: String): String {
     return try {
@@ -24,7 +25,9 @@ data class StatusColorSet(
 object StatusColors {
     @Composable
     fun forOrderStatus(status: String): StatusColorSet {
-        val isDark = isSystemInDarkTheme()
+//        val isDark = isSystemInDarkTheme()
+        val isDark = LocalIsDarkTheme.current
+
         return when (status.lowercase()) {
             "delivered" -> if (isDark)
                 StatusColorSet(Color(0xFF1B3A1F), Color(0xFF81C784))
@@ -50,7 +53,9 @@ object StatusColors {
     }
     @Composable
     fun forPaymentStatus(status: String): StatusColorSet {
-        val isDark = isSystemInDarkTheme()
+//        val isDark = isSystemInDarkTheme()
+        val isDark = LocalIsDarkTheme.current
+
         return when (status.lowercase()) {
             "paid" -> if (isDark)
                 StatusColorSet(Color(0xFF1B3A1F), Color(0xFF81C784))

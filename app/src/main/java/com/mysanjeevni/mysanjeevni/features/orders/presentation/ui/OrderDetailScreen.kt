@@ -52,6 +52,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderDetailViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 private val AccentPurple = Color(0xFF6C5CE7)
 private val SuccessGreen = Color(0xFF4CAF50)
@@ -101,13 +102,13 @@ fun OrderDetailScreen(
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column {
-                    Text(
+                    AutoText(
                         text = "Order Details",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground
                     )
-                    Text(
+                    AutoText(
                         text = "View and track your order",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -131,7 +132,7 @@ fun OrderDetailScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
+                        AutoText(
                             text = state.error,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -154,13 +155,13 @@ fun OrderDetailScreen(
                         item {
                             SectionCard {
                                 Column {
-                                    Text(
+                                    AutoText(
                                         "Order #${order.id.takeLast(8).uppercase()}",
                                         style = MaterialTheme.typography.headlineSmall,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
-                                    Text(
+                                    AutoText(
                                         text = "₹${order.totalPrice}",
                                         style = MaterialTheme.typography.headlineMedium,
                                         fontWeight = FontWeight.Bold,
@@ -173,7 +174,7 @@ fun OrderDetailScreen(
                         item {
                             SectionCard {
                                 Column {
-                                    Text(
+                                    AutoText(
                                         text = "Track Order",
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold,
@@ -291,14 +292,14 @@ fun OrderDetailScreen(
                                                 modifier = Modifier.weight(1f)
                                             ) {
 
-                                                Text(
+                                                AutoText(
                                                     text = medicine.name,
                                                     style = MaterialTheme.typography.titleMedium,
                                                     fontWeight = FontWeight.Bold
                                                 )
 
                                                 if (medicine.brand.isNotBlank()) {
-                                                    Text(
+                                                    AutoText(
                                                         text = medicine.brand,
                                                         style = MaterialTheme.typography.bodyMedium,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -313,12 +314,12 @@ fun OrderDetailScreen(
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
 
-                                                    Text(
+                                                    AutoText(
                                                         text = "Qty : ${order.items.getOrNull(index)?.quantity ?: 1}",
                                                         style = MaterialTheme.typography.bodyMedium
                                                     )
 
-                                                    Text(
+                                                    AutoText(
                                                         text = "₹${medicine.price}",
                                                         style = MaterialTheme.typography.titleMedium,
                                                         fontWeight = FontWeight.Bold,
@@ -348,7 +349,7 @@ fun OrderDetailScreen(
                                             horizontalArrangement = Arrangement.SpaceEvenly
                                         ) {
                                             PaymentColumn("Amount") {
-                                                Text("₹${order.totalPrice}", fontWeight = FontWeight.Bold)
+                                                AutoText("₹${order.totalPrice}", fontWeight = FontWeight.Bold)
                                             }
                                             PaymentColumn("Payment Status") {
                                                 StatusChip(
@@ -358,7 +359,7 @@ fun OrderDetailScreen(
                                                 )
                                             }
                                             PaymentColumn("Order Status") {
-                                                Text(
+                                                AutoText(
                                                     order.status.uppercase(),
                                                     fontWeight = FontWeight.Bold
                                                 )
@@ -404,7 +405,7 @@ private fun SectionHeader(
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
+        AutoText(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
@@ -461,7 +462,7 @@ private fun TrackingStep(
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.padding(bottom = if (isLast) 0.dp else 18.dp)) {
-            Text(
+            AutoText(
                 text = title,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
@@ -490,7 +491,7 @@ private fun AddressRow(
             modifier = Modifier.size(16.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
+        AutoText(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
@@ -509,7 +510,7 @@ private fun PaymentColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.wrapContentSize()
     ) {
-        Text(
+        AutoText(
             text = label,
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -528,7 +529,7 @@ private fun StatusChip(text: String, isPositive: Boolean) {
         shape = RoundedCornerShape(20.dp),
         color = bg
     ) {
-        Text(
+        AutoText(
             text = text,
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,

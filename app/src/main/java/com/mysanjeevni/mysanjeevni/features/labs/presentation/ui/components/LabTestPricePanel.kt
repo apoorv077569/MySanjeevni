@@ -22,14 +22,15 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mysanjeevni.mysanjeevni.features.labs.domain.model.LabTest
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun LabTestPricePanel(test: LabTest, onViewDetails: () -> Unit) {
     val mrp = test.mrp
     Column(horizontalAlignment = Alignment.End) {
-        Text(text = "₹${test.price}", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+        AutoText(text = "₹${test.price}", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
         if (mrp > test.price) {
-            Text(
+            AutoText(
                 text = "₹$mrp",
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -43,7 +44,7 @@ fun LabTestPricePanel(test: LabTest, onViewDetails: () -> Unit) {
             shape = RoundedCornerShape(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Teal)
         ) {
-            Text(text = "View Details", fontWeight = FontWeight.SemiBold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimary)
+            AutoText(text = "View Details", fontWeight = FontWeight.SemiBold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onPrimary)
             Spacer(Modifier.width(3.dp))
             Icon(Icons.Default.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(12.dp))
         }

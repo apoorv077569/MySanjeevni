@@ -35,7 +35,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -61,6 +60,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.EditProfileViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,7 +98,7 @@ fun EditProfileScreen(navController: NavController) {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.edit_profile)) },
+                    title = { AutoText(stringResource(R.string.edit_profile)) },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
@@ -182,7 +182,7 @@ fun EditProfileScreen(navController: NavController) {
                     TextField(
                         value = state.fullName,
                         onValueChange = { viewModel.onNameChanged(it) },
-                        label = { Text(stringResource(R.string.full_name)) },
+                        label = { AutoText(stringResource(R.string.full_name)) },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = colorScheme.surfaceVariant,
                             unfocusedContainerColor = colorScheme.surfaceVariant,
@@ -205,7 +205,7 @@ fun EditProfileScreen(navController: NavController) {
                     TextField(
                         value = state.email,
                         onValueChange = { viewModel.onEmailChanged(it) },
-                        label = { Text(stringResource(R.string.email)) },
+                        label = { AutoText(stringResource(R.string.email)) },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = colorScheme.surfaceVariant,
                             unfocusedContainerColor = colorScheme.surfaceVariant,
@@ -231,7 +231,7 @@ fun EditProfileScreen(navController: NavController) {
                     TextField(
                         value = state.phone,
                         onValueChange = { viewModel.onPhoneChanged(it) },
-                        label = { Text(stringResource(R.string.mobile_number)) },
+                        label = { AutoText(stringResource(R.string.mobile_number)) },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = colorScheme.surfaceVariant,
                             unfocusedContainerColor = colorScheme.surfaceVariant,
@@ -257,7 +257,7 @@ fun EditProfileScreen(navController: NavController) {
                     TextField(
                         value = state.address,
                         onValueChange = { viewModel.onAddressChanged(it) },
-                        label = { Text("Address") },
+                        label = { AutoText("Address") },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = colorScheme.surfaceVariant,
                             unfocusedContainerColor = colorScheme.surfaceVariant,
@@ -295,7 +295,7 @@ fun EditProfileScreen(navController: NavController) {
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text(
+                            AutoText(
                                 stringResource(R.string.save_changes),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold

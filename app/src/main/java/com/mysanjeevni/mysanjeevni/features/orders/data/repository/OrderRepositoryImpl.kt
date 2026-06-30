@@ -6,7 +6,6 @@ import com.mysanjeevni.mysanjeevni.data.remote.api.AuthApiService
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.CreateOrderRequest
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.CreateOrderResponse
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.RazorpayOrderDetailDto
-import com.mysanjeevni.mysanjeevni.features.orders.data.dto.RazorpayOrderDto
 import com.mysanjeevni.mysanjeevni.features.orders.data.mapper.toDomain
 import com.mysanjeevni.mysanjeevni.features.orders.domain.model.Order
 import com.mysanjeevni.mysanjeevni.features.orders.domain.repository.OrderRepository
@@ -27,7 +26,7 @@ class OrderRepositoryImpl @Inject constructor(
             Log.d("ORDER_API", "GET ORDERS START")
             Log.d("ORDER_API", "UserId = $userId")
 
-            val response = authApi.getOrders(userId)
+            val response = api.getOrders(userId)
 
             Log.d(
                 "ORDER_API",
@@ -126,7 +125,7 @@ class OrderRepositoryImpl @Inject constructor(
 
     override suspend fun createOrder(request: CreateOrderRequest): Result<CreateOrderResponse> {
         return try {
-            val response = authApi.createOrder(request)
+            val response = api.createOrder(request)
             if (!response.isSuccessful) {
                 val errorBody = response.errorBody()?.string()
                 Log.d("ORDER_API", "Response Code = ${response.code()}")
@@ -160,7 +159,7 @@ class OrderRepositoryImpl @Inject constructor(
             Log.d("ORDER_DETAIL_API", "Fetching Order")
             Log.d("ORDER_DETAIL_API", "OrderId = $orderId")
 
-            val response = authApi.getRazorpayOrder(orderId)
+            val response = api.getRazorpayOrder(orderId)
 
             Log.d(
                 "ORDER_DETAIL_API",

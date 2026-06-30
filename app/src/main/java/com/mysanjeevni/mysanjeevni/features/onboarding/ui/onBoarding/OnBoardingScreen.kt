@@ -9,15 +9,14 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.mysanjeevni.mysanjeevni.features.onboarding.data.onBoardingPages
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -44,7 +43,7 @@ fun OnBoardingScreen(onFinish: () -> Unit) {
             Spacer(modifier = Modifier.height(40.dp))
 
             // Skip Button
-            Text(
+            AutoText(
                 text = "Skip",
                 color = Color.White,
                 modifier = Modifier
@@ -109,7 +108,7 @@ fun OnBoardingScreen(onFinish: () -> Unit) {
                     .height(55.dp),
                 shape = RoundedCornerShape(30.dp)
             ) {
-                Text(
+                AutoText(
                     text =
                         if (pagerState.currentPage == onBoardingPages.lastIndex)
                             "Get Started"

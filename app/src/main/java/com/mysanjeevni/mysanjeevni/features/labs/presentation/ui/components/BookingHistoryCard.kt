@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mysanjeevni.mysanjeevni.features.labs.domain.model.BookingHistory
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 
 private data class StatusStyle(
@@ -120,14 +121,14 @@ fun BookingHistoryCard(
 
                     // Name + price + status chip
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
+                        AutoText(
                             text = booking.testName,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                         Spacer(Modifier.height(4.dp))
-                        Text(
+                        AutoText(
                             text = "₹${booking.amount}",
                             fontSize = 13.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -162,7 +163,7 @@ fun BookingHistoryCard(
                         modifier = Modifier.size(16.dp),
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text(
+                    AutoText(
                         text = "Booked: ${booking.createdAt}",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -192,7 +193,7 @@ private fun StatusChip(style: StatusStyle) {
                 modifier = Modifier.size(14.dp),
             )
             Spacer(Modifier.width(4.dp))
-            Text(
+            AutoText(
                 text = style.label,
                 color = style.color,
                 fontSize = 11.sp,
@@ -218,7 +219,7 @@ fun EmptyBookingHistory() {
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(16.dp))
-        Text(
+        AutoText(
             text = "No Lab Bookings Found",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 15.sp,
