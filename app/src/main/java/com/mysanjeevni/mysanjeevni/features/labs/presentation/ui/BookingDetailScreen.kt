@@ -199,7 +199,8 @@ fun BookingDetailScreen(
                             IconButton(
                                 onClick = {
                                     historyViewModel.syncBooking(
-                                        booking.id
+                                        booking.id,
+                                        booking.testName
                                     )
                                 }
                             ) {
@@ -444,7 +445,7 @@ fun BookingDetailScreen(
                     Button(
                         onClick = {
                             showCancelDialog = false
-                            historyViewModel.cancelBooking(booking.id)
+                            historyViewModel.cancelBooking(booking.id,booking.testName)
                         }
                     ) {
                         AutoText("Yes, Cancel")

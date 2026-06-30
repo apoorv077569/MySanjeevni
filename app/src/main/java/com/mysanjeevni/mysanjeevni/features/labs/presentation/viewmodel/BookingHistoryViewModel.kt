@@ -68,7 +68,7 @@ class BookingHistoryViewModel @Inject constructor(
         }
     }
 
-    fun cancelBooking(bookingId: String) {
+    fun cancelBooking(bookingId: String,testName:String) {
         val userId = sessionManager.getUserId()
         viewModelScope.launch {
             _state.update {
@@ -80,7 +80,6 @@ class BookingHistoryViewModel @Inject constructor(
             cancelBookingUseCase(
                 bookingId
             ).onSuccess {
-
                 _state.update {
                     it.copy(
                         isCancelling = false,
@@ -90,14 +89,11 @@ class BookingHistoryViewModel @Inject constructor(
                 FcmHelper.sendNotification(
                     userId.toString(),
                     "Booking Cancelled",
-                    "Your booking for lab test has been cancelled"
+                    "Your booking for lab test $testName has been cancelled"
                 )
-
                 getBookingHistory()
-            }
-                .onFailure { e ->
-
-                    _state.update {
+            }.onFailure { e ->
+                _state.update {
                         it.copy(
                             isCancelling = false,
                             error = e.message
@@ -121,7 +117,8 @@ class BookingHistoryViewModel @Inject constructor(
     }
 
     fun syncBooking(
-        bookingId: String
+        bookingId: String,
+        testName:String
     ) {
         viewModelScope.launch {
             val userId = sessionManager.getUserId()
@@ -141,7 +138,7 @@ class BookingHistoryViewModel @Inject constructor(
                 FcmHelper.sendNotification(
                     userId.toString(),
                     "Booking Synced",
-                    "Your booking information has been updated successfully"
+                    "Your booking information for $testName has been updated successfully"
                 )
                 getBookingHistory()
             }

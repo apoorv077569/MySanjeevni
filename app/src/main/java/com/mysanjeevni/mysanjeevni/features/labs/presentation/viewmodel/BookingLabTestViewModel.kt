@@ -1,6 +1,7 @@
 package com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.CreateLabBookingRequestDto
@@ -117,7 +118,7 @@ class BookLabTestViewModel @Inject constructor(
                         FcmHelper.sendNotification(
                             userId.toString(),
                             "Error",
-                            "A technical error occurred while booking your lab test"
+                            "A technical error occurred while booking your lab test: ${request.testName}"
                         )
                     }
 
@@ -127,7 +128,6 @@ class BookLabTestViewModel @Inject constructor(
                     "Exception = ${e.message}",
                     e
                 )
-
                 _state.update {
                     it.copy(
                         isLoading = false,
