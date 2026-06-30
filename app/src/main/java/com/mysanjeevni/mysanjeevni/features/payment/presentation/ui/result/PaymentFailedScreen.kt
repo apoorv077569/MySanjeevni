@@ -56,7 +56,7 @@ fun PaymentFailedScreen(
     onHome: () -> Unit
 ) {
 //    val isDark = isSystemInDarkTheme()
-    val isDark = LocalIsDarkTheme.current
+    val isDark = LocalIsDarkTheme.current || isSystemInDarkTheme()
     // Resolved colors
     val bgColor         = if (isDark) Color(0xFF121212)   else Color.White
     val titleNavy       = if (isDark) Color(0xFFE8EAF6)   else Color(0xFF1A2340)

@@ -48,7 +48,7 @@ fun MyConsultsScreen(
 
     // Theme logic
 //    val isDark = isSystemInDarkTheme()
-    val isDark = LocalIsDarkTheme.current
+    val isDark = LocalIsDarkTheme.current || isSystemInDarkTheme()
     val bgColor = if (isDark) Color(0xFF121212) else Color(0xFFF5F7FA)
     val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDark) Color.White else Color.Black

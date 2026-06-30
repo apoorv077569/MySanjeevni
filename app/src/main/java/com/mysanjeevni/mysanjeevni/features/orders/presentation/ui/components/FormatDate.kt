@@ -26,7 +26,7 @@ object StatusColors {
     @Composable
     fun forOrderStatus(status: String): StatusColorSet {
 //        val isDark = isSystemInDarkTheme()
-        val isDark = LocalIsDarkTheme.current
+        val isDark = LocalIsDarkTheme.current || isSystemInDarkTheme()
 
         return when (status.lowercase()) {
             "delivered" -> if (isDark)
@@ -54,7 +54,7 @@ object StatusColors {
     @Composable
     fun forPaymentStatus(status: String): StatusColorSet {
 //        val isDark = isSystemInDarkTheme()
-        val isDark = LocalIsDarkTheme.current
+        val isDark = LocalIsDarkTheme.current || isSystemInDarkTheme()
 
         return when (status.lowercase()) {
             "paid" -> if (isDark)

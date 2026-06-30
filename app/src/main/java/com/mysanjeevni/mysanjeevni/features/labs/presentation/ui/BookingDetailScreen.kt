@@ -1,6 +1,7 @@
 package com.mysanjeevni.mysanjeevni.features.labs.presentation.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -88,7 +89,7 @@ private data class BookingTheme(
 @Composable
 private fun rememberBookingTheme(): BookingTheme {
 //    val isDark = isSystemInDarkTheme()
-    val isDark = LocalIsDarkTheme.current
+    val isDark = LocalIsDarkTheme.current || isSystemInDarkTheme()
     return if (isDark) {
         BookingTheme(
             screenBg = Color(0xFF121212),

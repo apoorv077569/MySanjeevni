@@ -40,7 +40,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun HomeScreenSkeleton() {
 //    val isDark = isSystemInDarkTheme()
-    val isDark = LocalIsDarkTheme.current
+    val isDark = LocalIsDarkTheme.current || isSystemInDarkTheme()
     val backgroundColor = if (isDark) Color(0xFF121212) else Color.White
     val shimmerColor = if (isDark) Color(0xFF2A2A2A) else Color(0xFFE0E0E0)
 

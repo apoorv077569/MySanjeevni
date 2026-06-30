@@ -40,7 +40,7 @@ import com.mysanjeevni.mysanjeevni.utils.AutoText
 @Composable
 fun PrescriptionActionCard(navController: NavController) {
 //    val isDark = isSystemInDarkTheme()
-    val isDark = LocalIsDarkTheme.current
+    val isDark = LocalIsDarkTheme.current || isSystemInDarkTheme()
     val cardBg = if (isDark) Color(0xFF15302D) else Color(0xFFE0F2F1)
     val textColor = if (isDark) Color.White else Color.Black
 

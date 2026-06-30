@@ -43,7 +43,7 @@ fun MyLabTestsScreen(
     var showFilterSheet by remember { mutableStateOf(false) }
 
 //    val isDark = isSystemInDarkTheme()
-    val isDark = LocalIsDarkTheme.current
+    val isDark = LocalIsDarkTheme.current || isSystemInDarkTheme()
     val screenBg = if (isDark) Color(0xFF121212) else Color(0xFFF5F5F5)
     val textMuted = if (isDark) Color(0xFFAAAAAA) else Color(0xFF757575)
 

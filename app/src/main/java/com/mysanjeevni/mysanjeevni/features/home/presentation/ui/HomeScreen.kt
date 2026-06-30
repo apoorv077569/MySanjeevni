@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -74,7 +75,7 @@ fun HomeScreen(
     cartViewModel: CartViewModel
 ) {
 //    val isDark = isSystemInDarkTheme()
-    val isDark = LocalIsDarkTheme.current
+    val isDark = LocalIsDarkTheme.current|| isSystemInDarkTheme()
     val backgroundColor = if (isDark) Color(0xFF121212) else Color.White
 
     val isLoading by viewModel.isLoading.collectAsState()
