@@ -1,7 +1,9 @@
 package com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -18,6 +20,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -29,7 +32,8 @@ import java.util.Locale
 @Composable
 fun MedicineItem(
     medicine: Medicine,
-    onAddToCart: (Medicine) -> Unit
+    onAddToCart: (Medicine) -> Unit,
+    onClick:(Medicine) -> Unit
 ) {
 
     val colorScheme = MaterialTheme.colorScheme
@@ -43,7 +47,11 @@ fun MedicineItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .height(145.dp)
+            .padding(vertical = 6.dp)
+            .clickable{
+                onClick(medicine)
+            },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(8.dp),
         colors = CardDefaults.cardColors(
@@ -92,17 +100,31 @@ fun MedicineItem(
 
             Column(
                 modifier = Modifier.weight(1f)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.SpaceEvenly
             ) {
 
                 AutoText(
                     text = medicine.brand,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF00A884),
-                    maxLines = 1
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
+                AutoText(
+                    text = medicine.name,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 15.sp
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -136,6 +158,7 @@ fun MedicineItem(
             }
 
             Button(
+                modifier = Modifier.width(78.dp),
                 onClick = {
                     onAddToCart(medicine)
                 },

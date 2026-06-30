@@ -55,8 +55,8 @@ import com.mysanjeevni.mysanjeevni.features.home.presentation.ui.components.Slid
 import com.mysanjeevni.mysanjeevni.features.home.presentation.ui.sekeleton.HomeScreenSkeleton
 import com.mysanjeevni.mysanjeevni.features.home.presentation.viewmodel.HomeViewModel
 import com.mysanjeevni.mysanjeevni.features.location.ui.LocationSearchSDialog
-import com.mysanjeevni.mysanjeevni.features.medicines.presentation.components.MedicineCard
 import com.mysanjeevni.mysanjeevni.features.notification.presentation.viewmodel.NotificationViewModel
+import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui.components.MedicineItem
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -220,15 +220,30 @@ fun HomeScreen(
                         }
 
                         items(searchResults) { medicine ->
-                            MedicineCard(
+                            MedicineItem(
                                 medicine = medicine,
+                                onAddToCart = {
+                                    cartViewModel.addToCart(
+                                        CartItem(
+                                            id = medicine.id,
+                                            name = medicine.name,
+                                            price = medicine.price,
+                                            originalPrice = medicine.mrp,
+                                            imageUrl = medicine.image,
+                                            qty = 1
+                                        )
+                                    )
+                                },
+                                onClick = {
+                                    navController.navigate(
+                                        Screen.MedicineDetail.createRoute(medicine.id)
+                                    )
+                                }
                             )
                         }
                     }
                 }
-
             } else {
-
                 Column(
                     modifier = Modifier
                         .padding(
@@ -237,16 +252,11 @@ fun HomeScreen(
                         .fillMaxSize()
                         .verticalScroll(scrollState)
                 ) {
-
                     Spacer(modifier = Modifier.height(16.dp))
                     SlideableBannerSection()
-
                     Spacer(modifier = Modifier.height(8.dp))
-
                     PrescriptionActionCard(navController)
-
                     Spacer(modifier = Modifier.height(16.dp))
-
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -255,7 +265,6 @@ fun HomeScreen(
                             .background(highlightBg)
                             .padding(vertical = 12.dp)
                     ) {
-
                         PopularProductsSection(
                             products = popularProducts,
                             onProductClick = { medicine ->
@@ -280,17 +289,11 @@ fun HomeScreen(
                             cartViewModel = cartViewModel
                         )
                     }
-
                     Spacer(modifier = Modifier.height(12.dp))
-
                     categoryState.categories.forEach { category ->
-
                         val categoryProducts =
                             productsByType[category.name]
                                 ?: emptyList()
-
-
-
                         CategoryProductsSection(
                             title = category.name,
                             subCategories = category.children.map { it.name },
@@ -312,29 +315,10 @@ fun HomeScreen(
                             }
                         )
                     }
-
                     Spacer(modifier = Modifier.height(12.dp))
-
                     FooterTextInfo(isDark)
                 }
             }
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

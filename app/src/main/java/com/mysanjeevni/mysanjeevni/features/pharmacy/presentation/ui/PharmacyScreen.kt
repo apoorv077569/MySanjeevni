@@ -173,7 +173,7 @@ fun PharmacyScreen(
 
             else -> filtered
         }
-    }    // ─────────────────────────────────────────────────────────────────────────
+    }
 
 
     LaunchedEffect(displayedMedicines) {
@@ -231,6 +231,9 @@ fun PharmacyScreen(
                     items(displayedMedicines) { medicine ->
                         MedicineItem(
                             medicine = medicine,
+                            onClick = {
+                                navController.navigate(Screen.MedicineDetail.createRoute(it.id))
+                            },
                             onAddToCart = {
                                 val cartItem = medicine.toCartItem()
                                 Log.d("CART_DEBUG", "Pharmacy → Adding: ${cartItem.name}")
