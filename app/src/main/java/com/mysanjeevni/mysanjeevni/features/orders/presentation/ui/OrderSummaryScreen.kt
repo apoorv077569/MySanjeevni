@@ -26,35 +26,75 @@ import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
 import androidx.core.graphics.toColorInt
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mysanjeevni.mysanjeevni.features.orders.domain.model.CheckoutType
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 
-private val TealButton   = Color(0xFF1A9B82)
+private val TealButton = Color(0xFF1A9B82)
 
 @Composable
 fun OrderSummaryScreen(
     navController: NavController,
     orderViewModel: OrderViewModel
 ) {
-    val medicine   by orderViewModel.selectedMedicine.collectAsState()
-    val address    by orderViewModel.selectedAddress.collectAsState()
-    val cartItems  by orderViewModel.cartItems.collectAsState()
+    val medicine by orderViewModel.selectedMedicine.collectAsState()
+    val address by orderViewModel.selectedAddress.collectAsState()
+    val cartItems by orderViewModel.cartItems.collectAsState()
 
-    val isCartCheckout = cartItems.isNotEmpty()
+    val checkoutType by orderViewModel
+        .checkOutType
+        .collectAsStateWithLifecycle()
 
-    val subtotal = if (isCartCheckout) {
-        cartItems.sumOf { it.price * it.qty }
-    } else {
-        medicine?.price ?: 0.0
+    val resolvedCheckoutType = checkoutType ?: when {
+        medicine != null -> CheckoutType.BUY_NOW
+        cartItems.isNotEmpty() -> CheckoutType.CART
+        else -> null
+    }
+
+    val subtotal = when (resolvedCheckoutType) {
+
+        CheckoutType.CART -> {
+            cartItems.sumOf { item ->
+                item.price * item.qty
+            }
+        }
+
+        CheckoutType.BUY_NOW -> {
+            medicine?.price ?: 0.0
+        }
+
+        null -> {
+            0.0
+        }
     }
 
     val deliveryFee = when {
-        subtotal == 0.0    -> 0.0
-        subtotal >= 299.0  -> 0.0
-        else               -> 50.0
+        subtotal == 0.0 -> 0.0
+        subtotal >= 299.0 -> 0.0
+        else -> 50.0
     }
 
     val totalAmount = subtotal + deliveryFee
+
+    LaunchedEffect(
+        checkoutType,
+        resolvedCheckoutType,
+        medicine,
+        cartItems
+    ) {
+        Log.d("SUMMARY_CHECKOUT", "================================")
+        Log.d("SUMMARY_CHECKOUT", "VM Hash = ${orderViewModel.hashCode()}")
+        Log.d("SUMMARY_CHECKOUT", "Raw Checkout Type = $checkoutType")
+        Log.d("SUMMARY_CHECKOUT", "Resolved Type = $resolvedCheckoutType")
+        Log.d("SUMMARY_CHECKOUT", "Medicine = ${medicine?.name}")
+        Log.d("SUMMARY_CHECKOUT", "Medicine Price = ${medicine?.price}")
+        Log.d("SUMMARY_CHECKOUT", "Cart Count = ${cartItems.size}")
+        Log.d("SUMMARY_CHECKOUT", "Subtotal = $subtotal")
+        Log.d("SUMMARY_CHECKOUT", "Delivery Fee = $deliveryFee")
+        Log.d("SUMMARY_CHECKOUT", "Total = $totalAmount")
+        Log.d("SUMMARY_CHECKOUT", "================================")
+    }
 
     Log.d("ORDER_VM", "Summary VM = ${orderViewModel.hashCode()}")
 
@@ -76,6 +116,8 @@ fun OrderSummaryScreen(
             )
         }
     }
+
+
     // ── End business logic ────────────────────────────────────────────────────
 
     Column(
@@ -116,12 +158,14 @@ fun OrderSummaryScreen(
                             modifier = Modifier.weight(1f),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            AddressRow(Icons.Outlined.Person,   address?.fullName ?: "", bold = true)
-                            AddressRow(Icons.Outlined.Phone,    address?.phone ?: "")
-                            AddressRow(Icons.Outlined.Home,     address?.addressLine1 ?: "")
+                            AddressRow(Icons.Outlined.Person, address?.fullName ?: "", bold = true)
+                            AddressRow(Icons.Outlined.Phone, address?.phone ?: "")
+                            AddressRow(Icons.Outlined.Home, address?.addressLine1 ?: "")
                             AddressRow(Icons.Outlined.Business, address?.addressLine2 ?: "")
-                            AddressRow(Icons.Outlined.LocationOn,
-                                "${address?.city},  ${address?.state}")
+                            AddressRow(
+                                Icons.Outlined.LocationOn,
+                                "${address?.city},  ${address?.state}"
+                            )
                             AddressRow(Icons.Outlined.MailOutline, address?.pincode ?: "")
                         }
                         // Right: decorative map SVG placeholder
@@ -135,68 +179,74 @@ fun OrderSummaryScreen(
             }
 
             // ── Product(s) card ───────────────────────────────────────────────
-            if (isCartCheckout) {
-                items(cartItems) { item ->
-                    ProductCard(
-                        imageUrl  = item.imageUrl,
-                        name      = item.name,
-                        qty       = item.qty,
-                        price     = item.price,
-                        subtotal  = subtotal,
-                        deliveryFee = deliveryFee
-                    )
+            when (resolvedCheckoutType) {
+                CheckoutType.CART -> {
+                    items(cartItems) { item ->
+                        ProductCard(
+                            imageUrl = item.imageUrl,
+                            name = item.name,
+                            qty = item.qty,
+                            price = item.price,
+                            subtotal = subtotal,
+                            deliveryFee = deliveryFee
+                        )
+                    }
                 }
-            } else {
-                item {
-                    ProductCard(
-                        imageUrl    = medicine?.image,
-                        name        = medicine?.name ?: "",
-                        qty         = 1,
-                        price       = medicine?.price ?: 0.0,
-                        subtotal    = subtotal,
-                        deliveryFee = deliveryFee
-                    )
+                CheckoutType.BUY_NOW -> {
+                    item {
+                        ProductCard(
+                            imageUrl = medicine?.image,
+                            name = medicine?.name ?: "",
+                            qty = 1,
+                            price = medicine?.price ?: 0.0,
+                            subtotal = subtotal,
+                            deliveryFee = deliveryFee
+                        )
+                    }
+                }
+                null -> {
+                    item {
+                        SummaryCard {
+                            AutoText(
+                                text = "Checkout information unavailable",
+                                color = MaterialTheme.colorScheme.error,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
             }
-
             // ── Total Amount card ─────────────────────────────────────────────
             item {
                 SummaryCard {
-
                     AutoText(
                         text = "Payment Summary",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
-
                     Spacer(modifier = Modifier.height(16.dp))
-
                     PriceRow(
                         label = "Subtotal",
                         value = "₹$subtotal",
                         bold = false
                     )
-
                     Spacer(modifier = Modifier.height(8.dp))
-
                     PriceRow(
                         label = "Delivery Fee",
                         value = "₹$deliveryFee",
                         bold = false
                     )
-
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp)
                     )
-
                     PriceRow(
                         label = "Total Amount",
                         value = "₹$totalAmount",
                         bold = true
                     )
                 }
-            }        }
-
+            }
+        }
         // ── Proceed To Payment button ─────────────────────────────────────────
         Button(
             onClick = { navController.navigate(Screen.PaymentScreen.route) },
@@ -282,7 +332,7 @@ private fun ProductCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                PriceRow(label = "Price",    value = "₹$price",    bold = false)
+                PriceRow(label = "Price", value = "₹$price", bold = false)
             }
         }
 
@@ -328,6 +378,7 @@ private fun IconCircle(icon: ImageVector) {
         )
     }
 }
+
 @Composable
 private fun AddressRow(
     icon: ImageVector,
@@ -358,6 +409,7 @@ private fun AddressRow(
         )
     }
 }
+
 @Composable
 private fun PriceRow(
     label: String,
@@ -385,13 +437,14 @@ private fun PriceRow(
         )
     }
 }
+
 @Composable
 private fun MapIllustration(modifier: Modifier = Modifier) {
     // A simple Compose-drawn map pin + grid illustration matching the image style
     androidx.compose.foundation.Canvas(modifier = modifier) {
         val w = size.width
         val h = size.height
-        val purple50  = "#EEEDFE".toColorInt()
+        val purple50 = "#EEEDFE".toColorInt()
         val purplePin = "#AFA9EC".toColorInt()
 
         val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
@@ -414,7 +467,7 @@ private fun MapIllustration(modifier: Modifier = Modifier) {
         paint.alpha = 200
         val cx = w * 0.65f
         val cy = h * 0.38f
-        val r  = w * 0.22f
+        val r = w * 0.22f
         drawContext.canvas.nativeCanvas.drawCircle(cx, cy, r, paint)
 
         // Pin inner white dot

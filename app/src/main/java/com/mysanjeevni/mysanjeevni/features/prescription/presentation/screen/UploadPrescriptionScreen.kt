@@ -3,23 +3,18 @@ package com.mysanjeevni.mysanjeevni.features.prescription.presentation.screen
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,12 +32,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.prescription.presentation.components.CameraGallerySection
 import com.mysanjeevni.mysanjeevni.features.prescription.presentation.components.PrescriptionImagePreview
 import com.mysanjeevni.mysanjeevni.features.prescription.presentation.components.UploadGuidelinesCard
@@ -53,16 +48,60 @@ import com.mysanjeevni.mysanjeevni.utils.AutoText
 @Composable
 fun UploadPrescriptionScreen(
     navController: NavController,
+    productId: String,
+    productName: String,
+    userId: String,
     viewModel: PrescriptionViewModel = hiltViewModel()
-
 ) {
 
-    var selectedImageUri by remember {
+    var selectedFileUri by remember {
         mutableStateOf<Uri?>(null)
     }
-    val state by viewModel.state.collectAsState()
+
+    val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
+    LaunchedEffect(Unit) {
+        Log.d("PRESCRIPTION_UI", "Screen opened")
+        Log.d("PRESCRIPTION_UI", "Product ID: $productId")
+        Log.d("PRESCRIPTION_UI", "Product Name: $productName")
+        Log.d("PRESCRIPTION_UI", "User ID: $userId")
+    }
+
+    LaunchedEffect(state.isSuccess) {
+
+        if (state.isSuccess) {
+
+            Log.d(
+                "PRESCRIPTION_UI",
+                "Upload successful"
+            )
+
+            Log.d(
+                "PRESCRIPTION_UI",
+                "URL: ${state.data?.prescriptionUrl}"
+            )
+
+            Toast.makeText(
+                context,
+                "Prescription uploaded successfully!",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            // Reset prescription upload state
+            viewModel.resetState()
+
+            // Go to Address Screen
+            navController.navigate(
+                "${Screen.ManageAddresses.route}?checkout=true&home=false"
+            ) {
+                // Upload screen back stack se remove
+                popUpTo(Screen.UploadPrescription.route) {
+                    inclusive = true
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -77,8 +116,8 @@ fun UploadPrescriptionScreen(
                         }
                     ) {
                         Icon(
-                            Icons.Default.ArrowBack,
-                            null
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
                         )
                     }
                 }
@@ -91,58 +130,130 @@ fun UploadPrescriptionScreen(
                 .padding(padding)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
-
-
         ) {
-
             AutoText(
                 text = "Upload Your Prescription",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(Modifier.height(8.dp))
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
             Text(
                 text = "Upload a valid doctor's prescription to order medicines.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
+            Spacer(
+                modifier = Modifier.height(20.dp)
             )
-            Spacer(Modifier.height(20.dp))
-            PrescriptionImagePreview(imageUri = selectedImageUri)
-            Spacer(Modifier.height(20.dp))
+
+            PrescriptionImagePreview(
+                imageUri = selectedFileUri
+            )
+
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+
             CameraGallerySection(
-                onImageSelected = { uri ->
-                    Log.d("PRESCRIPTION", "URI = $uri")
-                    selectedImageUri = uri
-                    viewModel.selectImage(uri)
-                },
+                onFileSelected = { uri ->
+
+                    Log.d(
+                        "PRESCRIPTION_UI",
+                        "Selected file URI: $uri"
+                    )
+
+                    selectedFileUri = uri
+                }
             )
-            Spacer(Modifier.height(20.dp))
+
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+
             UploadGuidelinesCard()
+
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+
             Button(
                 onClick = {
-                    viewModel.uploadPrescription(context)
+
+                    // SAME STATE USED FOR UPLOAD
+                    val uri = selectedFileUri
+
+                    if (uri == null) {
+
+                        Toast.makeText(
+                            context,
+                            "Please select prescription",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        return@Button
+                    }
+
+                    Log.d(
+                        "PRESCRIPTION_UI",
+                        "Upload button clicked"
+                    )
+
+                    Log.d(
+                        "PRESCRIPTION_UI",
+                        "Uploading URI: $uri"
+                    )
+
+                    viewModel.uploadPrescription(
+                        context = context,
+                        fileUri = uri,
+                        productId = productId,
+                        productName = productName,
+                        userId = userId
+                    )
                 },
-                enabled = selectedImageUri != null && !state.isUploading,
+
+                // SAME STATE USED FOR ENABLE/DISABLE
+                enabled =
+                    selectedFileUri != null &&
+                            !state.isLoading,
+
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
+
                 shape = RoundedCornerShape(14.dp)
             ) {
-                if (state.isUploading) {
+
+                if (state.isLoading) {
+
                     CircularProgressIndicator(
                         color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
                     )
+
                 } else {
-                    AutoText("Upload Prescription")
+
+                    AutoText(
+                        text = "Upload Prescription"
+                    )
                 }
             }
-            LaunchedEffect(state.isUploaded) {
-                if (state.isUploaded) {
-                    Toast.makeText(context, "Prescription sent!", Toast.LENGTH_SHORT).show()
-                    navController.popBackStack()
-                }
+            state.error?.let { error ->
+                Spacer(
+                    modifier = Modifier.height(12.dp)
+                )
+
+                AutoText(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
+
 }

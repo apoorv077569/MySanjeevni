@@ -1,6 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.auth.data.dto
 
-data class LoginRequest(
+data class LoginRequestDto(
     val role: String,
     val email: String,
     val password: String

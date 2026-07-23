@@ -10,5 +10,8 @@ data class MedicineState(
 
     val selectedMedicine: Medicine? = null,
 
-    val error: String? = null
-)
+    val error: String? = null,
+    val isLoadingMore:Boolean = false,
+    val hasMorePages:Boolean = true,
+    val currentPage:Int = 0,
+    )

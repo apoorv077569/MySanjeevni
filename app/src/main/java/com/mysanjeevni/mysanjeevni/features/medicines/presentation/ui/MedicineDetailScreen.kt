@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
@@ -107,6 +107,25 @@ fun MedicineDetailScreen(
         it.productId == medicine.id
     }
 
+    LaunchedEffect(medicine) {
+        medicine.let {
+            Log.d(
+                "RX_DEBUG",
+                "Medicine Name: ${it.name}"
+            )
+
+            Log.d(
+                "RX_DEBUG",
+                "Medicine ID: ${it.id}"
+            )
+
+            Log.d(
+                "RX_DEBUG",
+                "Requires Prescription: ${it.requiresPrescription}"
+            )
+        }
+    }
+
     Scaffold(
         bottomBar = {
             MedicineBottomBar(
@@ -122,16 +141,51 @@ fun MedicineDetailScreen(
                             price = medicine.price,
                             originalPrice = medicine.mrp,
                             imageUrl = medicine.image,
-                            qty = medicine.quantity
+                            qty = medicine.quantity,
+                            stock = medicine.stock,
+                            requirePrescription = medicine.requiresPrescription
                         ),
                     )
                     navController.navigate(Screen.CartScreen.route)
                 },
                 onBuyNow = {
-                    orderViewModel.setMedicine(medicine)
-                    navController.navigate(
-                        "${Screen.ManageAddresses.route}?checkout=true&home=false"
+
+                    Log.d(
+                        "RX_FLOW",
+                        "Buy Now clicked | " +
+                                "Medicine=${medicine.name} | " +
+                                "requiresPrescription=${medicine.requiresPrescription}"
                     )
+                    Log.d("ORDER_VM", "BuyNow VM = ${orderViewModel.hashCode()}")
+                    orderViewModel.setMedicine(medicine)
+                    orderViewModel.startBuyNowCheckout()
+                    Log.d("CHECKOUT_FLOW", "Checkout started from BUY_NOW | Medicine=${medicine.name}")
+                    if (medicine.requiresPrescription) {
+
+                        Log.d(
+                            "RX_FLOW",
+                            "Prescription required → Opening Upload Prescription"
+                        )
+
+                        navController.navigate(
+                            Screen.UploadPrescription.createRoute(
+                                productId = medicine.id,
+                                productName = medicine.name,
+                                userId = currentUserId.orEmpty()
+                            )
+                        )
+
+                    } else {
+
+                        Log.d(
+                            "RX_FLOW",
+                            "Prescription not required → Opening Address"
+                        )
+
+                        navController.navigate(
+                            "${Screen.ManageAddresses.route}?checkout=true&home=false"
+                        )
+                    }
                 }
             )
         }
@@ -153,7 +207,7 @@ fun MedicineDetailScreen(
             ) {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
                         tint = MaterialTheme.colorScheme.primary
                     )

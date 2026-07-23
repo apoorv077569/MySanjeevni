@@ -7,7 +7,10 @@ import javax.inject.Inject
 class GetMedicineUseCase @Inject constructor(
     private val repository: PharmacyRepository
 ) {
-    suspend operator fun invoke(): List<Medicine>{
-        return repository.getMedicines();
+    suspend operator fun invoke(
+        page:Int,
+        limit:Int
+    ): List<Medicine>{
+        return repository.getMedicines(page=page,limit=limit);
     }
 }

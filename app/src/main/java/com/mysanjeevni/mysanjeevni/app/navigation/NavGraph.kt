@@ -1,5 +1,6 @@
 package com.mysanjeevni.mysanjeevni.app.navigation
 
+import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -132,8 +133,47 @@ fun NavGraph(navController: NavHostController,
             )
         }
 
-        composable(Screen.UploadPrescription.route) {
-            UploadPrescriptionScreen(navController = navController)
+        composable(
+            route = Screen.UploadPrescription.route,
+            arguments = listOf(
+                navArgument("productId") {
+                    type = NavType.StringType
+                },
+                navArgument("productName") {
+                    type = NavType.StringType
+                },
+                navArgument("userId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+
+            val productId =
+                backStackEntry.arguments
+                    ?.getString("productId")
+                    .orEmpty()
+
+            val productName =
+                backStackEntry.arguments
+                    ?.getString("productName")
+                    .orEmpty()
+
+            val userId =
+                backStackEntry.arguments
+                    ?.getString("userId")
+                    .orEmpty()
+
+            Log.d("PRESCRIPTION_NAV", "Opening UploadPrescriptionScreen")
+            Log.d("PRESCRIPTION_NAV", "Product ID: $productId")
+            Log.d("PRESCRIPTION_NAV", "Product Name: $productName")
+            Log.d("PRESCRIPTION_NAV", "User ID: $userId")
+
+            UploadPrescriptionScreen(
+                navController = navController,
+                productId = productId,
+                productName = productName,
+                userId = userId
+            )
         }
         composable(Screen.BookingHistoryScreen.route) {
             BookingHistoryScreen(navController)
@@ -212,12 +252,13 @@ fun NavGraph(navController: NavHostController,
             PrivacyScreen(navController)
         }
         composable(Screen.VERIFY.route) { backStackEntry ->
-            val phone = backStackEntry.arguments?.getString("phone") ?: ""
+            val phone = backStackEntry.arguments?.getString("mobile") ?: ""
             OtpVerificationScreen(navController, phone)
         }
         composable(Screen.ResetPassword.route) { backStackEntry ->
-            val phone = backStackEntry.arguments?.getString("phone") ?: ""
-            ResetPasswordScreen(navController = navController, phone)
+            val phone = backStackEntry.arguments?.getString("mobile") ?: ""
+            val resetPasswordToken = backStackEntry.arguments?.getString("resetPasswordToken")?:""
+            ResetPasswordScreen(navController = navController, phone,resetPasswordToken)
         }
         composable(Screen.ProfileScreen.route) {
             ProfileScreen(navController = navController)
@@ -233,7 +274,7 @@ fun NavGraph(navController: NavHostController,
             )
         }
         composable(Screen.CartScreen.route) {
-            CartScreen(navController = navController, cartViewModel)
+            CartScreen(navController = navController, cartViewModel,orderViewModel)
         }
         composable(
             route = Screen.LabTestDetail.route,

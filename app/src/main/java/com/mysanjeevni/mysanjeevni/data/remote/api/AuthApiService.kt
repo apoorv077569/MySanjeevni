@@ -1,11 +1,10 @@
 package com.mysanjeevni.mysanjeevni.data.remote.api
 
-import com.mysanjeevni.mysanjeevni.data.remote.model.auth.AuthResponse
 import com.mysanjeevni.mysanjeevni.data.remote.model.notification.GenericResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.auth.GoogleLoginRequest
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.GoogleLoginRequest
 import com.mysanjeevni.mysanjeevni.data.remote.model.notification.SaveTokenRequest
 import com.mysanjeevni.mysanjeevni.data.remote.model.notification.SendNotificationRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.upload.UploadResponse
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.AuthResponseDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.CreateLabBookingRequestDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.LabBookingResponseDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.cancel.CancelBookingResponseDto
@@ -48,11 +47,7 @@ interface AuthApiService {
         @Header("x-user-id") userId: String?
     ): Response<BookingHistoryResponseDto>
 
-    @Multipart
-    @POST("api/upload")
-    suspend fun uploadPrescription(
-        @Part image: MultipartBody.Part
-    ):Response<UploadResponse>
+
 
 
     @POST("api/lab-test-bookings/{id}/cancel")
@@ -105,5 +100,5 @@ interface AuthApiService {
     @POST("api/auth/signin-google")
     suspend fun googleSignin(
         @Body request: GoogleLoginRequest
-    ): Response<AuthResponse>
+    ): Response<AuthResponseDto>
 }

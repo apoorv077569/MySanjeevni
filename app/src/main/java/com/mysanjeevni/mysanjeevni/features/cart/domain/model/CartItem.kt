@@ -7,4 +7,6 @@ data class CartItem(
     val originalPrice:  Double,
     var qty: Int,
     val imageUrl: String,
+    val stock:Int,
+    val requirePrescription: Boolean
 )

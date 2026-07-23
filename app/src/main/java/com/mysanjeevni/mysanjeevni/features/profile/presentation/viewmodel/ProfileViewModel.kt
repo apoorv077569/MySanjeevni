@@ -3,8 +3,7 @@ package com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mysanjeevni.mysanjeevni.data.remote.client.ApiClient
-import com.mysanjeevni.mysanjeevni.features.profile.data.repository.ProfileRepository
+import com.mysanjeevni.mysanjeevni.features.profile.domain.usecase.GetProfileUseCase
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.ProfileState
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val repository: ProfileRepository,
+    private val getProfileUseCase: GetProfileUseCase,
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
@@ -27,8 +26,7 @@ class ProfileViewModel @Inject constructor(
         getProfile()
     }
 
-    private fun getProfile() {
-
+    fun getProfile() {
         viewModelScope.launch {
 
             _state.value = _state.value.copy(
@@ -36,60 +34,77 @@ class ProfileViewModel @Inject constructor(
                 error = null
             )
 
-            try {
+            val userId = sessionManager.getUserId()?: ""
 
-                val token = sessionManager.getToken()
-                val userId = sessionManager.getUserId()
+            Log.d(
+                "PROFILE_DEBUG",
+                "Fetching profile for userId: $userId"
+            )
 
-                Log.d("PROFILE_DEBUG", "Token: $token")
-
-                val response = repository.getProfile(userId = userId)
-                Log.d("PROFILE_DEBUG", "URL: ${ApiClient.api.getProfile(userId).raw().request.url}")
-
-                // 🔍 CHECK 2: API response code kya hai
-                Log.d("PROFILE_DEBUG", "Response Code: ${response.code()}")
-                Log.d("PROFILE_DEBUG", "Response Successful: ${response.isSuccessful}")
-
-                if (response.isSuccessful) {
-
-                    val rawJson = response.body().toString()
-                    Log.d("PROFILE_DEBUG", "Raw JSON: $rawJson")
-
-
-                    Log.d("PROFILE_DEBUG", "Response Body: ${response.body()}")
-                    Log.d("PROFILE_DEBUG", "User: ${response.body()?.user}")
-                    Log.d("PROFILE_DEBUG", "UserId: ${response.body()?.user?._id}")
-
-                    _state.value = _state.value.copy(
-                        isLoading = false,
-                        user = response.body()?.user
-                    )
-
-                } else {
-
-                    // 🔍 CHECK 4: Error response kya hai
-                    Log.d("PROFILE_DEBUG", "Error Body: ${response.errorBody()?.string()}")
-                    Log.d("PROFILE_DEBUG", "Error Message: ${response.message()}")
-
-                    _state.value = _state.value.copy(
-                        isLoading = false,
-                        error = response.message()
-                    )
-                }
-
-            } catch (e: Exception) {
-
-                // 🔍 CHECK 5: Exception kya hai
-                Log.d("PROFILE_DEBUG", "Exception: ${e.message}")
-                Log.d("PROFILE_DEBUG", "Exception Type: ${e.javaClass.simpleName}")
+            if (userId.isBlank()) {
+                Log.e(
+                    "PROFILE_DEBUG",
+                    "User ID is empty"
+                )
 
                 _state.value = _state.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Unknown Error"
+                    error = "User ID not found"
                 )
+                return@launch
             }
+
+            getProfileUseCase(userId)
+                .onSuccess { profile ->
+
+                    Log.d(
+                        "PROFILE_DEBUG",
+                        "Profile fetch successful"
+                    )
+
+                    Log.d(
+                        "PROFILE_DEBUG",
+                        "Profile: $profile"
+                    )
+
+                    Log.d(
+                        "PROFILE_DEBUG",
+                        "User ID: ${profile.id}"
+                    )
+
+                    Log.d(
+                        "PROFILE_DEBUG",
+                        "Full Name: ${profile.fullName}"
+                    )
+
+                    Log.d(
+                        "PROFILE_DEBUG",
+                        "Email: ${profile.email}"
+                    )
+
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        user = profile,
+                        error = null
+                    )
+                }
+                .onFailure { exception ->
+
+                    Log.e(
+                        "PROFILE_DEBUG",
+                        "Profile fetch failed",
+                        exception
+                    )
+
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        error = exception.message
+                            ?: "Failed to fetch profile"
+                    )
+                }
         }
     }
+
     fun logout() {
         sessionManager.logout()
     }

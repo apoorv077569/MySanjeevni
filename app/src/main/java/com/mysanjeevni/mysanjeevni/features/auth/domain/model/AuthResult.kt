@@ -1,8 +1,8 @@
 package com.mysanjeevni.mysanjeevni.features.auth.domain.model
 
-sealed class AuthResult<out T> {
-    data class Success<T>(val data: T) : AuthResult<T>()
-    data class Error(val message: String) : AuthResult<Nothing>()
-    object Loading : AuthResult<Nothing>()
-    object Idle : AuthResult<Nothing>()
-}
+data class AuthResult(
+    val message: String,
+    val token: String?,
+    val user: AuthUser?,
+    val phoneVerificationToken:String?
+)

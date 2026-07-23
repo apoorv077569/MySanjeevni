@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import com.mysanjeevni.mysanjeevni.R
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -28,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,7 +72,7 @@ fun MyConsultsScreen(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.back),
                 tint = textColor,
                 modifier = Modifier
                     .size(24.dp)
@@ -78,7 +80,7 @@ fun MyConsultsScreen(
             )
             Spacer(modifier = Modifier.width(16.dp))
             AutoText(
-                text = "My Consultations",
+                text = stringResource(R.string.my_consultations),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = textColor
@@ -100,12 +102,12 @@ fun MyConsultsScreen(
             Tab(
                 selected = state.selectedTab == 0,
                 onClick = { viewModel.onTabSelected(0) },
-                text = { AutoText("Upcoming") }
+                text = { AutoText(stringResource(R.string.upcoming)) }
             )
             Tab(
                 selected = state.selectedTab == 1,
                 onClick = { viewModel.onTabSelected(1) },
-                text = { AutoText("Past Consults") }
+                text = { AutoText(stringResource(R.string.past_consults)) }
             )
         }
 
@@ -119,7 +121,7 @@ fun MyConsultsScreen(
 
             if (listToShow.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    AutoText("No consultations found", color = secondaryText)
+                    AutoText(stringResource(R.string.no_consultations_found), color = secondaryText)
                 }
             } else {
                 LazyColumn(
@@ -233,7 +235,7 @@ fun ConsultCard(
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    AutoText(text = if(consult.isVideoCall) "Video" else "Visit", fontSize = 14.sp, color = textColor)
+                    AutoText(text = if(consult.isVideoCall) stringResource(R.string.video) else stringResource(R.string.visit), fontSize = 14.sp, color = textColor)
                 }
             }
 
@@ -252,7 +254,7 @@ fun ConsultCard(
                     ) {
                         Icon(Icons.Default.VideoCall, null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        AutoText("Join Call")
+                        AutoText(stringResource(R.string.join_call))
                     }
 
                     OutlinedButton(
@@ -261,7 +263,7 @@ fun ConsultCard(
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(1.dp, secondaryText)
                     ) {
-                        AutoText("Reschedule", color = textColor)
+                        AutoText(stringResource(R.string.reschedule), color = textColor)
                     }
                 } else if (consult.status == ConsultStatus.COMPLETED) {
                     // Past Actions
@@ -273,7 +275,7 @@ fun ConsultCard(
                     ) {
                         Icon(Icons.Default.Description, null, tint = primaryColor, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        AutoText("View Rx", color = primaryColor)
+                        AutoText(stringResource(R.string.view_rx), color = primaryColor)
                     }
 
                     Button(
@@ -282,7 +284,7 @@ fun ConsultCard(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        AutoText("Book Again")
+                        AutoText(stringResource(R.string.book_again))
                     }
                 }
             }

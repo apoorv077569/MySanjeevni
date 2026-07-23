@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,6 +62,7 @@ import com.mysanjeevni.mysanjeevni.features.pharmacy.data.mapper.toCartItem
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui.components.MedicineItem
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.viewmodel.PharmacyViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 // --- THEME COLORS ---
 val TealPrimary = Color(0xFF38D6C6)
@@ -90,6 +93,7 @@ fun PharmacyScreen(
     var selectedFilter by remember { mutableStateOf("All") }
     var selectedSort by remember { mutableStateOf("Relevance") }
     val focusRequester = remember { FocusRequester() }
+    val listState = rememberLazyListState()
 
     val availableCategories: List<String> = remember(state.medicines) {
         state.medicines
@@ -183,6 +187,35 @@ fun PharmacyScreen(
         )
     }
 
+    LaunchedEffect(listState) {
+
+        snapshotFlow {
+            val layoutInfo = listState.layoutInfo
+
+            val lastVisibleItem =
+                layoutInfo.visibleItemsInfo.lastOrNull()?.index
+
+            val totalItems =
+                layoutInfo.totalItemsCount
+
+            lastVisibleItem != null &&
+                    lastVisibleItem >= totalItems - 3
+        }
+            .distinctUntilChanged()
+            .collect { shouldLoadMore ->
+
+                if (shouldLoadMore) {
+
+                    Log.d(
+                        "PHARMACY_PAGINATION",
+                        "Bottom reached → loading next page"
+                    )
+
+                    viewModel.loadNextPage()
+                }
+            }
+    }
+
     Scaffold(
         containerColor = bgColor,
         topBar = {
@@ -214,6 +247,7 @@ fun PharmacyScreen(
         ) {
             if (!state.isLoading && state.error.isBlank()) {
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)

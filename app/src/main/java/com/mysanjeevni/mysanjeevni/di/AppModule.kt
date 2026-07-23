@@ -77,12 +77,18 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideCartDatabase(app: Application): AppDatabase {
+    fun provideCartDatabase(
+        app: Application
+    ): AppDatabase {
         return Room.databaseBuilder(
             app,
             AppDatabase::class.java,
             "mysanjeevni_db"
-        ).build()
+        )
+            .addMigrations(
+                AppDatabase.MIGRATION_4_5
+            )
+            .build()
     }
 
     @Provides

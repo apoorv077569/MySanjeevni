@@ -4,6 +4,6 @@ import com.mysanjeevni.mysanjeevni.features.medicines.domain.model.Medicine
 
 
 interface PharmacyRepository {
-    suspend fun getMedicines(): List<Medicine>
+    suspend fun getMedicines(page:Int,limit:Int): List<Medicine>
 
 }

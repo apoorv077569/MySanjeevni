@@ -81,6 +81,15 @@ fun LoginScreen(navController: NavController) {
     var role by remember { mutableStateOf("user") }
     var passwordVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        Log.d("GOOGLE_AUTH", "Package = ${context.packageName}")
+
+        val playServices = com.google.android.gms.common.GoogleApiAvailability
+            .getInstance()
+            .isGooglePlayServicesAvailable(context)
+
+        Log.d("GOOGLE_AUTH", "Google Play Services = $playServices")
+    }
     val sessionManager = SessionManager(context)
     val viewModel: AuthViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
@@ -89,37 +98,67 @@ fun LoginScreen(navController: NavController) {
 
     val colorScheme = MaterialTheme.colorScheme
 
-    val gso = remember {
+//    val gso = remember {
+//        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//            .requestIdToken("842557074955-pd1onnbeiijj3pjgmnvqdooa72lfurp3.apps.googleusercontent.com")
+//            .requestEmail()
+//            .build()
+//    }
+
+    val webClientId = stringResource(R.string.default_web_client_id)
+
+    Log.d("GOOGLE_AUTH", "default_web_client_id = $webClientId")
+
+    val gso = remember(webClientId) {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("812232097107-fepbdncld504nnp9medtrtja59ikj6ts.apps.googleusercontent.com")
+            .requestIdToken(webClientId)
             .requestEmail()
             .build()
     }
-    val googleSignInClient = remember { GoogleSignIn.getClient(context, gso) }
-
+    val googleSignInClient = remember(gso) {
+        GoogleSignIn.getClient(context, gso)
+    }
     val googleLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         try {
+//            val account = task.getResult(ApiException::class.java)
+//            val idToken = account?.idToken
+//            if (idToken != null) {
+//                Log.d("GOOGLE_AUTH", "idToken: $idToken")
+//                viewModel.googleLogin(idToken)
+//            }
             val account = task.getResult(ApiException::class.java)
-            val idToken = account?.idToken
-            if (idToken != null) {
-                Log.d("GOOGLE_AUTH", "idToken: $idToken")
-                viewModel.googleLogin(idToken)
+            val googleIdToken = account?.idToken
+            if (googleIdToken != null) {
+                viewModel.googleLogin(googleIdToken)
             }
+            Log.d("GOOGLE_AUTH", "idToken: $googleIdToken")
         } catch (e: ApiException) {
             val statusCode = e.statusCode
             val errorName = CommonStatusCodes.getStatusCodeString(statusCode)
+            Log.e("GOOGLE_AUTH", "Status=${e.statusCode}", e)
+
+            e.status?.let {
+                Log.e("GOOGLE_AUTH", "Resolution = ${it.resolution}")
+            }
             Log.e("GOOGLE_AUTH", "------ GOOGLE ERROR BODY ------")
             Log.e("GOOGLE_AUTH", "Status Code: $statusCode")
             Log.e("GOOGLE_AUTH", "Error Name: $errorName")
             Log.e("GOOGLE_AUTH", "Message: ${e.message}")
             Log.e("GOOGLE_AUTH", "-------------------------------")
             when (statusCode) {
-                10 -> Log.e("GOOGLE_AUTH", "Hint: DEVELOPER_ERROR. Check SHA-1 in Firebase and ensure you are using the WEB Client ID.")
+                10 -> Log.e(
+                    "GOOGLE_AUTH",
+                    "Hint: DEVELOPER_ERROR. Check SHA-1 in Firebase and ensure you are using the WEB Client ID."
+                )
+
                 7 -> Log.e("GOOGLE_AUTH", "Hint: NETWORK_ERROR. Check your internet connection.")
-                12500 -> Log.e("GOOGLE_AUTH", "Hint: SIGN_IN_FAILED. Check your Firebase config or google-services.json.")
+                12500 -> Log.e(
+                    "GOOGLE_AUTH",
+                    "Hint: SIGN_IN_FAILED. Check your Firebase config or google-services.json."
+                )
             }
         }
     }
@@ -174,7 +213,11 @@ fun LoginScreen(navController: NavController) {
                     onValueChange = { email = it },
                     label = { AutoText("Email") },
                     leadingIcon = {
-                        Icon(Icons.Default.Email, contentDescription = null, tint = colorScheme.onSurfaceVariant)
+                        Icon(
+                            Icons.Default.Email,
+                            contentDescription = null,
+                            tint = colorScheme.onSurfaceVariant
+                        )
                     },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
@@ -199,13 +242,17 @@ fun LoginScreen(navController: NavController) {
                     onValueChange = { password = it },
                     label = { AutoText("Password") },
                     leadingIcon = {
-                        Icon(Icons.Default.Lock, contentDescription = null, tint = colorScheme.onSurfaceVariant)
+                        Icon(
+                            Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = colorScheme.onSurfaceVariant
+                        )
                     },
                     trailingIcon = {
                         Icon(
                             imageVector = if (passwordVisible) Icons.Default.Visibility
                             else Icons.Default.VisibilityOff,
-                            contentDescription = if (passwordVisible) "Hide password" else "Show password",
+                            contentDescription = if (passwordVisible) stringResource(R.string.hide_password) else stringResource(R.string.show_password),
                             tint = colorScheme.onSurfaceVariant,
                             modifier = Modifier.clickable { passwordVisible = !passwordVisible }
                         )
@@ -267,7 +314,15 @@ fun LoginScreen(navController: NavController) {
                 // ── Google Sign-In Button ─────────────────────────────────
                 Button(
                     onClick = {
+                        Log.d(
+                            "GOOGLE_AUTH",
+                            "Last Account = ${GoogleSignIn.getLastSignedInAccount(context)}"
+                        )
                         googleSignInClient.signOut().addOnCompleteListener {
+                            Log.d(
+                                "GOOGLE_AUTH",
+                                "Launching Google Sign-In..."
+                            )
                             googleLauncher.launch(googleSignInClient.signInIntent)
                         }
                     },
@@ -320,17 +375,23 @@ fun LoginScreen(navController: NavController) {
                         val user = state.data.user
                         Log.d("LOGIN_DEBUG", "Token: $token")
                         Log.d("LOGIN_DEBUG", "User: $user")
-                        Log.d("LOGIN_DEBUG", "UserId: ${user?._id}")
+                        Log.d("LOGIN_DEBUG", "UserId: ${user?.id}")
                         Log.d("LOGIN_DEBUG", "UserRole: ${user?.role}")
                         Log.d("LOGIN_DEBUG", "UserName: ${user?.fullName}")
-                        sessionManager.saveLogin(token, user?._id)
+                        sessionManager.saveLogin(token, user?.id)
                         sessionManager.saveUserRole(user?.role ?: "user")
                         sessionManager.saveUserName(user?.fullName ?: "")
                         sessionManager.saveUserEmail(user?.email ?: "")
                         sessionManager.saveUserAddress(user?.address ?: "")
                         Log.d("LOGIN_DEBUG", "Session Saved - Token: ${sessionManager.getToken()}")
-                        Log.d("LOGIN_DEBUG", "Session Saved - UserId: ${sessionManager.getUserId()}")
-                        Log.d("LOGIN_DEBUG", "Session Saved - Role: ${sessionManager.getUserRole()}")
+                        Log.d(
+                            "LOGIN_DEBUG",
+                            "Session Saved - UserId: ${sessionManager.getUserId()}"
+                        )
+                        Log.d(
+                            "LOGIN_DEBUG",
+                            "Session Saved - Role: ${sessionManager.getUserRole()}"
+                        )
 
                         val request =
                             PeriodicWorkRequestBuilder<
@@ -352,10 +413,12 @@ fun LoginScreen(navController: NavController) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
                     }
+
                     is AuthUiState.Error -> {
                         Log.d("LOGIN_DEBUG", "Login Error: ${state.message}")
                         Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
                     }
+
                     else -> {}
                 }
             }

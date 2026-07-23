@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -67,7 +68,7 @@ fun ComingSoonBox() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Coming Soon",
+                    text = stringResource(R.string.coming_soon),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
@@ -76,7 +77,7 @@ fun ComingSoonBox() {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "We're working on something amazing",
+                    text = stringResource(R.string.were_working_on_something_amazing),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

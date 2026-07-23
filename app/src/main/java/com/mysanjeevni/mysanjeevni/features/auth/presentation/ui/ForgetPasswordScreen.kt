@@ -146,7 +146,7 @@ fun ForgetScreen(navController: NavController) {
                             strokeWidth = 2.dp
                         )
                     } else {
-                        AutoText("Send OTP", fontSize = 16.sp)
+                        AutoText(stringResource(R.string.send_otp), fontSize = 16.sp)
                     }
                 }
             }
@@ -154,7 +154,7 @@ fun ForgetScreen(navController: NavController) {
             LaunchedEffect(uiState) {
                 when (val state = uiState) {
                     is AuthUiState.OtpSent -> {
-                        Toast.makeText(navController.context, "OTP Sent Successfully", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(navController.context, R.string.otp_sent_successfully, Toast.LENGTH_SHORT).show()
                         navController.navigate(Screen.VERIFY.createRoute("$countryCode$phoneNumber"))
                     }
                     is AuthUiState.Error -> {

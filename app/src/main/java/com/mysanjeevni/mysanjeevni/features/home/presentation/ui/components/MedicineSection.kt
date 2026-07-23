@@ -119,7 +119,9 @@ fun FeaturedMedicinesItem(
         price = item.price,
         originalPrice = item.mrp,
         imageUrl = item.image,
-        qty = quantity
+        qty = quantity,
+        stock = item.stock,
+        requirePrescription = item.requiresPrescription
     )
 
     Card(

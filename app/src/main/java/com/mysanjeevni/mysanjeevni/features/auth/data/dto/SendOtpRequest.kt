@@ -1,15 +1,11 @@
 package com.mysanjeevni.mysanjeevni.features.auth.data.dto
 
-data class SendOtpRequest(
+data class SendOtpRequestDto(
     val phone: String,
     val role : String
 )
-data class SendOtpBeforeSignupRequest(
+
+data class SendOtpBeforeSignupRequestDto(
     val phone: String,
     val fullName:String
-)
-data class VerifyOtpRequest(
-    val phone: String,
-    val otp: String,
-    val role : String
 )

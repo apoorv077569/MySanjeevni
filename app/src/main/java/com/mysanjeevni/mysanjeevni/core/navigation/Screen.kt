@@ -17,8 +17,8 @@ sealed class Screen(val route: String) {
         fun createRoute(mobile: String) = "verify/$mobile"
     }
 
-    object ResetPassword : Screen("resetPassword/{mobile}") {
-        fun createRoute(mobile: String) = "resetPassword/$mobile"
+    object ResetPassword : Screen("resetPassword/{mobile}/{resetPasswordToken}") {
+        fun createRoute(mobile: String,resetPasswordToken: String) = "resetPassword/$mobile/$resetPasswordToken"
     }
 
     object MedicineDetail : Screen("medicine_detail/{id}") {
@@ -92,7 +92,20 @@ sealed class Screen(val route: String) {
         }
     }
 
-    object UploadPrescription : Screen("upload_prescription")
+    data object UploadPrescription : Screen(
+        route = "upload_prescription/{productId}/{productName}/{userId}"
+    ) {
+        fun createRoute(
+            productId: String,
+            productName: String,
+            userId: String
+        ): String {
+            return "upload_prescription/" +
+                    "${Uri.encode(productId)}/" +
+                    "${Uri.encode(productName)}/" +
+                    "${Uri.encode(userId)}"
+        }
+    }
     object WishlistScreen : Screen("wishlist_screen")
     object BookLabTestScreen {
         const val route =

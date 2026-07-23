@@ -1,6 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.profile.presentation.ui
 
-import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -41,9 +41,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,14 +69,13 @@ fun EditProfileScreen(navController: NavController) {
     val context = LocalContext.current
     val sessionManager = SessionManager(context)
     val userId = sessionManager.getUserId()
-    var selectedImageUri by remember {
-        mutableStateOf<Uri?>(null)
-    }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        selectedImageUri = uri
+        if (uri != null) {
+            viewModel.onImageSelected(uri)
+        }
     }
     val colorScheme = MaterialTheme.colorScheme
     LaunchedEffect(userId) {
@@ -89,7 +85,21 @@ fun EditProfileScreen(navController: NavController) {
     }
     LaunchedEffect(state.navigateBack) {
         if (state.navigateBack) {
+
+            Log.d(
+                "PROFILE_NAV_RESULT",
+                "Profile updated successfully, sending refresh result"
+            )
+
+            navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set(
+                    "profile_updated",
+                    true
+                )
+
             viewModel.onNavigatedBack()
+
             navController.popBackStack()
         }
     }
@@ -134,9 +144,9 @@ fun EditProfileScreen(navController: NavController) {
                                 .clickable { galleryLauncher.launch("image/*") }
                         ) {
                             when {
-                                selectedImageUri != null -> {
+                                state.selectedImageUri != null -> {
                                     AsyncImage(
-                                        model = selectedImageUri,
+                                        model = state.selectedImageUri,
                                         contentDescription = null,
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop
@@ -280,6 +290,7 @@ fun EditProfileScreen(navController: NavController) {
 
                     Button(
                         onClick = {
+                            Log.d("EDIT_PROFILE_UI", "Save Changes button clicked")
                             viewModel.updateProfile()
                         },
                         enabled = !state.isLoading,

@@ -123,7 +123,9 @@ fun PopularProductCard(
         price = item.price,
         originalPrice = item.mrp,
         imageUrl = item.image,
-        qty = quantity
+        qty = quantity,
+        stock = item.stock,
+        requirePrescription = item.requiresPrescription
     )
 
     val discountPercent = remember(item.price, item.mrp) {
@@ -159,9 +161,13 @@ fun PopularProductCard(
                 modifier = Modifier
                     .height(110.dp)
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp)),
+                    .background(
+                        MaterialTheme.colorScheme.surface,
+                        RoundedCornerShape(8.dp)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

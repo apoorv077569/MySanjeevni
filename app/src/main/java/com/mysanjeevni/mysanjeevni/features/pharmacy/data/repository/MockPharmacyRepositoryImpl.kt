@@ -10,8 +10,11 @@ class MockPharmacyRepositoryImpl @Inject constructor(
     private val api: ApiService
 ) : PharmacyRepository {
 
-    override suspend fun getMedicines(): List<Medicine> {
-        val response = api.getMedicines()
+    override suspend fun getMedicines(
+        page:Int,
+        limit:Int
+    ): List<Medicine> {
+        val response = api.getMedicines(page,limit)
 
         if (response.isSuccessful) {
             return response.body()?.products?.map {   // ✅ data → products

@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
-import com.mysanjeevni.mysanjeevni.features.home.data.repository.LocationRepository
+import com.mysanjeevni.mysanjeevni.features.home.domain.repository.LocationRepository
 import com.mysanjeevni.mysanjeevni.features.medicines.domain.model.Medicine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -37,6 +38,9 @@ class HomeViewModel @Inject constructor(
     val userCity = locationRepository.city
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
+    companion object{
+        private const val PAGE_SIZE = 20
+    }
 
     init {
         loadHomeData()
@@ -48,7 +52,7 @@ class HomeViewModel @Inject constructor(
     private fun startDealTimer() {
         viewModelScope.launch {
             while (_dealTimeLeft.value > 0) {
-                delay(1000)
+                delay(1000.milliseconds)
                 _dealTimeLeft.value--
             }
         }
@@ -60,60 +64,196 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+//    private fun loadHomeData() {
+//        viewModelScope.launch {
+//            _isLoading.value = true
+//            try {
+//                Log.d("HOME_DEBUG", "Calling getMedicines API...")
+//                val res = api.getMedicines()
+//                Log.d("HOME_DEBUG", "Response code: ${res.code()}")
+//                Log.d("HOME_DEBUG", "Response body: ${res.body()}")
+//                Log.d("HOME_DEBUG", "Error body: ${res.errorBody()?.string()}")
+//
+//                if (res.isSuccessful) {
+//                    val data = res.body()?.products ?: emptyList()
+//                    Log.d("HOME_DEBUG", "Products count: ${data.size}")
+//
+//                    _allMedicines.value = data.map { dto ->
+//                        Medicine(
+//                            id = dto._id,
+//                            name = dto.name,
+//                            description = dto.description.orEmpty(),
+//                            price = dto.price,
+//                            mrp = dto.mrp,
+//                            category = dto.category,
+//                            diseaseCategory = dto.diseaseCategory.orEmpty(),
+//                            diseaseSubcategory = dto.diseaseSubcategory.orEmpty(),
+//                            productType = dto.productType,
+//                            brand = dto.brand.orEmpty(),
+//                            stock = dto.stock,
+//                            quantity = dto.quantity,
+//                            quantityUnit = dto.quantityUnit,
+//                            image = dto.image.orEmpty(),
+//                            images = dto.images.orEmpty(),
+//                            specifications = dto.specifications.orEmpty(),
+//                            safetyInformation = dto.safetyInformation.orEmpty(),
+//                            requiresPrescription = dto.requiresPrescription,
+//                            vendorName = dto.vendorName.orEmpty(),
+//                            vendorRating = dto.vendorRating ?: 0.0,
+//                            rating = dto.rating,
+//                            reviews = dto.reviews,
+//                            icon = dto.icon
+//                        )
+//                    }
+//                    Log.d("HOME_DEBUG", "Medicines set: ${_allMedicines.value.size}")
+//                } else {
+//                    Log.e("HOME_DEBUG", "API Failed: ${res.code()} - ${res.message()}")
+//                }
+//            } catch (e: Exception) {
+//                Log.e("HOME_DEBUG", "Exception: ${e.localizedMessage}")
+//                e.printStackTrace()
+//            } finally {
+//                _isLoading.value = false
+//            }
+//        }
+//    }
+
+
     private fun loadHomeData() {
         viewModelScope.launch {
+
             _isLoading.value = true
+
             try {
-                Log.d("HOME_DEBUG", "Calling getMedicines API...")
-                val res = api.getMedicines()
-                Log.d("HOME_DEBUG", "Response code: ${res.code()}")
-                Log.d("HOME_DEBUG", "Response body: ${res.body()}")
-                Log.d("HOME_DEBUG", "Error body: ${res.errorBody()?.string()}")
+                Log.d(
+                    "HOME_PAGINATION",
+                    "Starting medicine pagination"
+                )
 
-                if (res.isSuccessful) {
-                    val data = res.body()?.products ?: emptyList()
-                    Log.d("HOME_DEBUG", "Products count: ${data.size}")
+                val allProducts = mutableListOf<Medicine>()
 
-                    _allMedicines.value = data.map { dto ->
-                        Medicine(
-                            id = dto._id,
-                            name = dto.name,
-                            description = dto.description.orEmpty(),
-                            price = dto.price,
-                            mrp = dto.mrp,
-                            category = dto.category,
-                            diseaseCategory = dto.diseaseCategory.orEmpty(),
-                            diseaseSubcategory = dto.diseaseSubcategory.orEmpty(),
-                            productType = dto.productType,
-                            brand = dto.brand.orEmpty(),
-                            stock = dto.stock,
-                            quantity = dto.quantity,
-                            quantityUnit = dto.quantityUnit,
-                            image = dto.image.orEmpty(),
-                            images = dto.images.orEmpty(),
-                            specifications = dto.specifications.orEmpty(),
-                            safetyInformation = dto.safetyInformation.orEmpty(),
-                            requiresPrescription = dto.requiresPrescription,
-                            vendorName = dto.vendorName.orEmpty(),
-                            vendorRating = dto.vendorRating ?: 0.0,
-                            rating = dto.rating,
-                            reviews = dto.reviews,
-                            icon = dto.icon
+                var currentPage = 1
+                var hasMorePages = true
+
+                while (hasMorePages) {
+
+                    Log.d(
+                        "HOME_PAGINATION",
+                        "Calling page=$currentPage, limit=$PAGE_SIZE"
+                    )
+
+                    val res = api.getMedicines(
+                        page = currentPage,
+                        limit = PAGE_SIZE
+                    )
+
+                    Log.d(
+                        "HOME_PAGINATION",
+                        "Response code=${res.code()}"
+                    )
+
+                    if (!res.isSuccessful) {
+
+                        val errorBody =
+                            res.errorBody()?.string()
+
+                        Log.e(
+                            "HOME_PAGINATION",
+                            "API failed: $errorBody"
                         )
+
+                        break
                     }
-                    Log.d("HOME_DEBUG", "Medicines set: ${_allMedicines.value.size}")
-                } else {
-                    Log.e("HOME_DEBUG", "API Failed: ${res.code()} - ${res.message()}")
+
+                    val products =
+                        res.body()?.products.orEmpty()
+
+                    Log.d(
+                        "HOME_PAGINATION",
+                        "Page $currentPage received=${products.size}"
+                    )
+
+                    val mappedMedicines =
+                        products.map { dto ->
+
+                            Medicine(
+                                id = dto._id,
+                                name = dto.name,
+                                description = dto.description.orEmpty(),
+                                price = dto.price,
+                                mrp = dto.mrp,
+                                category = dto.category,
+                                diseaseCategory =
+                                    dto.diseaseCategory.orEmpty(),
+                                diseaseSubcategory =
+                                    dto.diseaseSubcategory.orEmpty(),
+                                productType = dto.productType,
+                                brand = dto.brand.orEmpty(),
+                                stock = dto.stock,
+                                quantity = dto.quantity,
+                                quantityUnit = dto.quantityUnit,
+                                image = dto.image.orEmpty(),
+                                images = dto.images.orEmpty(),
+                                specifications =
+                                    dto.specifications.orEmpty(),
+                                safetyInformation =
+                                    dto.safetyInformation.orEmpty(),
+                                requiresPrescription =
+                                    dto.requiresPrescription,
+                                vendorName =
+                                    dto.vendorName.orEmpty(),
+                                vendorRating =
+                                    dto.vendorRating ?: 0.0,
+                                rating = dto.rating,
+                                reviews = dto.reviews,
+                                icon = dto.icon
+                            )
+                        }
+
+                    allProducts.addAll(mappedMedicines)
+
+                    Log.d(
+                        "HOME_PAGINATION",
+                        "Total loaded=${allProducts.size}"
+                    )
+
+                    if (products.size < PAGE_SIZE) {
+
+                        Log.d(
+                            "HOME_PAGINATION",
+                            "Last page reached"
+                        )
+
+                        hasMorePages = false
+
+                    } else {
+
+                        currentPage++
+                    }
                 }
+
+                _allMedicines.value =
+                    allProducts.distinctBy { it.id }
+
+                Log.d(
+                    "HOME_PAGINATION",
+                    "Final medicines count=${_allMedicines.value.size}"
+                )
+
             } catch (e: Exception) {
-                Log.e("HOME_DEBUG", "Exception: ${e.localizedMessage}")
-                e.printStackTrace()
+
+                Log.e(
+                    "HOME_PAGINATION",
+                    "Exception=${e.localizedMessage}",
+                    e
+                )
+
             } finally {
+
                 _isLoading.value = false
             }
         }
     }
-
 
     private fun loadPopularProducts() {
         viewModelScope.launch {

@@ -7,10 +7,12 @@ import androidx.lifecycle.viewModelScope
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartItem
 import com.mysanjeevni.mysanjeevni.features.medicines.domain.model.Medicine
 import com.mysanjeevni.mysanjeevni.features.medicines.domain.useCase.GetMedicineByIdUseCase
+import com.mysanjeevni.mysanjeevni.features.orders.domain.model.CheckoutType
 import com.mysanjeevni.mysanjeevni.features.orders.domain.model.Order
 import com.mysanjeevni.mysanjeevni.features.orders.domain.model.OrderUiModel
 import com.mysanjeevni.mysanjeevni.features.orders.domain.repository.OrderRepository
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.state.OrderState
+import com.mysanjeevni.mysanjeevni.features.profile.domain.model.Address
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +31,7 @@ class OrderViewModel @Inject constructor(
     private val _selectedMedicine = MutableStateFlow<Medicine?>(null)
     val selectedMedicine: StateFlow<Medicine?> = _selectedMedicine.asStateFlow()
 
-    private val _selectedAddress = MutableStateFlow<AddressItem?>(null)
+    private val _selectedAddress = MutableStateFlow<Address?>(null)
     val selectedAddress = _selectedAddress.asStateFlow()
 
     private val _orderState = MutableStateFlow<OrderState>(OrderState.Idle)
@@ -37,6 +39,9 @@ class OrderViewModel @Inject constructor(
 
     private val _cartItems = MutableStateFlow<List<CartItem>>(emptyList())
     val cartItems = _cartItems.asStateFlow()
+
+    private val _checkoutType = MutableStateFlow<CheckoutType?>(null)
+    val checkOutType = _checkoutType.asStateFlow()
 
     // ── Recent Order ───────────────────────────────────────────────────────
     private val _recentOrder = MutableStateFlow<Order?>(null)
@@ -56,10 +61,57 @@ class OrderViewModel @Inject constructor(
         _selectedMedicine.value = medicine
     }
 
-    fun setAddress(address: AddressItem){
+    fun setAddress(address: Address){
         _selectedAddress.value = address
     }
 
+    fun startCartCheckout() {
+
+        Log.d("CHECKOUT_FLOW", "==============================")
+        Log.d("CHECKOUT_FLOW", "STARTING CART CHECKOUT")
+        Log.d(
+            "CHECKOUT_FLOW",
+            "Old Medicine = ${_selectedMedicine.value?.name}"
+        )
+        Log.d(
+            "CHECKOUT_FLOW",
+            "Old Type = ${_checkoutType.value}"
+        )
+
+        // Remove stale Buy Now product
+        _selectedMedicine.value = null
+
+        // Explicitly mark this flow as CART
+        _checkoutType.value = CheckoutType.CART
+
+        Log.d(
+            "CHECKOUT_FLOW",
+            "New Medicine = ${_selectedMedicine.value?.name}"
+        )
+        Log.d(
+            "CHECKOUT_FLOW",
+            "New Type = ${_checkoutType.value}"
+        )
+        Log.d("CHECKOUT_FLOW", "==============================")
+    }
+
+    fun startBuyNowCheckout() {
+
+        Log.d("CHECKOUT_FLOW", "==============================")
+        Log.d("CHECKOUT_FLOW", "STARTING BUY NOW CHECKOUT")
+
+        _checkoutType.value = CheckoutType.BUY_NOW
+
+        Log.d(
+            "CHECKOUT_FLOW",
+            "New Type = ${_checkoutType.value}"
+        )
+        Log.d("CHECKOUT_FLOW", "==============================")
+    }
+
+    fun clearCheckoutType(){
+        _checkoutType.value = null
+    }
     fun getOrders(userId: String?) {
         viewModelScope.launch {
 

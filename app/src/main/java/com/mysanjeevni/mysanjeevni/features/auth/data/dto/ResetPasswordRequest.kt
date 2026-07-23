@@ -1,6 +1,8 @@
 package com.mysanjeevni.mysanjeevni.features.auth.data.dto
 
-data class ResetPasswordRequest(
+data class ResetPasswordRequestDto(
     val phone: String,
-    val newPassword: String
+    val otp: String,
+    val newPassword: String,
+    val role:String ="user"
 )

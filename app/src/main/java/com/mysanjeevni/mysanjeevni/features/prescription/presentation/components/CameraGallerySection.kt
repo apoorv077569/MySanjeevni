@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,9 +16,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,46 +34,51 @@ import java.io.File
 
 @Composable
 fun CameraGallerySection(
-    onImageSelected: (Uri) -> Unit
+    onFileSelected: (Uri) -> Unit
 ) {
     val context = LocalContext.current
+
     var currentImageUri by remember {
         mutableStateOf<Uri?>(null)
     }
+
     val galleryLauncher =
         rememberLauncherForActivityResult(
-            ActivityResultContracts.GetContent()
+            contract = ActivityResultContracts.GetContent()
         ) { uri ->
-            uri?.let { onImageSelected(it) }
-        }
-    val imageUri = remember {
-        FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.provider",
-            File.createTempFile(
-                "prescription_",
-                ".jpg",
-                context.cacheDir
-            )
-        )
-    }
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
-    ) { success ->
-        if (success) {
-            currentImageUri?.let {
-                onImageSelected(it)
+            uri?.let { selectedUri ->
+                onFileSelected(selectedUri)
             }
         }
-    }
+
+    val pdfLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument()
+        ) { uri ->
+            uri?.let { selectedUri ->
+                onFileSelected(selectedUri)
+            }
+        }
+
+    val cameraLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.TakePicture()
+        ) { success ->
+            if (success) {
+                currentImageUri?.let { uri ->
+                    onFileSelected(uri)
+                }
+            }
+        }
 
     val cameraPermissionLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission()
         ) { granted ->
-
             if (granted) {
-                cameraLauncher.launch(imageUri)
+                currentImageUri?.let { uri ->
+                    cameraLauncher.launch(uri)
+                }
             } else {
                 Toast.makeText(
                     context,
@@ -81,52 +87,85 @@ fun CameraGallerySection(
                 ).show()
             }
         }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 
         OutlinedButton(
             onClick = {
-
                 val uri = createImageUri(context)
-
                 currentImageUri = uri
 
-                when {
+                val hasPermission =
                     ContextCompat.checkSelfPermission(
                         context,
                         Manifest.permission.CAMERA
-                    ) == PackageManager.PERMISSION_GRANTED -> {
+                    ) == PackageManager.PERMISSION_GRANTED
 
-                        cameraLauncher.launch(uri)
-                    }
-
-                    else -> {
-                        cameraPermissionLauncher.launch(
-                            Manifest.permission.CAMERA
-                        )
-                    }
+                if (hasPermission) {
+                    cameraLauncher.launch(uri)
+                } else {
+                    cameraPermissionLauncher.launch(
+                        Manifest.permission.CAMERA
+                    )
                 }
-            }
-        ) {
-            AutoText("Camera")
-        }
-        OutlinedButton(
-            onClick = {galleryLauncher.launch("image/*")},
-            modifier = Modifier.weight(1f)
+            },
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = 4.dp)
         ) {
             Icon(
-                Icons.Default.PhotoLibrary,
-                null
+                imageVector = Icons.Default.CameraAlt,
+                contentDescription = null
             )
-            Spacer(Modifier.width(8.dp))
+
+            Spacer(Modifier.width(4.dp))
+
+            AutoText("Camera")
+        }
+
+        OutlinedButton(
+            onClick = {
+                galleryLauncher.launch("image/*")
+            },
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = 4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.PhotoLibrary,
+                contentDescription = null
+            )
+
+            Spacer(Modifier.width(4.dp))
+
             AutoText("Gallery")
+        }
+
+        OutlinedButton(
+            onClick = {
+                pdfLauncher.launch(
+                    arrayOf("application/pdf")
+                )
+            },
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = 4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.PictureAsPdf,
+                contentDescription = null
+            )
+
+            Spacer(Modifier.width(4.dp))
+
+            AutoText("PDF")
         }
     }
 }
 
-private fun createImageUri(context: Context): Uri {
+private fun createImageUri(
+    context: Context
+): Uri {
 
     val imageFile = File.createTempFile(
         "prescription_",

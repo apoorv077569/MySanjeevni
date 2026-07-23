@@ -57,11 +57,10 @@ import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
-import com.mysanjeevni.mysanjeevni.data.remote.model.address.AddressModel
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
 import com.mysanjeevni.mysanjeevni.features.home.presentation.viewmodel.HomeViewModel
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
-import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressItem
+import com.mysanjeevni.mysanjeevni.features.profile.domain.model.Address
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.AddressViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.dilaog.AddressDialog
@@ -74,22 +73,39 @@ fun ManageAddresses(
     cartViewModel: CartViewModel,
     isCheckout: Boolean = false,
     orderViewModel: OrderViewModel,
-    isHome:Boolean = false,
+    isHome: Boolean = false,
     homeViewModel: HomeViewModel = hiltViewModel()
-
 ) {
+
     val state by viewModel.state.collectAsState()
     val cartState by cartViewModel.state.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
-    var showDialog by remember { mutableStateOf(false) }
-    var selectedAddressForEdit by remember { mutableStateOf<AddressItem?>(null) }
-    LaunchedEffect(Unit) {
-        Log.d("ADDRESS_DEBUG", "isHome = $isHome")
-        Log.d("ADDRESS_DEBUG", "isCheckout = $isCheckout")
+
+    val snackbarHostState = remember {
+        SnackbarHostState()
     }
 
-    state.error?.let { error ->
-        LaunchedEffect(error) {
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var selectedAddressForEdit by remember {
+        mutableStateOf<Address?>(null)
+    }
+
+    LaunchedEffect(Unit) {
+        Log.d(
+            "ADDRESS_DEBUG",
+            "isHome = $isHome"
+        )
+
+        Log.d(
+            "ADDRESS_DEBUG",
+            "isCheckout = $isCheckout"
+        )
+    }
+
+    LaunchedEffect(state.error) {
+        state.error?.let { error ->
             snackbarHostState.showSnackbar(error)
         }
     }
@@ -101,201 +117,440 @@ fun ManageAddresses(
             "Cart Count = ${cartState.cartItem.size}"
         )
 
-        cartState.cartItem.forEach {
+        cartState.cartItem.forEach { item ->
             Log.d(
                 "ADDRESS_SCREEN",
-                "Item=${it.name}, Qty=${it.qty}"
+                "Item=${item.name}, Qty=${item.qty}"
             )
         }
     }
-//    val isDark = isSystemInDarkTheme()
-    val isDark = LocalIsDarkTheme.current || isSystemInDarkTheme()
 
-    val bgColor = if (isDark) Color(0xFF121212) else Color(0xFFF5F7FA)
-    val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
-    val textColor = if (isDark) Color.White else Color.Black
-    val secondaryText = if (isDark) Color.LightGray else Color.Gray
-    val primaryColor = MaterialTheme.colorScheme.primary
+    val isDark =
+        LocalIsDarkTheme.current ||
+                isSystemInDarkTheme()
+
+    val bgColor =
+        if (isDark) {
+            Color(0xFF121212)
+        } else {
+            Color(0xFFF5F7FA)
+        }
+
+    val cardColor =
+        if (isDark) {
+            Color(0xFF1E1E1E)
+        } else {
+            Color.White
+        }
+
+    val textColor =
+        if (isDark) {
+            Color.White
+        } else {
+            Color.Black
+        }
+
+    val secondaryText =
+        if (isDark) {
+            Color.LightGray
+        } else {
+            Color.Gray
+        }
+
+    val primaryColor =
+        MaterialTheme.colorScheme.primary
+
+    // =====================================================
+    // ADDRESS DIALOG
+    // =====================================================
 
     if (showDialog) {
+
         AddressDialog(
             addressToEdit = selectedAddressForEdit,
+
             onDismiss = {
                 showDialog = false
                 selectedAddressForEdit = null
             },
-            onSave = { addressModel ->
+
+            onSave = { address ->
+
+                Log.d(
+                    "ADDRESS_SCREEN",
+                    "Dialog Save Address = $address"
+                )
+
                 if (selectedAddressForEdit == null) {
-                    viewModel.addAddress(addressModel)
+
+                    // ADD ADDRESS
+                    viewModel.addAddress(
+                        address = address
+                    )
+
                 } else {
-                    viewModel.updateAddress(selectedAddressForEdit!!.id, addressModel)
+
+                    // UPDATE ADDRESS
+                    val addressId =
+                        selectedAddressForEdit!!.id
+
+                    viewModel.updateAddress(
+                        id = addressId,
+                        address = address.copy(
+                            id = addressId,
+
+                            // Existing values preserve
+                            userId = selectedAddressForEdit!!
+                                .userId,
+
+                            country = selectedAddressForEdit!!
+                                .country,
+
+                            createdAt = selectedAddressForEdit!!
+                                .createdAt,
+
+                            updatedAt = selectedAddressForEdit!!
+                                .updatedAt
+                        )
+                    )
                 }
-            })
+
+                showDialog = false
+                selectedAddressForEdit = null
+            }
+        )
     }
 
     Scaffold(
         containerColor = bgColor,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState
+            )
+        },
+
         topBar = {
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .statusBarsPadding()
                     .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+
+                verticalAlignment =
+                    Alignment.CenterVertically
             ) {
+
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.back),
+                    imageVector =
+                        Icons.AutoMirrored.Filled.ArrowBack,
+
+                    contentDescription =
+                        stringResource(R.string.back),
+
                     tint = textColor,
+
                     modifier = Modifier
                         .size(24.dp)
-                        .clickable { navController.popBackStack() }
+                        .clickable {
+                            navController.popBackStack()
+                        }
                 )
-                Spacer(modifier = Modifier.width(16.dp))
+
+                Spacer(
+                    modifier = Modifier.width(16.dp)
+                )
+
                 AutoText(
-                    text = stringResource(R.string.manage_addresses),
+                    text = stringResource(
+                        R.string.manage_addresses
+                    ),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = textColor
                 )
             }
         },
+
         floatingActionButton = {
+
             FloatingActionButton(
                 onClick = {
-                    selectedAddressForEdit = null // Reset for new entry
+
+                    // New address
+                    selectedAddressForEdit = null
                     showDialog = true
                 },
                 containerColor = primaryColor,
                 contentColor = Color.White
             ) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_address))
+
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription =
+                        stringResource(
+                            R.string.add_address
+                        )
+                )
             }
         }
     ) { paddingValues ->
-        if (state.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = primaryColor)
-            }
-        } else if (state.addresses.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    AutoText(
-                        text = "No addresses saved",
-                        fontSize = 16.sp,
-                        color = secondaryText
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    AutoText(
-                        text = "Tap + to add new address",
-                        fontSize = 14.sp,
-                        color = secondaryText
+
+        when {
+
+            // =====================================================
+            // LOADING
+            // =====================================================
+
+            state.isLoading -> {
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+
+                    contentAlignment =
+                        Alignment.Center
+                ) {
+
+                    CircularProgressIndicator(
+                        color = primaryColor
                     )
                 }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(state.addresses) { address ->
-                    AddressCardItem(
-                        address = address,
-                        cardColor = cardColor,
-                        textColor = textColor,
-                        secondaryText = secondaryText,
-                        primaryColor = primaryColor,
-                        onEdit = {
-                            selectedAddressForEdit = address
-                            showDialog = true
 
-                        },
-                        onDelete = {
-                            viewModel.deleteAddress(address.id)
-                        },
-                        onSetDefault = {
-                            val addressModel = AddressModel(
-                                userId = "",
-                                type = address.type,
-                                fullName = address.fullName,
-                                phone = address.phone,
-                                addressLine1 = address.addressLine1,
-                                addressLine2 = address.addressLine2,
-                                city = address.city,
-                                state = address.state,
-                                pincode = address.pincode,
-                                isDefault = true
-                            )
+            // =====================================================
+            // EMPTY
+            // =====================================================
 
-                            viewModel.updateAddress(address.id, addressModel)
-                        },
+            state.addresses.isEmpty() -> {
 
-                        onSelect = {
-                            Log.d(
-                                "ADDRESS_DEBUG",
-                                "CLICK -> isHome=$isHome isCheckout=$isCheckout"
-                            )
-                            Log.d(
-                                "ADDRESS_DEBUG",
-                                "Selected Address = ${address.addressLine1}"
-                            )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
 
-                            Log.d(
-                                "ADDRESS_DEBUG",
-                                "City = ${address.city}"
-                            )
+                    contentAlignment =
+                        Alignment.Center
+                ) {
 
-                            Log.d(
-                                "ADDRESS_DEBUG",
-                                "Pincode = ${address.pincode}"
-                            )
+                    Column(
+                        horizontalAlignment =
+                            Alignment.CenterHorizontally
+                    ) {
 
-                            Log.d(
-                                "ADDRESS_DEBUG",
-                                "Full Address = ${address.city} - ${address.pincode}"
-                            )
+                        AutoText(
+                            text = "No addresses saved",
+                            fontSize = 16.sp,
+                            color = secondaryText
+                        )
 
-                            if (isCheckout) {
-                                val selectedAddress = "${address.fullName},${address.type}, ${
-                                    address
-                                        .city
-                                }, ${address.phone}"
-                                orderViewModel.setAddress(address)
-                                orderViewModel.setCartItems(cartState.cartItem)
-                                Log.d("ADDRESS_DEBUG", "Selected Address = $selectedAddress")
-                                navController.navigate(Screen.SummaryScreen.route)
-                            }
-                            else if(isHome){
+                        Spacer(
+                            modifier = Modifier.height(8.dp)
+                        )
 
-                                homeViewModel.updateCity(
-                                    "${address.city}-${address.pincode}"
+                        AutoText(
+                            text = "Tap + to add new address",
+                            fontSize = 14.sp,
+                            color = secondaryText
+                        )
+                    }
+                }
+            }
+
+            // =====================================================
+            // ADDRESS LIST
+            // =====================================================
+
+            else -> {
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(
+                            horizontal = 16.dp
+                        ),
+
+                    verticalArrangement =
+                        Arrangement.spacedBy(16.dp),
+
+                    contentPadding =
+                        PaddingValues(
+                            bottom = 80.dp
+                        )
+                ) {
+
+                    items(
+                        items = state.addresses,
+                        key = { address ->
+                            address.id
+                        }
+                    ) { address ->
+
+                        AddressCardItem(
+                            address = address,
+
+                            cardColor = cardColor,
+
+                            textColor = textColor,
+
+                            secondaryText = secondaryText,
+
+                            primaryColor = primaryColor,
+
+                            // =====================================
+                            // EDIT
+                            // =====================================
+
+                            onEdit = {
+
+                                Log.d(
+                                    "ADDRESS_SCREEN",
+                                    "Edit Address = ${address.id}"
                                 )
+
+                                selectedAddressForEdit =
+                                    address
+
+                                showDialog = true
+                            },
+
+                            // =====================================
+                            // DELETE
+                            // =====================================
+
+                            onDelete = {
+
+                                Log.d(
+                                    "ADDRESS_SCREEN",
+                                    "Delete Address = ${address.id}"
+                                )
+
+                                viewModel.deleteAddress(
+                                    addressId = address.id
+                                )
+                            },
+
+                            // =====================================
+                            // SET DEFAULT
+                            // =====================================
+
+                            onSetDefault = {
+
+                                Log.d(
+                                    "ADDRESS_SCREEN",
+                                    "Set Default = ${address.id}"
+                                )
+
+                                // address already Domain Address hai.
+                                // AddressModel banane ki zarurat nahi.
+                                val updatedAddress =
+                                    address.copy(
+                                        isDefault = true
+                                    )
+
+                                viewModel.updateAddress(
+                                    id = address.id,
+                                    address = updatedAddress
+                                )
+                            },
+
+                            // =====================================
+                            // SELECT
+                            // =====================================
+
+                            onSelect = {
+
                                 Log.d(
                                     "ADDRESS_DEBUG",
-                                    "Updated Home City = ${address.city} - ${address.pincode}"
+                                    "CLICK -> isHome=$isHome " +
+                                            "isCheckout=$isCheckout"
                                 )
-                                navController.popBackStack()
-                            }
-                        },
-                        isCheckOut = isCheckout,
-                        isHome = isHome
-                    )
+
+                                Log.d(
+                                    "ADDRESS_DEBUG",
+                                    "Selected Address = " +
+                                            address.addressLine1
+                                )
+
+                                Log.d(
+                                    "ADDRESS_DEBUG",
+                                    "City = ${address.city}"
+                                )
+
+                                Log.d(
+                                    "ADDRESS_DEBUG",
+                                    "Pincode = ${address.pincode}"
+                                )
+
+                                Log.d(
+                                    "ADDRESS_DEBUG",
+                                    "Full Address = " +
+                                            "${address.city} - " +
+                                            address.pincode
+                                )
+
+                                if (isCheckout) {
+
+                                    val selectedAddress =
+                                        "${address.fullName}," +
+                                                "${address.type}," +
+                                                "${address.city}," +
+                                                address.phone
+
+                                    // Domain Address directly
+                                    orderViewModel.setAddress(
+                                        address
+                                    )
+
+                                    orderViewModel.setCartItems(
+                                        cartState.cartItem
+                                    )
+
+                                    Log.d(
+                                        "ADDRESS_DEBUG",
+                                        "Selected Address = " +
+                                                selectedAddress
+                                    )
+
+                                    navController.navigate(
+                                        Screen.SummaryScreen.route
+                                    )
+
+                                } else if (isHome) {
+
+                                    homeViewModel.updateCity(
+                                        "${address.city}-" +
+                                                address.pincode
+                                    )
+
+                                    Log.d(
+                                        "ADDRESS_DEBUG",
+                                        "Updated Home City = " +
+                                                "${address.city} - " +
+                                                address.pincode
+                                    )
+
+                                    navController.popBackStack()
+                                }
+                            },
+
+                            isCheckOut = isCheckout,
+
+                            isHome = isHome
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-
-
 @Composable
 fun AddressCardItem(
-    address: AddressItem,
+    address: Address,
     cardColor: Color,
     textColor: Color,
     secondaryText: Color,
@@ -305,66 +560,159 @@ fun AddressCardItem(
     onSetDefault: () -> Unit,
     onSelect: () -> Unit,
     isCheckOut: Boolean,
-    isHome:Boolean
+    isHome: Boolean
 ) {
+
     Card(
-        modifier = Modifier.clickable {
-            onSelect()
-        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onSelect()
+            },
+
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = cardColor),
-        elevation = CardDefaults.cardElevation(2.dp),
-        border = if (address.isDefault) BorderStroke(1.dp, primaryColor) else null
+
+        colors = CardDefaults.cardColors(
+            containerColor = cardColor
+        ),
+
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        ),
+
+        border =
+            if (address.isDefault) {
+                BorderStroke(
+                    width = 1.dp,
+                    color = primaryColor
+                )
+            } else {
+                null
+            }
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+
+                verticalAlignment =
+                    Alignment.CenterVertically
             ) {
+
                 Icon(
-                    imageVector = if (address.type == "Home") Icons.Default.Home else Icons.Default.Work,
+                    imageVector =
+                        if (
+                            address.type.equals(
+                                "home",
+                                ignoreCase = true
+                            )
+                        ) {
+                            Icons.Default.Home
+                        } else {
+                            Icons.Default.Work
+                        },
+
                     contentDescription = null,
-                    tint = if (address.isDefault) primaryColor else secondaryText,
+
+                    tint =
+                        if (address.isDefault) {
+                            primaryColor
+                        } else {
+                            secondaryText
+                        },
+
                     modifier = Modifier.size(20.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+
+                Spacer(
+                    modifier = Modifier.width(8.dp)
+                )
+
                 AutoText(
-                    text = address.type,
+                    text = address.type
+                        .replaceFirstChar {
+                            it.uppercase()
+                        },
+
                     fontSize = 16.sp,
+
                     fontWeight = FontWeight.Bold,
+
                     color = textColor
                 )
+
                 if (address.isDefault) {
-                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Spacer(
+                        modifier = Modifier.width(8.dp)
+                    )
+
                     AutoText(
                         text = "(Default)",
                         fontSize = 12.sp,
                         color = primaryColor
                     )
                 }
-                Spacer(modifier = Modifier.weight(1f))
+
+                Spacer(
+                    modifier = Modifier.weight(1f)
+                )
+
+                // =====================================
+                // EDIT ICON
+                // =====================================
+
                 Icon(
                     imageVector = Icons.Default.Edit,
+
                     contentDescription = "Edit",
+
                     tint = secondaryText,
+
                     modifier = Modifier
                         .size(20.dp)
-                        .clickable { onEdit() }
+                        .clickable {
+                            onEdit()
+                        }
                 )
-                Spacer(modifier = Modifier.width(16.dp))
+
+                Spacer(
+                    modifier = Modifier.width(16.dp)
+                )
+
+                // =====================================
+                // DELETE ICON
+                // =====================================
+
                 Icon(
-                    imageVector = Icons.Default.DeleteOutline,
+                    imageVector =
+                        Icons.Default.DeleteOutline,
+
                     contentDescription = "Delete",
-                    tint = Color.Red.copy(alpha = 0.7f),
+
+                    tint = Color.Red.copy(
+                        alpha = 0.7f
+                    ),
+
                     modifier = Modifier
                         .size(20.dp)
-                        .clickable { onDelete() }
+                        .clickable {
+                            onDelete()
+                        }
                 )
             }
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 12.dp),
-                color = secondaryText.copy(alpha = 0.2f)
+                modifier = Modifier.padding(
+                    vertical = 12.dp
+                ),
+
+                color = secondaryText.copy(
+                    alpha = 0.2f
+                )
             )
 
             AutoText(
@@ -373,23 +721,50 @@ fun AddressCardItem(
                 fontWeight = FontWeight.Medium,
                 color = textColor
             )
-            Spacer(modifier = Modifier.height(4.dp))
+
+            Spacer(
+                modifier = Modifier.height(4.dp)
+            )
+
             AutoText(
                 text = address.addressLine1,
                 fontSize = 14.sp,
                 color = secondaryText
             )
+
+            if (address.addressLine2.isNotBlank()) {
+
+                AutoText(
+                    text = address.addressLine2,
+                    fontSize = 14.sp,
+                    color = secondaryText
+                )
+            }
+
             AutoText(
-                text = address.addressLine2,
+                text =
+                    "${address.city}, " +
+                            "${address.state} - " +
+                            address.pincode,
+
                 fontSize = 14.sp,
+
                 color = secondaryText
             )
-            AutoText(
-                text = address.city,
-                fontSize = 14.sp,
-                color = secondaryText
+
+            if (address.country.isNotBlank()) {
+
+                AutoText(
+                    text = address.country,
+                    fontSize = 14.sp,
+                    color = secondaryText
+                )
+            }
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
+
             AutoText(
                 text = "Phone: ${address.phone}",
                 fontSize = 14.sp,
@@ -398,16 +773,48 @@ fun AddressCardItem(
             )
 
             if (!address.isDefault) {
-                Spacer(modifier = Modifier.height(16.dp))
+
+                Spacer(
+                    modifier = Modifier.height(16.dp)
+                )
+
                 AutoText(
                     text = "Set as Default",
+
                     color = primaryColor,
+
                     fontSize = 14.sp,
+
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable { onSetDefault() }
+
+                    modifier = Modifier.clickable {
+                        onSetDefault()
+                    }
+                )
+            }
+
+            // Optional visual hint based on mode
+            if (isCheckOut || isHome) {
+
+                Spacer(
+                    modifier = Modifier.height(12.dp)
+                )
+
+                AutoText(
+                    text =
+                        if (isCheckOut) {
+                            "Tap to deliver here"
+                        } else {
+                            "Tap to use this location"
+                        },
+
+                    fontSize = 12.sp,
+
+                    color = primaryColor,
+
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
     }
 }
-

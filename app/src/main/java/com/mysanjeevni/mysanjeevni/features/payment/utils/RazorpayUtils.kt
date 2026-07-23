@@ -5,8 +5,7 @@ import android.app.Activity
 import android.util.Log
 import com.mysanjeevni.mysanjeevni.BuildConfig
 import com.mysanjeevni.mysanjeevni.R
-import com.mysanjeevni.mysanjeevni.app.MainActivity
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.RazorpayOrder
+import com.mysanjeevni.mysanjeevni.features.payment.data.dto.RazorpayOrder
 import com.razorpay.Checkout
 import org.json.JSONObject
 

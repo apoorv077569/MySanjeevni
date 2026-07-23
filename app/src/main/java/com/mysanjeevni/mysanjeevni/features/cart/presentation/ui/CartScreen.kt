@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,6 +37,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -43,6 +47,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,12 +64,14 @@ import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartItem
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
+import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartScreen(navController: NavController, viewModel: CartViewModel) {
+fun CartScreen(navController: NavController, viewModel: CartViewModel,orderViewModel: OrderViewModel) {
 
     val state by viewModel.state.collectAsState()
 //    val isDark = isSystemInDarkTheme()
@@ -80,19 +87,42 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
     val deliveryFee = if (itemTotal > 299) 0.0 else 50.0
 
     val grandTotal = itemTotal + deliveryFee
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+
+    val userId = remember {
+        viewModel.getUserId()
+    }
 
     LaunchedEffect(state.cartItem) {
         Log.d("CART_DEBUG", "CART VM = ${viewModel.hashCode()}")
         Log.d("CART_DEBUG", "CartScreen → Items Size: ${state.cartItem.size}")
     }
+    LaunchedEffect(state.error) {
+        if (state.error.isNotBlank()) {
+            snackbarHostState.showSnackbar(
+                message = state.error
+            )
+            viewModel.clearError()
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { AutoText(stringResource(R.string.my_cart), fontWeight = FontWeight.Bold) },
+                title = {
+                    AutoText(
+                        stringResource(R.string.my_cart),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -104,7 +134,7 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
         },
         bottomBar = {
             if (state.cartItem.isNotEmpty()) {
-                CartBottomBar(grandTotal, isDark, navController)
+                CartBottomBar(grandTotal, isDark, navController,state.cartItem,userId,orderViewModel)
             }
         },
         containerColor = bgColor
@@ -138,6 +168,40 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
                     item { Spacer(modifier = Modifier.height(100.dp)) }
                 }
             }
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(
+                        top = 12.dp,
+                        start = 16.dp,
+                        end = 16.dp
+                    )
+            ) { snackbarData ->
+
+                LaunchedEffect(snackbarData) {
+
+                    delay(1000.milliseconds)
+
+                    snackbarData.dismiss()
+
+                    viewModel.clearError()
+                }
+
+                Snackbar(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    containerColor = Color(0xFFD32F2F),
+                    contentColor = Color.White
+                ) {
+                    AutoText(
+                        text = snackbarData.visuals.message,
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
         }
     }
 }
@@ -156,8 +220,13 @@ fun EmptyCartView(textColor: Color) {
             tint = Color.Gray
         )
         Spacer(modifier = Modifier.height(16.dp))
-        AutoText("Your cart is empty!", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = textColor)
-        AutoText("Add medicines to proceed", fontSize = 14.sp, color = Color.Gray)
+        AutoText(
+            stringResource(R.string.your_cart_is_empty),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = textColor
+        )
+        AutoText(stringResource(R.string.add_medicines_to_proceed), fontSize = 14.sp, color = Color.Gray)
     }
 }
 
@@ -279,7 +348,8 @@ fun BillSummary(cartItems: List<CartItem>, isDark: Boolean) {
     val itemTotal = cartItems.sumOf { it.price * it.qty }
     val deliveryFee = if (itemTotal > 299.0) 0.0 else 50.0
     val grandTotal = itemTotal + deliveryFee
-    val dividerColor = if (isDark) Color.White.copy(alpha = 0.12f) else Color.LightGray.copy(alpha = 0.5f)
+    val dividerColor =
+        if (isDark) Color.White.copy(alpha = 0.12f) else Color.LightGray.copy(alpha = 0.5f)
 
 
     Card(
@@ -357,7 +427,14 @@ fun BillSummary(cartItems: List<CartItem>, isDark: Boolean) {
 }
 
 @Composable
-fun CartBottomBar(grandTotal: Double, isDark: Boolean, navController: NavController) {
+fun CartBottomBar(
+    grandTotal: Double,
+    isDark: Boolean,
+    navController: NavController,
+    cartItems: List<CartItem>,
+    userId: String,
+    orderViewModel: OrderViewModel
+) {
     val containerColor = if (isDark) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDark) Color.White else Color.Black
 
@@ -387,7 +464,40 @@ fun CartBottomBar(grandTotal: Double, isDark: Boolean, navController: NavControl
                 )
             }
             Button(
-                onClick = { navController.navigate("${Screen.ManageAddresses.route}?checkout=true&home=false") },
+                onClick = {
+                    orderViewModel.startCartCheckout()
+                    Log.d(
+                        "CHECKOUT_FLOW",
+                        "Checkout started from CART | Items=${cartItems.size}"
+                    )
+                    val rxMedicine = cartItems.firstOrNull {
+                        it.requirePrescription
+                    }
+                    if (rxMedicine != null) {
+                        Log.d(
+                            "RX_CHECKOUT",
+                            "Rx medicine found: ${rxMedicine.name}"
+                        )
+
+                        Log.d(
+                            "RX_CHECKOUT",
+                            "Product ID: ${rxMedicine.id}"
+                        )
+                        navController.navigate(
+                            Screen.UploadPrescription.createRoute(
+                                productId = rxMedicine.id,
+                                productName = rxMedicine.name,
+                                userId = userId
+                            )
+                        )
+                    } else {
+                        Log.d(
+                            "RX_CHECKOUT",
+                            "No Rx medicine → Address Screen"
+                        )
+                        navController.navigate("${Screen.ManageAddresses.route}?checkout=true&home=false")
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6F61)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier

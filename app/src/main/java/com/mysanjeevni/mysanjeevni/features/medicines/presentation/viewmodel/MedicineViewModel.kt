@@ -19,6 +19,10 @@ class MedicineViewModel @Inject constructor(
     private val getMedicineByIdUseCase: GetMedicineByIdUseCase
 ) : ViewModel() {
 
+    companion object {
+        private const val TAG = "MEDICINE_PAGINATION"
+        private const val PAGE_SIZE = 20
+    }
     private val _state =
         MutableStateFlow(MedicineState())
 
@@ -34,10 +38,14 @@ class MedicineViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     isLoading = true,
-                    error = null
+                    isLoadingMore = false,
+                    error = null,
+                    currentPage = 0,
+                    hasMorePages = true
                 )
             }
-            getMedicinesUseCase().onSuccess { medicines ->
+
+            getMedicinesUseCase(page= 1, limit = PAGE_SIZE).onSuccess { medicines ->
                 _state.update {
                     it.copy(
                         isLoading = false,

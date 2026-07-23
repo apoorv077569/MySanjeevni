@@ -8,10 +8,10 @@ import com.mysanjeevni.mysanjeevni.features.orders.data.dto.CreateOrderRequest
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.OrderItemDto
 import com.mysanjeevni.mysanjeevni.features.orders.data.mapper.toDomain
 import com.mysanjeevni.mysanjeevni.features.orders.domain.repository.OrderRepository
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.CreateRazorpayOrderRequest
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.PaymentRepository
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.RazorpayOrder
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.VerifyPaymentRequest
+import com.mysanjeevni.mysanjeevni.features.payment.data.dto.CreateRazorpayOrderRequest
+import com.mysanjeevni.mysanjeevni.features.payment.domain.repository.PaymentRepository
+import com.mysanjeevni.mysanjeevni.features.payment.data.dto.RazorpayOrder
+import com.mysanjeevni.mysanjeevni.features.payment.data.dto.VerifyPaymentRequest
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.state.PaymentState
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel

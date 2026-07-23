@@ -12,6 +12,7 @@ data class CartEntity(
     val price: Double,
     val originalPrice: Double,
     val quantity:Int,
-    val imageUrl: String
-
+    val imageUrl: String,
+    val stock:Int,
+    val requirePrescription: Boolean
 )

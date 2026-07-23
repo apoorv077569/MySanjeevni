@@ -1,6 +1,7 @@
 package com.mysanjeevni.mysanjeevni.features.profile.presentation.ui
 
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,7 +42,10 @@ import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,13 +68,27 @@ import com.mysanjeevni.mysanjeevni.utils.AutoText
 @Composable
 fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hiltViewModel()
 ) {
-//    val isDark = isSystemInDarkTheme()
     val isDark = LocalIsDarkTheme.current || isSystemInDarkTheme()
     val bgColor = if (isDark) Color(0xFF121212) else Color(0xFFF5F7FA)
     val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDark) Color.White else Color.Black
     val secondaryText = if (isDark) Color.LightGray else Color(0xFF26A69A)
     val state by viewModel.state.collectAsState()
+
+    val currentBackStackEntry = navController.currentBackStackEntry
+    val profileUpdatedFlow = remember(currentBackStackEntry) {
+        currentBackStackEntry
+            ?.savedStateHandle
+            ?.getStateFlow(
+                "profile_updated",
+                false
+            )
+    }
+    val profileUpdated by profileUpdatedFlow
+        ?.collectAsState()
+        ?: remember {
+            mutableStateOf(false)
+        }
 
     val user = state.user
     val context = LocalContext.current
@@ -81,6 +99,16 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
         ?.take(2)
         ?.mapNotNull { it.firstOrNull()?.uppercase() }
         ?.joinToString("")?:"U"
+
+    LaunchedEffect(profileUpdated) {
+        if (profileUpdated) {
+            Log.d("PROFILE_REFRESH", "Profile update result received")
+            Log.d("PROFILE_REFRESH", "Refreshing profile from API")
+            viewModel.getProfile()
+            currentBackStackEntry?.savedStateHandle?.set("profile_updated", false)
+            Log.d("PROFILE_REFRESH", "Profile update result consumed")
+        }
+    }
 
 
     Column(

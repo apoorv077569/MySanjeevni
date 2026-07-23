@@ -1,7 +1,7 @@
 package com.mysanjeevni.mysanjeevni.features.payment.presentation.state
 
 import com.mysanjeevni.mysanjeevni.features.orders.domain.model.Order
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.RazorpayOrder
+import com.mysanjeevni.mysanjeevni.features.payment.data.dto.RazorpayOrder
 
 sealed class PaymentState {
     object Idle : PaymentState()

@@ -16,6 +16,23 @@ android {
     compileSdk {
         version = release(36)
     }
+    signingConfigs{
+        create("release"){
+            storeFile  = file("C:/Users/Apoorv Rathore/MySanjeevni/my-release-key.jks")
+            storePassword = "Nikhil@2026"
+            keyAlias = "my-key-alias"
+            keyPassword = "Nikhil@2026"
+        }
+    }
+    buildTypes{
+        getByName("debug"){
+            signingConfig = signingConfigs.getByName("release")
+        }
+        getByName("release"){
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+        }
+    }
 
     defaultConfig {
         applicationId = "com.mysanjeevni.mysanjeevni"
@@ -109,6 +126,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:31.5.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-auth-ktx:23.2.1")
 //    google auth
     implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation("androidx.credentials:credentials:1.3.0")

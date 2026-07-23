@@ -7,6 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +22,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -30,6 +35,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
@@ -79,6 +85,7 @@ fun HomeScreen(
     val backgroundColor = if (isDark) Color(0xFF121212) else Color.White
 
     val isLoading by viewModel.isLoading.collectAsState()
+    val cartState by cartViewModel.state.collectAsState()
 
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResults by viewModel.searchResults.collectAsState()
@@ -99,6 +106,28 @@ fun HomeScreen(
         medicines.groupBy { it.productType }
     }
     val highlightBg = if (isDark) Color(0xFF16242B) else Color(0xFFE3F2FD)
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+
+    LaunchedEffect(cartState.error) {
+
+        if (cartState.error.isNotBlank()) {
+
+            Log.d(
+                "CART_SNACKBAR",
+                "Showing error: ${cartState.error}"
+            )
+
+            // Previous snackbar remove
+            snackbarHostState.currentSnackbarData?.dismiss()
+
+            snackbarHostState.showSnackbar(
+                message = cartState.error,
+                duration = SnackbarDuration.Indefinite
+            )
+        }
+    }
 
     LaunchedEffect(medicines) {
         Log.d("HOME_DEBUG", "========== MEDICINES ==========")
@@ -195,35 +224,90 @@ fun HomeScreen(
                 )
             }
         ) { paddingValues ->
+            Box(modifier = Modifier.fillMaxSize()
+            ){
+                if (searchQuery.isNotBlank()) {
 
-            if (searchQuery.isNotBlank()) {
+                    if (searchResults.isEmpty()) {
+                        ProductNotFound()
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(
+                                    top = paddingValues.calculateTopPadding()
+                                ),
+                            contentPadding = PaddingValues(12.dp)
+                        ) {
 
-                if (searchResults.isEmpty()) {
-                    ProductNotFound()
+                            item {
+
+                                AutoText(
+                                    text = "${searchResults.size} Products Found",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(bottom = 12.dp)
+                                )
+                            }
+
+                            items(searchResults) { medicine ->
+                                MedicineItem(
+                                    medicine = medicine,
+                                    onAddToCart = {
+                                        cartViewModel.addToCart(
+                                            CartItem(
+                                                id = medicine.id,
+                                                name = medicine.name,
+                                                price = medicine.price,
+                                                originalPrice = medicine.mrp,
+                                                imageUrl = medicine.image,
+                                                qty = 1,
+                                                stock = medicine.stock,
+                                                requirePrescription = medicine.requiresPrescription
+                                            )
+                                        )
+                                    },
+                                    onClick = {
+                                        navController.navigate(
+                                            Screen.MedicineDetail.createRoute(medicine.id)
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
                 } else {
-                    LazyColumn(
+                    Column(
                         modifier = Modifier
-                            .fillMaxSize()
                             .padding(
                                 top = paddingValues.calculateTopPadding()
-                            ),
-                        contentPadding = PaddingValues(12.dp)
-                    ) {
-
-                        item {
-
-                            AutoText(
-                                text = "${searchResults.size} Products Found",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(bottom = 12.dp)
                             )
-                        }
-
-                        items(searchResults) { medicine ->
-                            MedicineItem(
-                                medicine = medicine,
-                                onAddToCart = {
+                            .fillMaxSize()
+                            .verticalScroll(scrollState)
+                    ) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        SlideableBannerSection()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        PrescriptionActionCard(navController)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(highlightBg)
+                                .padding(vertical = 12.dp)
+                        ) {
+                            PopularProductsSection(
+                                products = popularProducts,
+                                onProductClick = { medicine ->
+                                    navController.navigate(
+                                        Screen.MedicineDetail.createRoute(
+                                            medicine.id
+                                        )
+                                    )
+                                },
+                                onAddToCart = { medicine ->
                                     cartViewModel.addToCart(
                                         CartItem(
                                             id = medicine.id,
@@ -231,95 +315,83 @@ fun HomeScreen(
                                             price = medicine.price,
                                             originalPrice = medicine.mrp,
                                             imageUrl = medicine.image,
-                                            qty = 1
+                                            qty = 1,
+                                            stock = medicine.stock,
+                                            requirePrescription = medicine.requiresPrescription
                                         )
                                     )
                                 },
-                                onClick = {
-                                    navController.navigate(
-                                        Screen.MedicineDetail.createRoute(medicine.id)
+                                cartViewModel = cartViewModel
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        categoryState.categories.forEach { category ->
+                            val categoryProducts =
+                                productsByType[category.name]
+                                    ?: emptyList()
+                            CategoryProductsSection(
+                                title = category.name,
+                                subCategories = category.children.map { it.name },
+                                medicines = categoryProducts,
+                                isDark = isDark,
+                                navController = navController,
+                                cartViewModel = cartViewModel,
+                                onAddToCartClick = { medicine ->
+                                    cartViewModel.addToCart(
+                                        CartItem(
+                                            id = medicine.id,
+                                            name = medicine.name,
+                                            price = medicine.price,
+                                            originalPrice = medicine.mrp,
+                                            imageUrl = medicine.image,
+                                            qty = 1,
+                                            stock = medicine.stock,
+                                            requirePrescription = medicine.requiresPrescription
+                                        )
                                     )
                                 }
                             )
                         }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        FooterTextInfo(isDark)
                     }
                 }
-            } else {
-                Column(
+                SnackbarHost(
+                    hostState = snackbarHostState,
                     modifier = Modifier
+                        .align(Alignment.TopCenter)
                         .padding(
-                            top = paddingValues.calculateTopPadding()
+                            top = paddingValues.calculateTopPadding() + 12.dp,
+                            start = 16.dp,
+                            end = 16.dp
                         )
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                ) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    SlideableBannerSection()
-                    Spacer(modifier = Modifier.height(8.dp))
-                    PrescriptionActionCard(navController)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(highlightBg)
-                            .padding(vertical = 12.dp)
+                ) { snackbarData ->
+
+                    LaunchedEffect(snackbarData) {
+
+                        delay(1000.milliseconds)
+
+                        snackbarData.dismiss()
+
+                        cartViewModel.clearError()
+                    }
+
+                    Snackbar(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        containerColor = Color(0xFFD32F2F),
+                        contentColor = Color.White
                     ) {
-                        PopularProductsSection(
-                            products = popularProducts,
-                            onProductClick = { medicine ->
-                                navController.navigate(
-                                    Screen.MedicineDetail.createRoute(
-                                        medicine.id
-                                    )
-                                )
-                            },
-                            onAddToCart = { medicine ->
-                                cartViewModel.addToCart(
-                                    CartItem(
-                                        id = medicine.id,
-                                        name = medicine.name,
-                                        price = medicine.price,
-                                        originalPrice = medicine.mrp,
-                                        imageUrl = medicine.image,
-                                        qty = 1
-                                    )
-                                )
-                            },
-                            cartViewModel = cartViewModel
+                        AutoText(
+                            text = snackbarData.visuals.message,
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    categoryState.categories.forEach { category ->
-                        val categoryProducts =
-                            productsByType[category.name]
-                                ?: emptyList()
-                        CategoryProductsSection(
-                            title = category.name,
-                            subCategories = category.children.map { it.name },
-                            medicines = categoryProducts,
-                            isDark = isDark,
-                            navController = navController,
-                            cartViewModel = cartViewModel,
-                            onAddToCartClick = { medicine ->
-                                cartViewModel.addToCart(
-                                    CartItem(
-                                        id = medicine.id,
-                                        name = medicine.name,
-                                        price = medicine.price,
-                                        originalPrice = medicine.mrp,
-                                        imageUrl = medicine.image,
-                                        qty = 1
-                                    )
-                                )
-                            }
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    FooterTextInfo(isDark)
                 }
             }
+
         }
     }
 }

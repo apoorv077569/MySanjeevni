@@ -109,7 +109,9 @@ class WishlistViewModel @Inject constructor(
                     imageUrl = item.image,
                     quantity = 1,
                     userId = userId,
-                    originalPrice = item.price
+                    originalPrice = item.price,
+                    stock = item.stock,
+                    requirePrescription = item.requirePrescription
                 )
             )
 

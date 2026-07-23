@@ -29,18 +29,13 @@ import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.rememberTranslatedText
 
-
 private val RedError       = Color(0xFFE53935)
-private val RedErrorLight  = Color(0xFFEF5350)  // slightly lighter for dark-mode icon
-
+private val RedErrorLight  = Color(0xFFEF5350)
 private val TealButton     = Color(0xFF00BFA5)
-
-// Wave / ring colours shift between themes
 private val WavePinkLight1 = Color(0xFFFFD6D6)
 private val WavePinkLight2 = Color(0xFFFFBCBC)
 private val WaveDarkBg1    = Color(0xFF3A1A1A)
 private val WaveDarkBg2    = Color(0xFF2E1212)
-
 private val RingLight1     = Color(0xFFFFE8E8)
 private val RingLight2     = Color(0xFFFFD0D0)
 private val RingLight3     = Color(0xFFFFBCBC)

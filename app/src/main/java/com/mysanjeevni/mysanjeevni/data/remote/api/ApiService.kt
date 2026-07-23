@@ -1,20 +1,17 @@
 package com.mysanjeevni.mysanjeevni.data.remote.api
 
-import com.mysanjeevni.mysanjeevni.data.remote.model.cart.AddToCartRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.auth.AuthResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.address.CreateAddressRequest
 import com.mysanjeevni.mysanjeevni.data.remote.model.notification.GenericResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.auth.LoginRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.user.ProfileResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.auth.RegisterRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.auth.ResetPasswordRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.auth.SendOtpBeforeSignupRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.auth.SendOtpRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.address.UpdateAddressRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.cart.UpdateCartRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.auth.VerifyOtpRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.notification.NotificationResponse
-import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartResponse
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.GoogleLoginRequest
+import com.mysanjeevni.mysanjeevni.features.cart.data.dto.UpdateCartRequest
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.AuthResponseDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.LoginRequestDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.RegisterRequestDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.ResetPasswordRequestDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.SendOtpBeforeSignupRequestDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.SendOtpRequestDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.VerifyOtpBeforeSignupDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.VerifyOtpRequestDto
+import com.mysanjeevni.mysanjeevni.features.cart.data.dto.CartResponse
 import com.mysanjeevni.mysanjeevni.features.category.data.dto.CategoryResponseDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.CreateLabBookingRequestDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.LabBookingResponseDto
@@ -32,9 +29,13 @@ import com.mysanjeevni.mysanjeevni.features.orders.data.dto.CreateOrderRequest
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.CreateOrderResponse
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.GetOrdersResponse
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.RazorpayOrderResponse
-import com.mysanjeevni.mysanjeevni.features.profile.data.model.UpdateProfileRequest
-import com.mysanjeevni.mysanjeevni.features.profile.data.model.UpdateProfileResponse
-import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressResponse
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.AddressResponseDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.CreateAddressRequestDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.ProfileImageUploadResponseDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.ProfileResponseDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.UpdateAddressRequestDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.UpdateProfileRequestDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.UpdateProfileResponseDto
 import com.mysanjeevni.mysanjeevni.features.review.data.dto.CreateReviewRequestDto
 import com.mysanjeevni.mysanjeevni.features.review.data.dto.CreateReviewResponseDto
 import com.mysanjeevni.mysanjeevni.features.review.data.dto.ReviewListResponseDto
@@ -48,14 +49,17 @@ import com.mysanjeevni.mysanjeevni.features.support.returns.data.dto.ReturnRespo
 import com.mysanjeevni.mysanjeevni.features.support.ticket.data.dto.CreateTicketRequestDto
 import com.mysanjeevni.mysanjeevni.features.support.ticket.data.dto.CreateTicketResponseDto
 import com.mysanjeevni.mysanjeevni.features.support.ticket.data.dto.TicketsResponseDto
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -63,13 +67,8 @@ interface ApiService {
 
     @POST("api/auth/login")
     suspend fun loginUser(
-        @Body request: LoginRequest
-    ): Response<AuthResponse>
-
-    @GET("api/notifications")
-    suspend fun getNotifications(
-        @Query("userId") userId: String
-    ): Response<NotificationResponse>
+        @Body request: LoginRequestDto
+    ): Response<AuthResponseDto>
 
     @POST("api/user/support/chat")
     suspend fun sendChatMessage(
@@ -91,11 +90,10 @@ interface ApiService {
     suspend fun getReturnRequests(
         @Query("userId") userId: String
     ): Response<ReturnListResponseDto>
-
     @GET("api/user/profile")
     suspend fun getProfile(
         @Query("id") userId: String?
-    ): Response<ProfileResponse>
+    ): Response<ProfileResponseDto>
 
     @POST("api/inquiries")
     suspend fun raiseTicket(
@@ -118,8 +116,14 @@ interface ApiService {
 
     @PUT("api/user/update-profile")
     suspend fun updateProfile(
-        @Body request: UpdateProfileRequest
-    ): Response<UpdateProfileResponse>
+        @Body request: UpdateProfileRequestDto
+    ): Response<UpdateProfileResponseDto>
+
+    @Multipart
+    @POST("api/user/upload-profile-image")
+    suspend fun uploadProfileImage(
+        @Part image: MultipartBody.Part
+    ): Response<ProfileImageUploadResponseDto>
 
     @GET("api/lab-partners/serviceability")
     suspend fun checkServiceability(
@@ -151,38 +155,38 @@ interface ApiService {
 
     @POST("api/auth/signup")
     suspend fun registerUser(
-        @Body request: RegisterRequest
-    ): Response<AuthResponse>
+        @Body request: RegisterRequestDto
+    ): Response<AuthResponseDto>
 
     @POST("api/auth/phone/signup")
     suspend fun sendOtpBeforeSignup(
-        @Body request: SendOtpBeforeSignupRequest
-    ): Response<AuthResponse>
+        @Body request: SendOtpBeforeSignupRequestDto
+    ): Response<AuthResponseDto>
 
     @POST("api/auth/phone/verify-signup-otp")
     suspend fun verifyBeforeSignup(
-        @Body request: VerifyOtpRequest
-    ): Response<AuthResponse>
+        @Body request: VerifyOtpBeforeSignupDto
+    ): Response<AuthResponseDto>
 
     @GET("api/cart")
     suspend fun getCart(
-        @Query("userId") userId:String
+        @Query("userId") userId: String
     ): Response<CartResponse>
 
     @POST("api/auth/phone/send-otp")
     suspend fun sendOtp(
-        @Body request: SendOtpRequest
+        @Body request: SendOtpRequestDto
     ): Response<GenericResponse>
 
-    @POST("api/auth/reset-password")
+    @POST("api/auth/forgot-password/reset")
     suspend fun resetPassword(
-        @Body request: ResetPasswordRequest
+        @Body request: ResetPasswordRequestDto
     ): Response<GenericResponse>
 
     @POST("api/auth/phone/verify-otp")
     suspend fun verifyOtp(
-        @Body request: VerifyOtpRequest
-    ): Response<AuthResponse>
+        @Body request: VerifyOtpRequestDto
+    ): Response<AuthResponseDto>
 
     @GET("api/lab-tests")
     suspend fun getLabTests(
@@ -197,14 +201,12 @@ interface ApiService {
     suspend fun getLabTestById(
         @Path("id") id: String
     ): Response<LabTestDetailResponse>
+
     @GET("api/products")
-    suspend fun getMedicines(): Response<MedicineResponseDto>
-
-    @POST("api/cart/add")
-    suspend fun addToCart(
-        @Body request: AddToCartRequest
-    ): Response<CartResponse>
-
+    suspend fun getMedicines(
+        @Query("page") page: Int,
+        @Query("limit") limit: Int = 20
+    ): Response<MedicineResponseDto>
 
 
 
@@ -242,10 +244,6 @@ interface ApiService {
     ): Response<UpdateReviewResponseDto>
 
 
-    @DELETE("api/cart")
-    suspend fun clearCart(
-        @Query("userId") userId: String
-    ):  Result<Unit>
 
 
 
@@ -269,8 +267,8 @@ interface ApiService {
     @POST("api/addresses")
     suspend fun addAddress(
         @Header("Authorization") token: String,
-        @Body address: CreateAddressRequest
-    ): Response<AddressResponse>
+        @Body address: CreateAddressRequestDto
+    ): Response<AddressResponseDto>
 
     @GET("api/products/popular")
     suspend fun getPopularProducts(): Response<MedicineResponseDto>
@@ -279,7 +277,7 @@ interface ApiService {
     suspend fun getAddresses(
         @Header("Authorization") token: String,
         @Query("userId") userId: String
-    ): Response<AddressResponse>
+    ): Response<AddressResponseDto>
 
     @DELETE("api/addresses/{id}")
     suspend fun deleteAddress(
@@ -292,12 +290,16 @@ interface ApiService {
     suspend fun updateAddress(
         @Header("Authorization") token: String,
         @Path("id") id: String,
-        @Body address: UpdateAddressRequest
-    ): Response<AddressResponse>
+        @Body address: UpdateAddressRequestDto
+    ): Response<AddressResponseDto>
 
     @GET("api/categories")
     suspend fun getCategories(): Response<CategoryResponseDto>
 
+    @POST("api/auth/google")
+    suspend fun googleSignin(
+        @Body request: GoogleLoginRequest
+    ): Response<AuthResponseDto>
 
 
 }
