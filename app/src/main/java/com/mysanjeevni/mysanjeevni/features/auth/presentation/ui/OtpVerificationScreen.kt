@@ -27,7 +27,9 @@ import com.mysanjeevni.mysanjeevni.features.auth.presentation.state.AuthUiState
 import com.mysanjeevni.mysanjeevni.features.auth.presentation.ui.components.OtpBox
 import com.mysanjeevni.mysanjeevni.features.auth.presentation.viewmodel.AuthViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun OtpVerificationScreen(navController: NavController, mobile: String) {
@@ -47,12 +49,14 @@ fun OtpVerificationScreen(navController: NavController, mobile: String) {
     val focusRequester6 = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
+    var secondsRemaining by rememberSaveable { mutableIntStateOf(60) }
+    var canResendOtp by rememberSaveable { mutableStateOf(false) }
     val viewModel: AuthViewModel = hiltViewModel()
-    val isLoading by viewModel.isLoading.collectAsState()
     val verifyOtp by viewModel.otpSent.collectAsState()
     val error by viewModel.error.collectAsState()
     val scope = rememberCoroutineScope()
     val colorScheme = MaterialTheme.colorScheme
+    var isRedirecting by remember { mutableStateOf(false) }
 
     val isFormValid = otp1.isNotBlank() && otp2.isNotBlank() && otp3.isNotBlank() && otp4.isNotBlank() && otp5.isNotBlank() && otp6.isNotBlank()
 
@@ -76,7 +80,6 @@ fun OtpVerificationScreen(navController: NavController, mobile: String) {
                     R.string.otp_verified_successfully,
                     Toast.LENGTH_SHORT
                 ).show()
-
                 navController.navigate(
                     Screen.ResetPassword.createRoute(
                         mobile = mobile,
@@ -88,21 +91,28 @@ fun OtpVerificationScreen(navController: NavController, mobile: String) {
                     }
                     launchSingleTop = true
                 }
-
                 viewModel.clearState()
             }
-
             is AuthUiState.Error -> {
                 Toast.makeText(
                     context,
                     (uiState as AuthUiState.Error).message,
                     Toast.LENGTH_SHORT
                 ).show()
-
                 viewModel.clearState()
             }
-
             else -> {}
+        }
+    }
+
+    LaunchedEffect(canResendOtp) {
+        if (!canResendOtp) {
+            secondsRemaining = 60
+            while (secondsRemaining > 0) {
+                delay(1000.milliseconds)
+                secondsRemaining--
+            }
+            canResendOtp = true
         }
     }
 
@@ -126,24 +136,51 @@ fun OtpVerificationScreen(navController: NavController, mobile: String) {
                     .background(colorScheme.surface, RoundedCornerShape(20.dp))
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Image(
                     painter = painterResource(R.drawable.app_logo),
                     contentDescription = null,
                     modifier = Modifier.size(70.dp)
                 )
+//                AutoText(
+//                    text = stringResource(R.string.otp_verification),
+//                    fontSize = 20.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    color = colorScheme.primary
+//                )
+//                AutoText(
+//                    text = mobile,
+//                    fontSize = 16.sp,
+//                    fontWeight = FontWeight.Bold,
+//                    color = colorScheme.primary
+//                )
+//                AutoText(
+//                    text = stringResource(R.string.enter_6_digit_otp),
+//                    fontSize = 14.sp,
+//                    color = colorScheme.onSurfaceVariant
+//                )
 
                 AutoText(
-                    text = stringResource(R.string.otp_verification),
-                    fontSize = 20.sp,
+                    text = "OTP Verification",
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.primary
                 )
-
                 AutoText(
-                    text = stringResource(R.string.enter_6_digit_otp),
-                    fontSize = 14.sp,
+                    text = "Enter the 6-digit code sent to",
+                    fontSize = 15.sp,
+                    color = colorScheme.onSurfaceVariant
+                )
+                AutoText(
+                    text = mobile,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = colorScheme.primary
+                )
+                AutoText(
+                    text = "The code is valid for 5 minutes.",
+                    fontSize = 13.sp,
                     color = colorScheme.onSurfaceVariant
                 )
 
@@ -203,43 +240,59 @@ fun OtpVerificationScreen(navController: NavController, mobile: String) {
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
                     AutoText(
                         text = stringResource(R.string.did_not_receive_the_otp),
                         fontSize = 14.sp,
                         color = colorScheme.onSurfaceVariant
                     )
                     TextButton(
+                        enabled = canResendOtp,
                         onClick = {
                             scope.launch {
-                                viewModel.sendOtp(
-                                    phone = mobile
-                                )
+                                viewModel.resendOtp(phone = mobile)
+                                canResendOtp = false
                             }
                         },
                         contentPadding = PaddingValues(horizontal = 4.dp)
                     ) {
                         AutoText(
-                            text = stringResource(R.string.resend_otp),
+                            text = if (canResendOtp)
+                                stringResource(R.string.resend_otp)
+                            else
+                                "Resend in ${secondsRemaining}s",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = colorScheme.primary
+                            color = if (canResendOtp)
+                                colorScheme.primary
+                            else
+                                colorScheme.onSurfaceVariant
                         )
                     }
                 }
                 Button(
                     onClick = {
-                        val enteredOtp = "$otp1$otp2$otp3$otp4$otp5$otp6"
+                        scope.launch {
+                            isRedirecting = true
+                            val enteredOtp = "$otp1$otp2$otp3$otp4$otp5$otp6"
 
-                        navController.navigate(
-                            Screen.ResetPassword.createRoute(
-                                mobile = mobile,
-                                resetPasswordToken = enteredOtp
-                            )
-                        )
+                            delay(3000.milliseconds)
+
+                            navController.navigate(
+                                Screen.ResetPassword.createRoute(
+                                    mobile = mobile,
+                                    resetPasswordToken = enteredOtp
+                                )
+                            ) {
+                                launchSingleTop = true
+                            }
+
+                            isRedirecting = false
+                        }
                     },
-                    enabled = isFormValid && !isLoading,
-                    modifier = Modifier.wrapContentWidth().height(52.dp),
+                    enabled = isFormValid && !isRedirecting,
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .height(52.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = buttonBg,
@@ -247,12 +300,11 @@ fun OtpVerificationScreen(navController: NavController, mobile: String) {
                         disabledContainerColor = colorScheme.onSurface.copy(alpha = 0.12f),
                         disabledContentColor = colorScheme.onSurface.copy(alpha = 0.38f)
                     )
-                )
-                {
-                    if (isLoading) {
+                ) {
+                    if (isRedirecting) {
                         CircularProgressIndicator(
-                            color = colorScheme.onPrimary,
                             modifier = Modifier.size(22.dp),
+                            color = colorScheme.onPrimary,
                             strokeWidth = 2.dp
                         )
                     } else {

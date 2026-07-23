@@ -343,9 +343,22 @@ class AuthViewModel @Inject constructor(
     }
 
 
-    // ================================
-    // SEND SIGNUP OTP
-    // ================================
+    fun resendOtp(
+        phone: String,
+        role: String = "user"
+    ) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            sendOtpUseCase(
+                phone = phone,
+                role = role
+            ).onSuccess {
+                }.onFailure { error ->
+                    _error.value = error.message ?: "Failed to resend OTP"
+                }
+            _isLoading.value = false
+        }
+    }
 
     fun sendOtpBeforeSignup(
         phone: String,
