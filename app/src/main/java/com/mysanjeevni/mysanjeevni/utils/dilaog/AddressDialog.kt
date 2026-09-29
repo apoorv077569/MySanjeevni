@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,6 +21,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,14 +35,20 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.mysanjeevni.mysanjeevni.features.profile.domain.model.Address
+import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.AddressViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun AddressDialog(
     addressToEdit: Address? = null,
     onDismiss: () -> Unit,
+    addressViewModel: AddressViewModel,
     onSave: (Address) -> Unit
 ) {
+
+    val serviceabilityState by addressViewModel
+        .serviceabilityState
+        .collectAsState()
 
     var fullName by remember(addressToEdit) {
         mutableStateOf(
@@ -215,6 +223,13 @@ fun AddressDialog(
                             pincode = value
                                 .filter { it.isDigit() }
                                 .take(6)
+                            if (pincode.length == 6) {
+                                addressViewModel.checkServiceability(
+                                    pincode
+                                )
+                            } else {
+                                addressViewModel.clearServiceability()
+                            }
                         },
                         label = {
                             AutoText("Pincode")
@@ -225,8 +240,82 @@ fun AddressDialog(
                         singleLine = true,
                         modifier = Modifier.weight(1f)
                     )
+
+                }
+                if (serviceabilityState.isLoading) {
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp
+                        )
+
+                        Spacer(Modifier.width(8.dp))
+
+                        AutoText("Checking delivery...")
+                    }
                 }
 
+                else if (serviceabilityState.serviceable) {
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+
+                        Column(
+                            modifier = Modifier.padding(12.dp)
+                        ) {
+
+                            AutoText(
+                                text = "✅ Deliverable via ${serviceabilityState.courierName}",
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(Modifier.height(6.dp))
+
+                            AutoText(
+                                text = "Shipping Charge: ₹${serviceabilityState.deliveryCharge}"
+                            )
+
+                            AutoText(
+                                text = "Estimated Delivery: ${serviceabilityState.estimatedDeliveryDate}"
+                            )
+
+                            AutoText(
+                                text = "Delivery Time: ${serviceabilityState.estimatedDeliveryDays} Days"
+                            )
+
+                            AutoText(
+                                text = if (serviceabilityState.codAvailable)
+                                    "COD Available"
+                                else
+                                    "COD Not Available"
+                            )
+                        }
+                    }
+                }
+
+                else {
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+
+                        Column(
+                            modifier = Modifier.padding(12.dp)
+                        ) {
+
+                            AutoText(
+                                text = "❌ Sorry! Delivery is not available for this pincode.",
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
                 OutlinedTextField(
                     value = state,
                     onValueChange = {

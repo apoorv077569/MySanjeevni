@@ -1,7 +1,7 @@
 package com.mysanjeevni.mysanjeevni.features.prescription.domain.usecase
 
 import android.util.Log
-import com.mysanjeevni.mysanjeevni.features.prescription.data.model.PrescriptionModel
+import com.mysanjeevni.mysanjeevni.features.prescription.domain.model.PrescriptionModel
 import com.mysanjeevni.mysanjeevni.features.prescription.domain.repository.PrescriptionRepository
 import okhttp3.MultipartBody
 import okhttp3.RequestBody

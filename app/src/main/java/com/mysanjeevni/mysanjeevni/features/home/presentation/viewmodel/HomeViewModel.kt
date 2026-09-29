@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,6 +28,8 @@ class HomeViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
     private val _dealTimeLeft = MutableStateFlow(36000L)
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
     private val _popularProducts = MutableStateFlow<List<Medicine>>(emptyList())
     val popularProducts: StateFlow<List<Medicine>> =
         _popularProducts.asStateFlow()
@@ -64,60 +67,14 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-//    private fun loadHomeData() {
-//        viewModelScope.launch {
-//            _isLoading.value = true
-//            try {
-//                Log.d("HOME_DEBUG", "Calling getMedicines API...")
-//                val res = api.getMedicines()
-//                Log.d("HOME_DEBUG", "Response code: ${res.code()}")
-//                Log.d("HOME_DEBUG", "Response body: ${res.body()}")
-//                Log.d("HOME_DEBUG", "Error body: ${res.errorBody()?.string()}")
-//
-//                if (res.isSuccessful) {
-//                    val data = res.body()?.products ?: emptyList()
-//                    Log.d("HOME_DEBUG", "Products count: ${data.size}")
-//
-//                    _allMedicines.value = data.map { dto ->
-//                        Medicine(
-//                            id = dto._id,
-//                            name = dto.name,
-//                            description = dto.description.orEmpty(),
-//                            price = dto.price,
-//                            mrp = dto.mrp,
-//                            category = dto.category,
-//                            diseaseCategory = dto.diseaseCategory.orEmpty(),
-//                            diseaseSubcategory = dto.diseaseSubcategory.orEmpty(),
-//                            productType = dto.productType,
-//                            brand = dto.brand.orEmpty(),
-//                            stock = dto.stock,
-//                            quantity = dto.quantity,
-//                            quantityUnit = dto.quantityUnit,
-//                            image = dto.image.orEmpty(),
-//                            images = dto.images.orEmpty(),
-//                            specifications = dto.specifications.orEmpty(),
-//                            safetyInformation = dto.safetyInformation.orEmpty(),
-//                            requiresPrescription = dto.requiresPrescription,
-//                            vendorName = dto.vendorName.orEmpty(),
-//                            vendorRating = dto.vendorRating ?: 0.0,
-//                            rating = dto.rating,
-//                            reviews = dto.reviews,
-//                            icon = dto.icon
-//                        )
-//                    }
-//                    Log.d("HOME_DEBUG", "Medicines set: ${_allMedicines.value.size}")
-//                } else {
-//                    Log.e("HOME_DEBUG", "API Failed: ${res.code()} - ${res.message()}")
-//                }
-//            } catch (e: Exception) {
-//                Log.e("HOME_DEBUG", "Exception: ${e.localizedMessage}")
-//                e.printStackTrace()
-//            } finally {
-//                _isLoading.value = false
-//            }
-//        }
-//    }
-
+    fun refresh(){
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            loadHomeData()
+            loadPopularProducts()
+            _isRefreshing.value = false
+        }
+    }
 
     private fun loadHomeData() {
         viewModelScope.launch {

@@ -41,6 +41,21 @@ fun OrderSummaryScreen(
     val medicine by orderViewModel.selectedMedicine.collectAsState()
     val address by orderViewModel.selectedAddress.collectAsState()
     val cartItems by orderViewModel.cartItems.collectAsState()
+    val deliveryCharge by orderViewModel
+        .deliveryCharge
+        .collectAsState()
+
+    val courierName by orderViewModel
+        .courierName
+        .collectAsState()
+
+    val estimatedDeliveryDate by orderViewModel
+        .estimatedDeliveryDate
+        .collectAsState()
+
+    val estimatedDeliveryDays by orderViewModel
+        .estimatedDeliveryDays
+        .collectAsState()
 
     val checkoutType by orderViewModel
         .checkOutType
@@ -69,11 +84,7 @@ fun OrderSummaryScreen(
         }
     }
 
-    val deliveryFee = when {
-        subtotal == 0.0 -> 0.0
-        subtotal >= 299.0 -> 0.0
-        else -> 50.0
-    }
+    val deliveryFee = deliveryCharge
 
     val totalAmount = subtotal + deliveryFee
 

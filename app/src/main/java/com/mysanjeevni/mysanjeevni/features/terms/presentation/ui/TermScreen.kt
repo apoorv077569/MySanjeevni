@@ -234,7 +234,7 @@ fun TermsScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(2.dp))
                     val emailInteractionSource = remember { MutableInteractionSource() }
                     AutoText(
-                        text = "mysanjeevni3693@gmail.com",
+                        text = "admin@mysanjeevni.com",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = colors.accent,
@@ -242,7 +242,7 @@ fun TermsScreen(navController: NavController) {
                             interactionSource = emailInteractionSource,
                             indication = null
                         ) {
-                            uriHandler.openUri("mailto:mysanjeevni3693@gmail.com")
+                            uriHandler.openUri("mailto:admin@mysanjeevni.com")
                         }
                     )
                 }

@@ -1,11 +1,12 @@
 package com.mysanjeevni.mysanjeevni.features.auth.data.repository
 
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
+import com.mysanjeevni.mysanjeevni.data.remote.api.AuthApiService
 import com.mysanjeevni.mysanjeevni.features.auth.data.dto.GoogleLoginRequest
 import javax.inject.Inject
 
 class AuthRepository @Inject constructor(
-    private val api: ApiService
+    private val api: AuthApiService
 ) {
 
 

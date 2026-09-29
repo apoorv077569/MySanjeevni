@@ -13,6 +13,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
+import com.mysanjeevni.mysanjeevni.features.currency.presentation.viewmodel.CurrencyViewModel
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.state.OrderState
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.ui.components.EmptyOrdersView
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.ui.components.ErrorView
@@ -42,6 +44,10 @@ fun OrdersScreen(
 
     val sessionManager = SessionManager(LocalContext.current)
     val orderState by viewModel.orderState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val currencyViewModel: CurrencyViewModel = hiltViewModel()
+    val currencyState by currencyViewModel.state.collectAsStateWithLifecycle()
+    val currencyInfo = currencyState.currencyInfo
     val userId = sessionManager.getUserId()
 
     var selectedStatus by remember { mutableStateOf<String?>(null) }
@@ -96,76 +102,169 @@ fun OrdersScreen(
             )
         }
     ) { paddingValues ->
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {viewModel.refresh(userId)},
+            modifier = Modifier.fillMaxSize()
         ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
 
-            when (val state = orderState) {
+                if (currencyState.isLoading) {
 
-                is OrderState.Success -> {
-                    val filteredOrders = remember(state.orders, selectedStatus) {
-                        if (selectedStatus == null) {
-                            state.orders
-                        } else {
-                            state.orders.filter {
-                                it.order.status.equals(selectedStatus, ignoreCase = true)
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+
+                } else if (currencyInfo == null) {
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+
+                        AutoText(
+                            text = currencyState.error ?: "Unable to load currency"
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(12.dp)
+                        )
+
+                        Button(
+                            onClick = {
+                                currencyViewModel.refresh()
                             }
+                        ) {
+                            AutoText(
+                                text = "Retry",
+                                color = Color.White
+                            )
                         }
                     }
 
-                    when {
-                        state.orders.isEmpty() -> {
-                            EmptyOrdersView(modifier = Modifier.align(Alignment.Center))
+                } else {
+
+                    // IMPORTANT:
+                    // Yahan currency non-null hai
+                    val currency = currencyInfo
+
+                    when (val state = orderState) {
+
+                        is OrderState.Success -> {
+
+                            val filteredOrders = remember(
+                                state.orders,
+                                selectedStatus
+                            ) {
+                                if (selectedStatus == null) {
+                                    state.orders
+                                } else {
+                                    state.orders.filter {
+                                        it.order.status.equals(
+                                            selectedStatus,
+                                            ignoreCase = true
+                                        )
+                                    }
+                                }
+                            }
+
+                            when {
+
+                                state.orders.isEmpty() -> {
+
+                                    EmptyOrdersView(
+                                        modifier = Modifier.align(
+                                            Alignment.Center
+                                        )
+                                    )
+                                }
+
+                                filteredOrders.isEmpty() -> {
+
+                                    EmptyOrdersView(
+                                        modifier = Modifier.align(
+                                            Alignment.Center
+                                        ),
+                                        title = "No matching orders",
+                                        subtitle = "Try a different filter"
+                                    )
+                                }
+
+                                else -> {
+
+                                    LazyColumn(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentPadding = PaddingValues(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+
+                                        items(
+                                            filteredOrders,
+                                            key = { it.order.id }
+                                        ) { order ->
+
+                                            OrderCard(
+                                                orderUi = order,
+                                                currencyInfo = currency,
+                                                onClick = {
+                                                    navController.navigate(
+                                                        Screen.OrderDetailScreen.createRoute(
+                                                            order.order.id
+                                                        )
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (showFilterSheet) {
+
+                                OrderFilterSheet(
+                                    statuses = state.orders
+                                        .map { it.order.status }
+                                        .distinct(),
+
+                                    selectedStatus = selectedStatus,
+
+                                    onStatusSelected = {
+                                        selectedStatus = it
+                                    },
+
+                                    onDismiss = {
+                                        showFilterSheet = false
+                                    }
+                                )
+                            }
                         }
 
-                        filteredOrders.isEmpty() -> {
-                            EmptyOrdersView(
-                                modifier = Modifier.align(Alignment.Center),
-                                title = "No matching orders",
-                                subtitle = "Try a different filter"
+                        is OrderState.Error -> {
+
+                            ErrorView(
+                                message = state.message,
+                                onRetry = {
+                                    viewModel.getOrders(userId)
+                                },
+                                modifier = Modifier.align(
+                                    Alignment.Center
+                                )
                             )
                         }
 
-                        else -> {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                items(filteredOrders, key = { it.order.id }) { order ->
-                                    OrderCard(orderUi = order, onClick = {
-                                        navController.navigate(
-                                            Screen.OrderDetailScreen.createRoute(order.order.id)
-                                        )
-                                    })
-                                }
-                            }
-                        }
+                        else -> Unit
                     }
-
-                    if (showFilterSheet) {
-                        OrderFilterSheet(
-                            statuses = state.orders.map { it.order.status }.distinct(),
-                            selectedStatus = selectedStatus,
-                            onStatusSelected = { selectedStatus = it },
-                            onDismiss = { showFilterSheet = false }
-                        )
-                    }                }
-
-                is OrderState.Error -> {
-                    ErrorView(
-                        message = state.message,
-                        onRetry = {
-                            viewModel.getOrders(userId)
-                        },
-                        modifier = Modifier.align(Alignment.Center)
-                    )
                 }
-
-                else -> Unit
             }
         }
     }

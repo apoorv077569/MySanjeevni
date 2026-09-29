@@ -103,6 +103,7 @@ fun MedicineDetailScreen(
     }
 
     val medicine = state.selectedMedicine ?: return
+    val currencyInfo = state.currencyInfo ?: return
     val isWishlisted = wishlistState.items.any {
         it.productId == medicine.id
     }
@@ -295,8 +296,9 @@ fun MedicineDetailScreen(
                 Spacer(Modifier.height(12.dp))
 
                 MedicinePriceCard(
-                    price = medicine.price,
-                    mrp = medicine.mrp
+                    price = medicine.price * currencyInfo.exchangeRate,
+                    mrp = medicine.mrp * currencyInfo.exchangeRate,
+                    currencySymbol = currencyInfo.currencySymbol
                 )
 
                 Spacer(Modifier.height(12.dp))

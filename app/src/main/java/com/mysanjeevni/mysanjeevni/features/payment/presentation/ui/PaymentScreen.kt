@@ -94,6 +94,9 @@ fun PaymentScreen(
         .collectAsState()
     val address by orderViewModel.selectedAddress.collectAsState()
     val cartItems by orderViewModel.cartItems.collectAsState()
+    val deliveryCharge by orderViewModel
+        .deliveryCharge
+        .collectAsState()
     colorScheme
     var selectedMethod by remember { mutableStateOf(PaymentMethod.RAZORPAY) }
     val userId = sessionManager.getUserId()
@@ -110,11 +113,7 @@ fun PaymentScreen(
         paymentState is PaymentState.Loading ||
                 smsState is OrderSmsUiState.Loading
 
-    val deliveryFee = when {
-        subtotal == 0.0 -> 0.0
-        subtotal >= 299.0 -> 0.0
-        else -> 50.0
-    }
+    val deliveryFee = deliveryCharge
 
     val finalAmount = subtotal + deliveryFee
     var checkoutOpened by remember {
@@ -469,7 +468,7 @@ fun PaymentScreen(
                                 totalPrice = finalAmount,
                                 deliveryAddress = address!!.id,
                                 notes = "COD",
-                                shippingCharge = 0.0
+                                shippingCharge = deliveryFee
                             )
 
                         }

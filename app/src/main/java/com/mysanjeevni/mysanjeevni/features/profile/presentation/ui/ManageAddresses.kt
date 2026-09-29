@@ -44,6 +44,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +65,7 @@ import com.mysanjeevni.mysanjeevni.features.profile.domain.model.Address
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.AddressViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.dilaog.AddressDialog
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,6 +85,9 @@ fun ManageAddresses(
     val snackbarHostState = remember {
         SnackbarHostState()
     }
+    var pendingCheckoutAddress by remember {
+        mutableStateOf<Address?>(null)
+    }
 
     var showDialog by remember {
         mutableStateOf(false)
@@ -91,6 +96,11 @@ fun ManageAddresses(
     var selectedAddressForEdit by remember {
         mutableStateOf<Address?>(null)
     }
+    val serviceabilityState by viewModel
+        .serviceabilityState
+        .collectAsState()
+
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         Log.d(
@@ -173,7 +183,7 @@ fun ManageAddresses(
                 showDialog = false
                 selectedAddressForEdit = null
             },
-
+            addressViewModel = viewModel,
             onSave = { address ->
 
                 Log.d(
@@ -491,46 +501,73 @@ fun ManageAddresses(
                                             "${address.city} - " +
                                             address.pincode
                                 )
-
+                                viewModel.checkServiceability(address.pincode)
                                 if (isCheckout) {
 
-                                    val selectedAddress =
-                                        "${address.fullName}," +
-                                                "${address.type}," +
-                                                "${address.city}," +
-                                                address.phone
+                                    scope.launch {
 
-                                    // Domain Address directly
-                                    orderViewModel.setAddress(
-                                        address
-                                    )
+                                        val available =
+                                            viewModel.checkServiceabilityForCheckout(
+                                                address.pincode
+                                            )
 
-                                    orderViewModel.setCartItems(
-                                        cartState.cartItem
-                                    )
+                                        if (!available) {
 
-                                    Log.d(
-                                        "ADDRESS_DEBUG",
-                                        "Selected Address = " +
-                                                selectedAddress
-                                    )
+                                            snackbarHostState.showSnackbar(
+                                                "❌ Sorry! Delivery is not available for this pincode."
+                                            )
 
-                                    navController.navigate(
-                                        Screen.SummaryScreen.route
-                                    )
+                                            return@launch
+                                        }
+
+                                        snackbarHostState.showSnackbar(
+                                            "✅ Deliverable via ${viewModel.serviceabilityState.value.courierName}"
+                                        )
+
+                                        // Save Shiprocket details
+                                        orderViewModel.setShippingDetails(
+
+                                            charge = viewModel.serviceabilityState.value.deliveryCharge,
+
+                                            courier = viewModel.serviceabilityState.value.courierName,
+
+                                            days = viewModel.serviceabilityState.value.estimatedDeliveryDays,
+
+                                            date = viewModel.serviceabilityState.value.estimatedDeliveryDate
+                                        )
+
+                                        val selectedAddress =
+                                            "${address.fullName}," +
+                                                    "${address.type}," +
+                                                    "${address.city}," +
+                                                    address.phone
+
+                                        // Existing logic (unchanged)
+                                        orderViewModel.setAddress(address)
+
+                                        orderViewModel.setCartItems(
+                                            cartState.cartItem
+                                        )
+
+                                        Log.d(
+                                            "ADDRESS_DEBUG",
+                                            "Selected Address = $selectedAddress"
+                                        )
+
+                                        navController.navigate(
+                                            Screen.SummaryScreen.route
+                                        )
+                                    }
 
                                 } else if (isHome) {
 
                                     homeViewModel.updateCity(
-                                        "${address.city}-" +
-                                                address.pincode
+                                        "${address.city}-${address.pincode}"
                                     )
 
                                     Log.d(
                                         "ADDRESS_DEBUG",
-                                        "Updated Home City = " +
-                                                "${address.city} - " +
-                                                address.pincode
+                                        "Updated Home City = ${address.city} - ${address.pincode}"
                                     )
 
                                     navController.popBackStack()

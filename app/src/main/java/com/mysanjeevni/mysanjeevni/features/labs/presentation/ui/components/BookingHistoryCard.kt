@@ -8,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -16,6 +18,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.mysanjeevni.mysanjeevni.features.currency.presentation.viewmodel.CurrencyViewModel
 import com.mysanjeevni.mysanjeevni.features.labs.domain.model.BookingHistory
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 
@@ -69,8 +73,24 @@ private fun testIcon(status: String): ImageVector = when (status.lowercase()) {
 fun BookingHistoryCard(
     booking: BookingHistory,
     onClick: () -> Unit,
+    currencyViewModel: CurrencyViewModel = hiltViewModel()
 ) {
     val style = statusStyle(booking.status)
+
+    val currencyState by currencyViewModel.state.collectAsState()
+
+    // Fallback to INR (rate = 1.0) while loading or if currency fetch failed
+    val currencySymbol = currencyState.currencyInfo?.currencySymbol ?: "₹"
+    val exchangeRate = currencyState.currencyInfo?.exchangeRate ?: 1.0
+
+    val convertedAmount = booking.amount * exchangeRate
+    val formattedAmount = "$currencySymbol${
+        String.format(
+            java.util.Locale.getDefault(),
+            if (exchangeRate == 1.0) "%.0f" else "%.2f",
+            convertedAmount
+        )
+    }"
 
     Card(
         modifier = Modifier
@@ -129,7 +149,7 @@ fun BookingHistoryCard(
                         )
                         Spacer(Modifier.height(4.dp))
                         AutoText(
-                            text = "₹${booking.amount}",
+                            text = formattedAmount,
                             fontSize = 13.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

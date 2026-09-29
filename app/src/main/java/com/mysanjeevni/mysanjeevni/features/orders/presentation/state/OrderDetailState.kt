@@ -10,5 +10,8 @@ data class OrderDetailState(
     val order: RazorpayOrderDetailDto? = null,
     val medicines: List<Medicine> = emptyList(),
     val address: Address? = null,
-    val error: String? = null
+    val error: String? = null,
+    val isCancelling: Boolean = false,
+    val cancelMessage: String? = null
 )
+

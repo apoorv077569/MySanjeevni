@@ -21,13 +21,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
+import com.mysanjeevni.mysanjeevni.features.currency.presentation.viewmodel.CurrencyViewModel
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.state.LabDetailState
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.components.LabBottomBar
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.components.LabHeaderSection
@@ -40,10 +44,17 @@ import com.mysanjeevni.mysanjeevni.utils.AutoText
 fun LabDetailScreen(
     navController: NavController,
     state: LabDetailState,
-    onAddToCart: () -> Unit
+    onAddToCart: () -> Unit,
+    currencyViewModel: CurrencyViewModel = hiltViewModel()
 ) {
 
     val isDark = LocalIsDarkTheme.current
+
+    val currencyState by currencyViewModel.state.collectAsState()
+
+    // Fallback to INR (rate = 1.0) while loading or if currency fetch failed
+    val currencySymbol = currencyState.currencyInfo?.currencySymbol ?: "₹"
+    val exchangeRate = currencyState.currencyInfo?.exchangeRate ?: 1.0
 
     val screenBg =
         if (isDark) Color(0xFF121212)
@@ -101,6 +112,15 @@ fun LabDetailScreen(
 
     val labTest = state.labTestDetail ?: return
 
+    val convertedPrice = labTest.price.toDouble() * exchangeRate
+    val formattedSharePrice = "$currencySymbol${
+        String.format(
+            java.util.Locale.getDefault(),
+            if (exchangeRate == 1.0) "%.0f" else "%.2f",
+            convertedPrice
+        )
+    }"
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -136,7 +156,7 @@ fun LabDetailScreen(
                                     Intent.EXTRA_TEXT,
                                     """
                                 🧪 ${labTest.name}
-                                    Price: ₹${labTest.price}
+                                    Price: $formattedSharePrice
                                     Book this test on MySanjeevni:
                                     https://www.mysanjeevni.com/labtest/${labTest.id}
                                     Download MySanjeevni:

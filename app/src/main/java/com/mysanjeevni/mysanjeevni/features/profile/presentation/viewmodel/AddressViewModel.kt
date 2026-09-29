@@ -1,159 +1,17 @@
 package com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel
 
-//import android.app.Application
-//import android.util.Log
-//import androidx.lifecycle.AndroidViewModel
-//import androidx.lifecycle.viewModelScope
-//import com.mysanjeevni.mysanjeevni.data.remote.model.address.AddressModel
-//import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressItem
-//import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressState
-//import com.mysanjeevni.mysanjeevni.features.profile.data.repository.AddressRepository
-//import com.mysanjeevni.mysanjeevni.utils.SessionManager
-//import dagger.hilt.android.lifecycle.HiltViewModel
-//import kotlinx.coroutines.flow.*
-//import kotlinx.coroutines.launch
-//import javax.inject.Inject
-//
-//@HiltViewModel
-//class AddressViewModel @Inject constructor(
-//    application: Application,
-//    private val repository: AddressRepository,
-//    private val sessionManager: SessionManager
-//) : AndroidViewModel(application) {
-//
-//    private val _state = MutableStateFlow(AddressState())
-//    val state: StateFlow<AddressState> = _state.asStateFlow()
-//
-//    init {
-//        loadAddresses()
-//    }
-//
-//    fun loadAddresses() {
-//        val token = sessionManager.getToken()
-//        val userId = sessionManager.getUserId()
-//
-//        Log.d("ADDRESS_VM", "🚀 LOAD ADDRESSES")
-//        Log.d("ADDRESS_VM", "Token: $token")
-//        Log.d("ADDRESS_VM", "UserId: $userId")
-//
-//        if (token.isNullOrBlank() || userId.isNullOrBlank()) return
-//
-//        viewModelScope.launch {
-//            _state.update { it.copy(isLoading = true) }
-//
-//            try {
-//                val list = repository.fetchAddresses(token, userId)
-//
-//                _state.update {
-//                    it.copy(
-//                        addresses = list,
-//                        isLoading = false,
-//                        error = null
-//                    )
-//                }
-//
-//            } catch (e: Exception) {
-//                _state.update {
-//                    it.copy(
-//                        isLoading = false,
-//                        error = e.message
-//                    )
-//                }
-//            }
-//        }
-//    }
-//
-//    // 🔹 ADD
-//    fun addAddress(address: AddressModel) {
-//        val token = sessionManager.getToken()
-//        val userId = sessionManager.getUserId()
-//
-//        if (token.isNullOrBlank() || userId.isNullOrBlank()) return
-//
-//        viewModelScope.launch {
-//            try {
-//                val newAddress = address.copy(userId = userId)
-//
-//                repository.addAddress(token, newAddress)
-//
-//                Log.d("ADDRESS_VM", "✅ Address Added")
-//
-//                loadAddresses()
-//
-//            } catch (e: Exception) {
-//                _state.update { it.copy(error = e.message) }
-//            }
-//        }
-//    }
-//
-//    // 🔹 UPDATE
-//    fun updateAddress(id: String, address: AddressModel) {
-//        val token = sessionManager.getToken()
-//        val userId = sessionManager.getUserId()
-//
-//        if (token.isNullOrBlank() || userId.isNullOrBlank()) return
-//
-//        viewModelScope.launch {
-//            try {
-//                val updated = address.copy(userId = userId)
-//
-//                repository.updateAddress(token, id, updated)
-//
-//                Log.d("ADDRESS_VM", "✅ Address Updated")
-//
-//                loadAddresses()
-//
-//            } catch (e: Exception) {
-//                _state.update { it.copy(error = e.message) }
-//            }
-//        }
-//    }
-//
-//    // 🔹 DELETE
-//    fun deleteAddress(addressId: String) {
-//        val token = sessionManager.getToken()
-//        val userId = sessionManager.getUserId()
-//
-//        if (token.isNullOrBlank() || userId.isNullOrBlank()) return
-//
-//        viewModelScope.launch {
-//            _state.update { it.copy(isLoading = true) }
-//
-//            try {
-//                repository.deleteAddress(token, userId, addressId)
-//
-//                Log.d("ADDRESS_VM", "✅ Address Deleted")
-//
-//                loadAddresses()
-//
-//            } catch (e: Exception) {
-//                _state.update {
-//                    it.copy(
-//                        isLoading = false,
-//                        error = e.message
-//                    )
-//                }
-//            }
-//        }
-//    }
-//
-//    // 🔹 SELECT
-//    fun selectAddress(address: AddressItem) {
-//        _state.update { it.copy(selectedAddress = address) }
-//    }
-//}
-
-
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.mysanjeevni.mysanjeevni.features.orders.domain.usecase.CheckServiceabilityUseCase
 import com.mysanjeevni.mysanjeevni.features.profile.domain.model.Address
 import com.mysanjeevni.mysanjeevni.features.profile.domain.usecase.AddAddressUseCase
 import com.mysanjeevni.mysanjeevni.features.profile.domain.usecase.DeleteAddressUseCase
 import com.mysanjeevni.mysanjeevni.features.profile.domain.usecase.GetAddressUseCase
 import com.mysanjeevni.mysanjeevni.features.profile.domain.usecase.UpdateAddressUseCase
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressUiState
+import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.ServiceabilityUiState
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -170,7 +28,9 @@ class AddressViewModel @Inject constructor(
     private val addAddressUseCase: AddAddressUseCase,
     private val updateAddressUseCase: UpdateAddressUseCase,
     private val deleteAddressUseCase: DeleteAddressUseCase,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val checkServiceabilityUseCase: CheckServiceabilityUseCase
+
 ) : AndroidViewModel(application) {
 
     private val _state = MutableStateFlow(
@@ -179,6 +39,11 @@ class AddressViewModel @Inject constructor(
 
     val state: StateFlow<AddressUiState> =
         _state.asStateFlow()
+    private val _serviceabilityState =
+        MutableStateFlow(ServiceabilityUiState())
+
+    val serviceabilityState =
+        _serviceabilityState.asStateFlow()
 
     init {
         loadAddresses()
@@ -192,6 +57,7 @@ class AddressViewModel @Inject constructor(
         Log.d("ADDRESS_VM", "==============================")
         Log.d("ADDRESS_VM", "LOAD ADDRESSES")
         Log.d("ADDRESS_VM", "UserId = $userId")
+        Log.d("ADDRESS_VM","Token = $token")
 
         if (token.isNullOrBlank() || userId.isNullOrBlank()) {
             _state.update {
@@ -248,13 +114,27 @@ class AddressViewModel @Inject constructor(
                         }
                         ?: emptyList()
 
+                    val defaultAddress =
+                        addresses.firstOrNull { it.isDefault }
+
                     _state.update {
                         it.copy(
                             addresses = addresses,
+                            selectedAddress = defaultAddress,
                             isLoading = false,
                             error = null
                         )
                     }
+
+                    Log.d(
+                        "ADDRESS_VM",
+                        "Default Address = $defaultAddress"
+                    )
+
+                    Log.d(
+                        "ADDRESS_VM",
+                        "Default Pincode = ${defaultAddress?.pincode}"
+                    )
 
                     Log.d(
                         "ADDRESS_VM",
@@ -523,6 +403,172 @@ class AddressViewModel @Inject constructor(
         }
     }
 
+    fun checkServiceability(
+        pincode: String
+    ) {
+        Log.d("SERVICEABILITY_VM", "============================")
+        Log.d("SERVICEABILITY_VM", "CHECK SERVICEABILITY")
+        Log.d("SERVICEABILITY_VM", "Pincode = $pincode")
+        if (pincode.length != 6) {
+            Log.d(
+                "SERVICEABILITY_VM",
+                "Invalid pincode length. Clearing state."
+            )
+            _serviceabilityState.value = ServiceabilityUiState()
+            return
+        }
+        viewModelScope.launch {
+            Log.d(
+                "SERVICEABILITY_VM",
+                "Calling CheckServiceabilityUseCase..."
+            )
+            _serviceabilityState.update {
+                it.copy(
+                    isLoading = true,
+                    error = null
+                )
+            }
+            checkServiceabilityUseCase(pincode)
+                .fold(
+                    onSuccess = { result ->
+                        Log.d(
+                            "SERVICEABILITY_VM",
+                            "Serviceability Success"
+                        )
+                        Log.d(
+                            "SERVICEABILITY_VM",
+                            "Serviceable = ${result.serviceable}"
+                        )
+                        Log.d(
+                            "SERVICEABILITY_VM",
+                            "Courier = ${result.courierName}"
+                        )
+                        Log.d(
+                            "SERVICEABILITY_VM",
+                            "Charge = ₹${result.deliveryCharge}"
+                        )
+                        Log.d(
+                            "SERVICEABILITY_VM",
+                            "ETA = ${result.estimatedDeliveryDate}"
+                        )
+                        Log.d(
+                            "SERVICEABILITY_VM",
+                            "Days = ${result.estimatedDeliveryDays}"
+                        )
+                        Log.d(
+                            "SERVICEABILITY_VM",
+                            "COD = ${result.codAvailable}"
+                        )
+                        _serviceabilityState.value =
+                            ServiceabilityUiState(
+                                isLoading = false,
+                                serviceable = result.serviceable,
+                                courierName = result.courierName,
+                                deliveryCharge = result.deliveryCharge,
+                                estimatedDeliveryDate =
+                                    result.estimatedDeliveryDate,
+                                estimatedDeliveryDays =
+                                    result.estimatedDeliveryDays,
+                                codAvailable =
+                                    result.codAvailable
+                            )
+                    },
+
+                    onFailure = { exception ->
+
+                        Log.e(
+                            "SERVICEABILITY_VM",
+                            "API Failed"
+                        )
+
+                        Log.e(
+                            "SERVICEABILITY_VM",
+                            "Reason = ${exception.message}",
+                            exception
+                        )
+
+                        _serviceabilityState.value =
+                            ServiceabilityUiState(
+
+                                isLoading = false,
+
+                                error = exception.message
+                            )
+                    }
+                )
+        }
+    }
+
+    suspend fun checkServiceabilityForCheckout(
+        pincode: String
+    ): Boolean {
+
+        Log.d("CHECKOUT_SERVICEABILITY", "==========================")
+        Log.d("CHECKOUT_SERVICEABILITY", "CHECK SERVICEABILITY")
+        Log.d("CHECKOUT_SERVICEABILITY", "Pincode = $pincode")
+
+        if (pincode.length != 6) {
+
+            Log.d(
+                "CHECKOUT_SERVICEABILITY",
+                "Invalid Pincode"
+            )
+
+            return false
+        }
+
+        _serviceabilityState.update {
+            it.copy(
+                isLoading = true,
+                error = null
+            )
+        }
+
+        return checkServiceabilityUseCase(pincode)
+            .fold(
+
+                onSuccess = { result ->
+
+                    Log.d(
+                        "CHECKOUT_SERVICEABILITY",
+                        "Serviceable = ${result.serviceable}"
+                    )
+
+                    _serviceabilityState.value =
+                        ServiceabilityUiState(
+                            isLoading = false,
+                            serviceable = result.serviceable,
+                            courierName = result.courierName,
+                            deliveryCharge = result.deliveryCharge,
+                            estimatedDeliveryDate = result.estimatedDeliveryDate,
+                            estimatedDeliveryDays = result.estimatedDeliveryDays,
+                            codAvailable = result.codAvailable
+                        )
+
+                    result.serviceable
+                },
+
+                onFailure = { exception ->
+
+                    Log.e(
+                        "CHECKOUT_SERVICEABILITY",
+                        exception.message ?: "API Failed"
+                    )
+
+                    _serviceabilityState.value =
+                        ServiceabilityUiState(
+                            isLoading = false,
+                            error = exception.message
+                        )
+
+                    false
+                }
+            )
+    }
+
+    fun clearServiceability() {
+        _serviceabilityState.value = ServiceabilityUiState()
+    }
     fun selectAddress(address: Address) {
         _state.update {
             it.copy(

@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
+import com.mysanjeevni.mysanjeevni.features.currency.presentation.viewmodel.CurrencyViewModel
 import com.mysanjeevni.mysanjeevni.features.labs.domain.model.BookingHistory
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel.BookingHistoryViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
@@ -125,12 +126,18 @@ fun BookingDetailScreen(
     navController: NavController
 ) {
     val historyViewModel: BookingHistoryViewModel = hiltViewModel()
+    val currencyViewModel: CurrencyViewModel = hiltViewModel()
     val state by historyViewModel.state.collectAsState()
+    val currencyState by currencyViewModel.state.collectAsState()
     val booking = navController.previousBackStackEntry
         ?.savedStateHandle
         ?.get<BookingHistory>("booking")
     var showCancelDialog by remember { mutableStateOf(false) }
     val theme = rememberBookingTheme()
+
+    // Fallback to INR (rate = 1.0) while loading or if currency fetch failed
+    val currencySymbol = currencyState.currencyInfo?.currencySymbol ?: "₹"
+    val exchangeRate = currencyState.currencyInfo?.exchangeRate ?: 1.0
 
     if (booking == null) {
         Box(
@@ -140,6 +147,15 @@ fun BookingDetailScreen(
             AutoText("Booking Not Found", color = theme.textPrimary)
         }
     } else {
+
+        val convertedAmount = booking.amount.toDouble() * exchangeRate
+        val formattedAmount = "$currencySymbol ${
+            String.format(
+                java.util.Locale.getDefault(),
+                if (exchangeRate == 1.0) "%.0f" else "%.2f",
+                convertedAmount
+            )
+        }"
 
         LaunchedEffect(state.cancelSuccess) {
             if (state.cancelSuccess) {
@@ -388,7 +404,7 @@ fun BookingDetailScreen(
                         DetailRow(
                             icon = Icons.Default.CurrencyRupee,
                             label = "Amount",
-                            value = "₹ ${booking.amount}",
+                            value = formattedAmount,
                             theme = theme,
                         )
                         RowDivider(theme = theme)

@@ -7,6 +7,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -14,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.mysanjeevni.mysanjeevni.features.currency.presentation.viewmodel.CurrencyViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 import kotlin.math.roundToInt
 
@@ -22,10 +26,27 @@ fun LabBottomBar(
     price: Double,
     originalPrice: Double = 0.0,
     testCount: Int,
-    onAddToCart: () -> Unit
+    onAddToCart: () -> Unit,
+    currencyViewModel: CurrencyViewModel = hiltViewModel()
 ) {
     val teal = Color(0xFF00897B)
 
+    val currencyState by currencyViewModel.state.collectAsState()
+
+    // Fallback to INR (rate = 1.0) while loading or if currency fetch failed
+    val currencySymbol = currencyState.currencyInfo?.currencySymbol ?: "₹"
+    val exchangeRate = currencyState.currencyInfo?.exchangeRate ?: 1.0
+
+    val convertedPrice = price * exchangeRate
+    val formattedPrice = "$currencySymbol${
+        String.format(
+            java.util.Locale.getDefault(),
+            if (exchangeRate == 1.0) "%.0f" else "%.2f",
+            convertedPrice
+        )
+    }"
+
+    // Discount % is a ratio, unaffected by currency — keep calculated on raw INR values
     val discountPercent = if (originalPrice > price && originalPrice > 0)
         ((originalPrice - price) / originalPrice * 100).roundToInt()
     else 0
@@ -45,7 +66,7 @@ fun LabBottomBar(
             // Left: price + test count + discount
             Column {
                 AutoText(
-                    text = "₹$price",
+                    text = formattedPrice,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = teal

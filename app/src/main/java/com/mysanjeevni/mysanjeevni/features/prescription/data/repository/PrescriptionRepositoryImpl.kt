@@ -2,8 +2,10 @@ package com.mysanjeevni.mysanjeevni.features.prescription.data.repository
 
 import com.mysanjeevni.mysanjeevni.features.prescription.domain.repository.PrescriptionRepository
 import android.util.Log
-import com.mysanjeevni.mysanjeevni.features.prescription.data.model.PrescriptionModel
+import com.mysanjeevni.mysanjeevni.features.prescription.data.mapper.toDomain
+import com.mysanjeevni.mysanjeevni.features.prescription.domain.model.PrescriptionModel
 import com.mysanjeevni.mysanjeevni.features.prescription.data.remote.PrescriptionApiService
+import com.mysanjeevni.mysanjeevni.features.prescription.domain.model.Prescription
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -66,5 +68,74 @@ class PrescriptionRepositoryImpl  @Inject constructor(
             throw e
         }
     }
+    override suspend fun getPrescriptions(
+        userId: String,
+        consultationId: String?
+    ): Result<List<Prescription>> {
 
-}
+        return try {
+
+            Log.d(TAG, "getPrescriptions() started")
+            Log.d(TAG, "userId=$userId")
+            Log.d(TAG, "consultationId=$consultationId")
+
+            val response = apiService.getPrescriptions(
+                userId = userId,
+                consultationId = consultationId
+            )
+
+            Log.d(
+                TAG,
+                "API response code=${response.code()}"
+            )
+
+            if (response.isSuccessful) {
+
+                val prescriptions =
+                    response.body()
+                        ?.prescriptions
+                        .orEmpty()
+                        .map { dto ->
+                            dto.toDomain()
+                        }
+
+                Log.d(
+                    TAG,
+                    "Prescriptions count=${prescriptions.size}"
+                )
+
+                Result.success(prescriptions)
+
+            } else {
+
+                val errorBody =
+                    response.errorBody()?.string()
+
+                Log.e(
+                    TAG,
+                    "Prescription API failed: " +
+                            "code=${response.code()}, " +
+                            "error=$errorBody"
+                )
+
+                Result.failure(
+                    Exception(
+                        errorBody
+                            ?: "Failed to fetch prescriptions"
+                    )
+                )
+            }
+
+        } catch (e: Exception) {
+
+            Log.e(
+                TAG,
+                "Exception while fetching prescriptions",
+                e
+            )
+
+            Result.failure(e)
+        }
+    }
+    }
+

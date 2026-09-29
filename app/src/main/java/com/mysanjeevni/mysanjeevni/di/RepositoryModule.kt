@@ -6,6 +6,12 @@ import com.mysanjeevni.mysanjeevni.features.auth.domain.repository.AuthRepositor
 import com.mysanjeevni.mysanjeevni.features.auth.domain.repository.GoogleAuthRepository
 import com.mysanjeevni.mysanjeevni.features.category.data.repository.CategoryRepositoryImpl
 import com.mysanjeevni.mysanjeevni.features.category.domain.repository.CategoryRepository
+import com.mysanjeevni.mysanjeevni.features.consult.data.repository.AgoraRepositoryImpl
+import com.mysanjeevni.mysanjeevni.features.consult.data.repository.ConsultRepositoryImpl
+import com.mysanjeevni.mysanjeevni.features.consult.domnain.repository.AgoraRepository
+import com.mysanjeevni.mysanjeevni.features.consult.domnain.repository.ConsultRepository
+import com.mysanjeevni.mysanjeevni.features.currency.data.repository.CurrencyRepositoryImpl
+import com.mysanjeevni.mysanjeevni.features.currency.domain.repository.CurrencyRepository
 import com.mysanjeevni.mysanjeevni.features.home.data.repository.LocationRepositoryImpl
 import com.mysanjeevni.mysanjeevni.features.home.domain.repository.LocationRepository
 import com.mysanjeevni.mysanjeevni.features.labs.data.repository.BookingHistoryRepositoryImpl
@@ -160,5 +166,22 @@ import javax.inject.Singleton
         impl: LocationRepositoryImpl
     ): LocationRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindConsultRepository(
+        impl: ConsultRepositoryImpl
+    ): ConsultRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAgoraRepository(
+        impl: AgoraRepositoryImpl
+    ): AgoraRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCurrencyRepository(
+        impl: CurrencyRepositoryImpl
+    ): CurrencyRepository
 
 }

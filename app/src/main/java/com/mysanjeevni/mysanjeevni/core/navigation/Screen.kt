@@ -129,4 +129,26 @@ sealed class Screen(val route: String) {
     }
 
     object PaymentFailed : Screen("payment_failed")
+    object PrescriptionScreen : Screen(
+        route = "prescription?consultationId={consultationId}"
+    ) {
+
+        fun createRoute(
+            consultationId: String? = null
+        ): String {
+
+            return if (consultationId.isNullOrBlank()) {
+                "prescription"
+            } else {
+                "prescription?consultationId=$consultationId"
+            }
+        }
+    }
+    object BookConsultation : Screen("book_consultation/{doctorId}") {
+        fun createRoute(doctorId: String) = "book_consultation/$doctorId"
+    }
+    object ConsultationDetail : Screen("consultation_detail")
+    object AgoraCall:Screen("agora_call/{channelName}/{participantType}"){
+        fun createRoute(channelName:String,participantType: String) = "agora_call/$channelName/$participantType"
+    }
 }

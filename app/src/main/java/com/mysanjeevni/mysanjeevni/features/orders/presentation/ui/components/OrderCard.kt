@@ -25,7 +25,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +34,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.mysanjeevni.mysanjeevni.features.currency.domain.model.CurrencyInfo
 import com.mysanjeevni.mysanjeevni.features.orders.domain.model.OrderUiModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 import kotlin.math.abs
@@ -42,17 +42,33 @@ import kotlin.math.abs
 @Composable
 fun OrderCard(
     orderUi: OrderUiModel,
+    currencyInfo: CurrencyInfo,
     onClick: () -> Unit
 ) {
 
     val order = orderUi.order
     val medicine = orderUi.medicine
+
     val accentPairs = listOf(
-        MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer,
-        MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer,
-        MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
+        MaterialTheme.colorScheme.primaryContainer to
+                MaterialTheme.colorScheme.onPrimaryContainer,
+
+        MaterialTheme.colorScheme.tertiaryContainer to
+                MaterialTheme.colorScheme.onTertiaryContainer,
+
+        MaterialTheme.colorScheme.secondaryContainer to
+                MaterialTheme.colorScheme.onSecondaryContainer
     )
-    val (accentBg, accentFg) = accentPairs[abs(order.id.hashCode()) % accentPairs.size]
+
+    val (accentBg, accentFg) =
+        accentPairs[abs(order.id.hashCode()) % accentPairs.size]
+
+    /*
+     * Backend amount remains INR.
+     * Conversion is only for UI display.
+     */
+    val displayAmount =
+        order.totalPrice * currencyInfo.exchangeRate
 
     Card(
         modifier = Modifier
@@ -76,11 +92,11 @@ fun OrderCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
                 Box(
                     modifier = Modifier
                         .size(60.dp)
@@ -110,7 +126,6 @@ fun OrderCard(
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
-
                 }
 
                 OrderStatusChip(
@@ -118,8 +133,9 @@ fun OrderCard(
                 )
             }
 
-
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
 
             // Price & Date
             Row(
@@ -131,19 +147,25 @@ fun OrderCard(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+
                     IconAvatar(
                         icon = Icons.Outlined.CurrencyRupee,
                         background = accentBg,
                         tint = accentFg
                     )
+
                     Column {
+
                         AutoText(
                             text = "Amount",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+
                         AutoText(
-                            text = "₹${order.totalPrice}",
+                            text = "${
+                                currencyInfo.currencySymbol
+                            }${"%.2f".format(displayAmount)}",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -155,17 +177,21 @@ fun OrderCard(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+
                     IconAvatar(
                         icon = Icons.Outlined.CalendarToday,
                         background = accentBg,
                         tint = accentFg
                     )
+
                     Column {
+
                         AutoText(
                             text = "Ordered On",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+
                         AutoText(
                             text = formatDate(order.createdAt),
                             style = MaterialTheme.typography.bodyMedium,
@@ -176,7 +202,9 @@ fun OrderCard(
                 }
             }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
 
             // Qty + Payment
             Row(
@@ -189,6 +217,7 @@ fun OrderCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+
                     IconAvatar(
                         icon = Icons.Outlined.Inventory2,
                         background = accentBg,
@@ -196,8 +225,11 @@ fun OrderCard(
                         size = 28.dp,
                         iconSize = 14.dp
                     )
+
                     AutoText(
-                        text = "${order.items.size} ${if (order.items.size == 1) "Item" else "Items"}",
+                        text = "${order.items.size} ${
+                            if (order.items.size == 1) "Item" else "Items"
+                        }",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -207,7 +239,11 @@ fun OrderCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    PaymentStatusChip(paymentStatus = order.paymentStatus)
+
+                    PaymentStatusChip(
+                        paymentStatus = order.paymentStatus
+                    )
+
                     Icon(
                         imageVector = Icons.Outlined.ChevronRight,
                         contentDescription = null,

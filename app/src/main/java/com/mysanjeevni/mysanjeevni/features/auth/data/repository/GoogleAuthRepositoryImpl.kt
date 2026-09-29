@@ -13,20 +13,32 @@ class GoogleAuthRepositoryImpl @Inject constructor(
     private val authRepository: AuthRepository
 ) : GoogleAuthRepository {
 
+    companion object {
+        private const val TAG = "GOOGLE_DEBUG"
+    }
+
     override suspend fun loginWithGoogle(
         googleIdToken: String
     ): Result<AuthResponseDto> {
 
+        Log.d(TAG, "========== GOOGLE LOGIN START ==========")
+        Log.d(TAG, "Google ID Token received")
+        Log.d(TAG, "Token length = ${googleIdToken.length}")
+
         return try {
-            Log.d("GOOGLE_DEBUG", "================================")
-            Log.d("GOOGLE_DEBUG", "GOOGLE TOKEN")
-            Log.d("GOOGLE_DEBUG", googleIdToken)
-            Log.d("GOOGLE_DEBUG", "================================")
-            val credential =
-                GoogleAuthProvider.getCredential(
-                    googleIdToken,
-                    null
-                )
+
+            // STEP 1
+            Log.d(TAG, "STEP 1: Creating Firebase credential")
+
+            val credential = GoogleAuthProvider.getCredential(
+                googleIdToken,
+                null
+            )
+
+            Log.d(TAG, "STEP 1 SUCCESS: Firebase credential created")
+
+            // STEP 2
+            Log.d(TAG, "STEP 2: Firebase signInWithCredential")
 
             val firebaseUser =
                 suspendCancellableCoroutine { cont ->
@@ -37,85 +49,168 @@ class GoogleAuthRepositoryImpl @Inject constructor(
 
                             val user = result.user
 
+                            Log.d(
+                                TAG,
+                                "STEP 2 SUCCESS: Firebase sign-in successful"
+                            )
+
+                            Log.d(
+                                TAG,
+                                "Firebase UID = ${user?.uid}"
+                            )
+
+                            Log.d(
+                                TAG,
+                                "Firebase Email = ${user?.email}"
+                            )
+
                             if (user != null) {
                                 cont.resume(user)
                             } else {
                                 cont.resumeWith(
                                     Result.failure(
-                                        Exception("Firebase user not found")
+                                        Exception("Firebase user is null")
                                     )
                                 )
                             }
                         }
-                        .addOnFailureListener {
+                        .addOnFailureListener { exception ->
+
+                            Log.e(
+                                TAG,
+                                "STEP 2 FAILED: Firebase sign-in failed",
+                                exception
+                            )
 
                             cont.resumeWith(
-                                Result.failure(it)
+                                Result.failure(exception)
                             )
                         }
                 }
+
+            // STEP 3
+            Log.d(TAG, "STEP 3: Getting Firebase ID token")
 
             val firebaseToken =
                 suspendCancellableCoroutine { cont ->
 
                     firebaseUser
                         .getIdToken(true)
-                        .addOnSuccessListener {
+                        .addOnSuccessListener { result ->
 
-                            val token = it.token
-                            Log.d("GOOGLE_DEBUG", "================================")
-                            Log.d("GOOGLE_DEBUG", "FIREBASE TOKEN")
-                            Log.d("GOOGLE_DEBUG", token ?: "")
-                            Log.d("GOOGLE_DEBUG", "================================")
+                            val token = result.token
+
+                            Log.d(
+                                TAG,
+                                "STEP 3 SUCCESS: Firebase ID token received"
+                            )
+
+                            Log.d(
+                                TAG,
+                                "Firebase token length = ${token?.length}"
+                            )
 
                             if (token != null) {
+
                                 cont.resume(token)
+
                             } else {
+
                                 cont.resumeWith(
                                     Result.failure(
-                                        Exception("Firebase token is null")
+                                        Exception(
+                                            "Firebase ID token is null"
+                                        )
                                     )
                                 )
                             }
                         }
-                        .addOnFailureListener {
+                        .addOnFailureListener { exception ->
+
+                            Log.e(
+                                TAG,
+                                "STEP 3 FAILED: Unable to get Firebase ID token",
+                                exception
+                            )
 
                             cont.resumeWith(
-                                Result.failure(it)
+                                Result.failure(exception)
                             )
                         }
                 }
-            Log.d("GOOGLE_DEBUG", "================================")
-            Log.d("GOOGLE_DEBUG", "SENDING FIREBASE TOKEN TO BACKEND")
-            Log.d("GOOGLE_DEBUG", "Token Length = ${firebaseToken.length}")
-            Log.d("GOOGLE_DEBUG", "Token Prefix = ${firebaseToken.take(40)}")
-            Log.d("GOOGLE_DEBUG", "================================")
-            val response =
-                authRepository.googleLogin(firebaseToken)
-            Log.d("GOOGLE_DEBUG", "HTTP Code = ${response.code()}")
 
+            // STEP 4
+            Log.d(TAG, "STEP 4: Sending Firebase token to backend")
+
+            val response = try {
+
+                authRepository.googleLogin(firebaseToken)
+
+            } catch (e: Exception) {
+
+                Log.e(
+                    TAG,
+                    "STEP 4 FAILED: Backend request exception",
+                    e
+                )
+
+                throw e
+            }
+
+            Log.d(
+                TAG,
+                "STEP 4 RESPONSE: HTTP ${response.code()}"
+            )
 
             if (response.isSuccessful && response.body() != null) {
+
+                Log.d(
+                    TAG,
+                    "STEP 4 SUCCESS: Backend Google login successful"
+                )
 
                 Result.success(response.body()!!)
 
             } else {
-                Log.d(
-                    "GOOGLE_DEBUG",
-                    "Error Body = ${response.errorBody()?.string()}"
+
+                val errorBody =
+                    response.errorBody()?.string()
+
+                Log.e(
+                    TAG,
+                    "STEP 4 FAILED: Backend rejected login"
                 )
+
+                Log.e(
+                    TAG,
+                    "HTTP Code = ${response.code()}"
+                )
+
+                Log.e(
+                    TAG,
+                    "Error Body = $errorBody"
+                )
+
                 Result.failure(
                     Exception(
-                        response.errorBody()?.string()
-                            ?: "Google Login Failed"
+                        errorBody ?: "Google Login Failed"
                     )
                 )
             }
 
         } catch (e: Exception) {
 
+            Log.e(
+                TAG,
+                "GOOGLE LOGIN EXCEPTION",
+                e
+            )
+
             Result.failure(e)
 
+        } finally {
+
+            Log.d(TAG, "========== GOOGLE LOGIN END ==========")
         }
     }
 }

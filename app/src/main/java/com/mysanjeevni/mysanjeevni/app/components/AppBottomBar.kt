@@ -9,20 +9,25 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.MedicalServices
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Science
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -43,9 +48,11 @@ import androidx.navigation.NavHostController
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 
+private val ConsultGreen = Color(0xFF00A878)
 @Composable
 fun AppBottomBar(
-    navController: NavHostController, currentRoute: String?
+    navController: NavHostController,
+    currentRoute: String?
 ) {
     val showBottomBar = currentRoute in listOf(
         Screen.Home.route,
@@ -57,81 +64,183 @@ fun AppBottomBar(
 
     if (!showBottomBar) return
 
-    Surface(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(
-                10.dp,
-                RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-            )
-            .navigationBarsPadding(),
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+            .navigationBarsPadding()
+            .height(100.dp)
     ) {
-        Row(
+
+        // Bottom white bar
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
+                .align(Alignment.BottomCenter)
                 .height(80.dp)
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .shadow(
+                    elevation = 10.dp,
+                    shape = RoundedCornerShape(
+                        topStart = 28.dp,
+                        topEnd = 28.dp
+                    )
+                ),
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(
+                topStart = 28.dp,
+                topEnd = 28.dp
+            )
         ) {
-            BottomNavItem(
-                icon = if (currentRoute == Screen.Home.route)
-                    Icons.Filled.Home
-                else
-                    Icons.Outlined.Home,
-                label = "Home",
-                isSelected = currentRoute == Screen.Home.route,
-                onClick = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
-            )
 
-            BottomNavItem(
-                icon = Icons.Outlined.ShoppingCart,
-                label = "Cart",
-                isSelected = currentRoute == Screen.CartScreen.route,
-                onClick = {
-                    navController.navigate(Screen.CartScreen.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .padding(horizontal = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-            BottomNavItem(
-                icon = Icons.Outlined.Science,
-                label = "Lab Test",
-                isSelected = currentRoute == Screen.MyLabTestsScreen.route,
-                onClick = {
-                    navController.navigate(Screen.MyLabTestsScreen.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                // HOME
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BottomNavItem(
+                        icon = if (currentRoute == Screen.Home.route)
+                            Icons.Filled.Home
+                        else
+                            Icons.Outlined.Home,
+                        label = "Home",
+                        isSelected = currentRoute == Screen.Home.route,
+                        onClick = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(
+                                    navController.graph.findStartDestination().id
+                                ) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
                 }
-            )
 
-            BottomNavItem(
-                icon = Icons.Outlined.Person,
-                label = "Profile",
-                isSelected = currentRoute == Screen.ProfileScreen.route,
-                onClick = {
-                    navController.navigate(Screen.ProfileScreen.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                // CART
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BottomNavItem(
+                        icon = Icons.Outlined.ShoppingCart,
+                        label = "Cart",
+                        isSelected = currentRoute == Screen.CartScreen.route,
+                        onClick = {
+                            navController.navigate(Screen.CartScreen.route) {
+                                popUpTo(
+                                    navController.graph.findStartDestination().id
+                                ) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
                 }
-            )
 
+                // CENTER CONSULT SPACE
+                Spacer(
+                    modifier = Modifier.width(72.dp)
+                )
+
+                // LAB TEST
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BottomNavItem(
+                        icon = Icons.Outlined.Science,
+                        label = "Lab Test",
+                        isSelected = currentRoute == Screen.MyLabTestsScreen.route,
+                        onClick = {
+                            navController.navigate(Screen.MyLabTestsScreen.route) {
+                                popUpTo(
+                                    navController.graph.findStartDestination().id
+                                ) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
+                }
+
+                // PROFILE
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BottomNavItem(
+                        icon = Icons.Outlined.Person,
+                        label = "Profile",
+                        isSelected = currentRoute == Screen.ProfileScreen.route,
+                        onClick = {
+                            navController.navigate(Screen.ProfileScreen.route) {
+                                popUpTo(
+                                    navController.graph.findStartDestination().id
+                                ) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
+                }
+            }
         }
+
+        // FLOATING CONSULT BUTTON
+        Surface(
+            modifier = Modifier
+                .size(60.dp)
+                .align(Alignment.TopCenter)
+                .offset(y = (-2).dp)
+                .shadow(
+                    elevation = 10.dp,
+                    shape = CircleShape
+                ),
+            shape = CircleShape,
+            color = ConsultGreen
+        ) {
+
+            IconButton(
+                onClick = {
+                    navController.navigate(Screen.Consult.route)
+                },
+                modifier = Modifier.fillMaxSize()
+            ) {
+
+                Icon(
+                    imageVector = Icons.Outlined.MedicalServices,
+                    contentDescription = "Consult",
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+
+        // CONSULT LABEL
+        Text(
+            text = "Consult",
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .offset(y = (-2).dp),
+            color = ConsultGreen,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 

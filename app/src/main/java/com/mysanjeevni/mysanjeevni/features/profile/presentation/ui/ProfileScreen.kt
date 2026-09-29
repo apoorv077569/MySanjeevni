@@ -31,8 +31,10 @@ import androidx.compose.material.icons.automirrored.filled.Note
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.MedicalServices
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -252,7 +254,10 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
             ProfileMenuItem(
                 Icons.AutoMirrored.Filled.Note, "My Prescription", textColor, secondaryText, onClick =
-                    { navController.navigate(Screen.UploadPrescription.route) })
+                    { navController.navigate(Screen.PrescriptionScreen.route) })
+            ProfileMenuItem(
+                Icons.Default.MedicalServices, "My Consultation", textColor, secondaryText, onClick =
+                    { navController.navigate(Screen.MyConsultScreen.route) })
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
             ProfileMenuItem(Icons.Default.CardGiftcard, "Share With Friends", textColor, secondaryText, onClick = {
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {

@@ -30,9 +30,22 @@ class OrderViewModel @Inject constructor(
 
     private val _selectedMedicine = MutableStateFlow<Medicine?>(null)
     val selectedMedicine: StateFlow<Medicine?> = _selectedMedicine.asStateFlow()
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing = _isRefreshing.asStateFlow()
 
     private val _selectedAddress = MutableStateFlow<Address?>(null)
     val selectedAddress = _selectedAddress.asStateFlow()
+    private val _deliveryCharge = MutableStateFlow(0.0)
+    val deliveryCharge = _deliveryCharge.asStateFlow()
+
+    private val _courierName = MutableStateFlow("")
+    val courierName = _courierName.asStateFlow()
+
+    private val _estimatedDeliveryDays = MutableStateFlow("")
+    val estimatedDeliveryDays = _estimatedDeliveryDays.asStateFlow()
+
+    private val _estimatedDeliveryDate = MutableStateFlow("")
+    val estimatedDeliveryDate = _estimatedDeliveryDate.asStateFlow()
 
     private val _orderState = MutableStateFlow<OrderState>(OrderState.Idle)
     val orderState: StateFlow<OrderState> = _orderState.asStateFlow()
@@ -47,21 +60,30 @@ class OrderViewModel @Inject constructor(
     private val _recentOrder = MutableStateFlow<Order?>(null)
     val recentOrder: StateFlow<Order?> = _recentOrder.asStateFlow()
 
+
+    fun refresh(userId: String?){
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            getOrders(userId)
+            _isRefreshing.value = false
+        }
+    }
+
     fun setRecentOrder(order: Order) {
         _recentOrder.value = order
     }
     // ──────────────────────────────────────────────────────────────────────
 
-    fun setCartItems(items: List<CartItem>){
+    fun setCartItems(items: List<CartItem>) {
         _cartItems.value = items
-        Log.d("ORDER_VM","Cart Saved = ${items.size}")
+        Log.d("ORDER_VM", "Cart Saved = ${items.size}")
     }
 
-    fun setMedicine(medicine: Medicine){
+    fun setMedicine(medicine: Medicine) {
         _selectedMedicine.value = medicine
     }
 
-    fun setAddress(address: Address){
+    fun setAddress(address: Address) {
         _selectedAddress.value = address
     }
 
@@ -109,9 +131,26 @@ class OrderViewModel @Inject constructor(
         Log.d("CHECKOUT_FLOW", "==============================")
     }
 
-    fun clearCheckoutType(){
+    fun clearCheckoutType() {
         _checkoutType.value = null
     }
+
+    fun setShippingDetails(
+        charge: Double,
+        courier: String,
+        days: String,
+        date: String
+    ) {
+
+        _deliveryCharge.value = charge
+
+        _courierName.value = courier
+
+        _estimatedDeliveryDays.value = days
+
+        _estimatedDeliveryDate.value = date
+    }
+
     fun getOrders(userId: String?) {
         viewModelScope.launch {
 

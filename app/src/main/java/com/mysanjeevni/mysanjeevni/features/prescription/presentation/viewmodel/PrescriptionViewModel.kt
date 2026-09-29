@@ -6,12 +6,15 @@ import android.provider.OpenableColumns
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mysanjeevni.mysanjeevni.features.prescription.domain.usecase.GetPrescriptionsUseCase
 import com.mysanjeevni.mysanjeevni.features.prescription.domain.usecase.UploadPrescriptionUseCase
 import com.mysanjeevni.mysanjeevni.features.prescription.presentation.state.PrescriptionState
+import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -20,7 +23,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PrescriptionViewModel @Inject constructor(
-    private val uploadPrescriptionUseCase: UploadPrescriptionUseCase
+    private val uploadPrescriptionUseCase: UploadPrescriptionUseCase,
+    private val getPrescriptionUseCase: GetPrescriptionsUseCase,
+    private val sessionManager: SessionManager
+
 ) : ViewModel() {
 
     companion object {
@@ -210,6 +216,75 @@ class PrescriptionViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    fun loadPrescription(consultationId: String? = null) {
+        viewModelScope.launch {
+            Log.d(TAG, "Load Prescription Started")
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    error = null
+                )
+            }
+            val userId = sessionManager.getUserId()
+            Log.d(TAG, "User Id = $userId")
+            if (userId.isNullOrBlank()) {
+                Log.e(TAG, "UserId is null or empty")
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "User session not found"
+                    )
+                }
+                return@launch
+            }
+            getPrescriptionUseCase(
+                userId = userId,
+                consultationId = consultationId
+            ).onSuccess { prescriptions ->
+                Log.d(
+                    TAG,
+                    "Prescriptions loaded successfully"
+                )
+
+                Log.d(
+                    TAG,
+                    "Prescription count=${prescriptions.size}"
+                )
+                prescriptions.forEach { prescription ->
+                    Log.d(
+                        TAG,
+                        "Prescription: " +
+                                "id=${prescription.id}, " +
+                                "doctor=${prescription.doctorName}, " +
+                                "diagnosis=${prescription.diagnosis}, " +
+                                "medicines=${prescription.medicines.size}"
+                    )
+                }
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        prescriptions = prescriptions,
+                        error = null
+                    )
+                }
+            }
+                .onFailure { exception ->
+                    Log.e(TAG, "Failed to load prescriptions", exception)
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = exception.localizedMessage ?: "Failed to load prescription"
+                        )
+                    }
+                }
+        }
+    }
+
+    fun retry(){
+        Log.d(TAG,"Retry Requested")
+        loadPrescription()
     }
 
     private fun getFileName(

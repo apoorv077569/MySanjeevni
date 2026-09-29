@@ -11,6 +11,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -160,7 +161,12 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
         }
 
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            navigationBarStyle = androidx.activity.SystemBarStyle.light(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT
+            )
+        )
 
         setContent {
 
@@ -198,6 +204,7 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
                         val labViewModel: BookLabTestViewModel = hiltViewModel(this@MainActivity)
 
                         Scaffold(
+                            containerColor = MaterialTheme.colorScheme.background,
                             bottomBar = {
                                 AppBottomBar(navController, currentRoute)
                             }

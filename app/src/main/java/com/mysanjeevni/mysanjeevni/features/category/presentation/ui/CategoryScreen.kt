@@ -33,21 +33,29 @@ import com.mysanjeevni.mysanjeevni.features.category.presentation.viewmodel.Cate
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
-fun CategoryScreen(navController: NavController, viewModel: CategoryViewModel = hiltViewModel()) {
+fun CategoryScreen(
+    navController: NavController,
+    viewModel: CategoryViewModel = hiltViewModel()
+) {
     val state = viewModel.state
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
+
         if (state.isLoading) {
+
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
             }
+
         } else {
+
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
                 contentPadding = PaddingValues(
@@ -59,11 +67,17 @@ fun CategoryScreen(navController: NavController, viewModel: CategoryViewModel = 
                 verticalArrangement = Arrangement.spacedBy(18.dp),
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                items(state.categories) { category ->
-                    CategoryItem(
-                        name = category.name,
-                        onClick = {
 
+                items(
+                    items = state.categories,
+                    key = { it }
+                ) { category ->
+
+                    CategoryItem(
+                        name = category,
+                        onClick = {
+                            // Category click
+                            // Navigation yahan add kar sakte ho
                         }
                     )
                 }
@@ -71,12 +85,19 @@ fun CategoryScreen(navController: NavController, viewModel: CategoryViewModel = 
         }
     }
 }
+
 @Composable
-fun CategoryItem(name: String, onClick: () -> Unit) {
+fun CategoryItem(
+    name: String,
+    onClick: () -> Unit
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { onClick() }
+        modifier = Modifier.clickable {
+            onClick()
+        }
     ) {
+
         Card(
             modifier = Modifier.size(70.dp),
             shape = RoundedCornerShape(20.dp),
@@ -84,10 +105,12 @@ fun CategoryItem(name: String, onClick: () -> Unit) {
                 containerColor = Color(0xFFEDE3EC)
             )
         ) {
+
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
+
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = null,
@@ -95,7 +118,9 @@ fun CategoryItem(name: String, onClick: () -> Unit) {
                 )
             }
         }
+
         Spacer(modifier = Modifier.height(8.dp))
+
         AutoText(
             text = name,
             fontSize = 13.sp,

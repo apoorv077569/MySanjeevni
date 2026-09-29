@@ -95,11 +95,8 @@ fun PharmacyScreen(
     val focusRequester = remember { FocusRequester() }
     val listState = rememberLazyListState()
 
-    val availableCategories: List<String> = remember(state.medicines) {
-        state.medicines
-            .mapNotNull { it.category.takeIf { c -> c.isNotBlank() } }
-            .distinct()
-    }
+    val availableCategories=state.categories
+
 
 
     LaunchedEffect(state.medicines) {
@@ -125,22 +122,11 @@ fun PharmacyScreen(
     }
     val displayedMedicines = remember(
         state.medicines,
-        selectedFilter,
         selectedSort,
         searchQuery
     ) {
 
         var filtered = state.medicines
-
-        // Category Filter
-        if (selectedFilter != "All") {
-            filtered = filtered.filter {
-                it.category.equals(
-                    selectedFilter,
-                    ignoreCase = true
-                )
-            }
-        }
 
         // Search Filter
         if (searchQuery.isNotBlank()) {
@@ -165,6 +151,7 @@ fun PharmacyScreen(
 
             "Discount" ->
                 filtered.sortedByDescending {
+
                     val mrp = it.mrp
                     val price = it.price
 
@@ -233,7 +220,14 @@ fun PharmacyScreen(
                 FilterAndSortRow(
                     categories = availableCategories,
                     selectedFilter = selectedFilter,
-                    onFilterSelected = { selectedFilter = it },
+                    onFilterSelected = { category ->
+                        Log.d(
+                            "PHARMACY_CATEGORY",
+                            "Category clicked = $category"
+                        )
+                        selectedFilter = category
+                        viewModel.onCategorySelected(category)
+                    },
                     selectedSort = selectedSort,
                     onSortSelected = { selectedSort = it }
                 )
@@ -254,7 +248,7 @@ fun PharmacyScreen(
                 ) {
                     item {
                         AutoText(
-                            text = "${displayedMedicines.size} Products found",
+                            text = "${state.totalMedicines} Products found",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground

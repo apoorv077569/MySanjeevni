@@ -24,7 +24,9 @@ data class RazorpayOrderDetailDto(
 
     val paymentStatus: String,
 
-    val razorpayOrderId: String?
+    val razorpayOrderId: String?,
+    val shippingCharge: Double = 0.0
+
 )
 
 data class RazorpayOrderItemDto(

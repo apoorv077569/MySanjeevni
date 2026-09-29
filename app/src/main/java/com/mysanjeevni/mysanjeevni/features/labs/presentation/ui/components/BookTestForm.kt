@@ -22,6 +22,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.mysanjeevni.mysanjeevni.features.currency.presentation.viewmodel.CurrencyViewModel
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.state.LabAvailabilityState
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.DatePickerField
@@ -55,10 +57,26 @@ fun BookTestForm(
     onBackClick: () -> Unit,
     onPayClick: () -> Unit,
     isLoading: Boolean = false,
+    currencyViewModel: CurrencyViewModel = hiltViewModel(),
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isServiceBlocked = availabilityState.serviceability?.isServiceable == false
     val isButtonDisabled = isServiceBlocked || isLoading
+
+    val currencyState by currencyViewModel.state.collectAsState()
+
+    // Fallback to INR (rate = 1.0) while loading or if currency fetch failed
+    val currencySymbol = currencyState.currencyInfo?.currencySymbol ?: "₹"
+    val exchangeRate = currencyState.currencyInfo?.exchangeRate ?: 1.0
+
+    val convertedTestPrice = testPrice * exchangeRate
+    val formattedTestPrice = "$currencySymbol${
+        String.format(
+            java.util.Locale.getDefault(),
+            if (exchangeRate == 1.0) "%.0f" else "%.2f",
+            convertedTestPrice
+        )
+    }"
 
     Column(
         modifier = modifier
@@ -126,7 +144,7 @@ fun BookTestForm(
                         fontSize = 16.sp
                     )
                     AutoText(
-                        text = "₹$testPrice",
+                        text = formattedTestPrice,
                         color = colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp

@@ -20,11 +20,15 @@ import com.mysanjeevni.mysanjeevni.features.auth.presentation.ui.LoginScreen
 import com.mysanjeevni.mysanjeevni.features.auth.presentation.ui.OtpVerificationScreen
 import com.mysanjeevni.mysanjeevni.features.auth.presentation.ui.ResetPasswordScreen
 import com.mysanjeevni.mysanjeevni.features.auth.presentation.ui.SignupScreen
-import com.mysanjeevni.mysanjeevni.features.cart.presentation.ui.CartScreen
+import com.mysanjeevni.mysanjeevni.features.cart.presentation.ui.screen.CartScreen
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
 import com.mysanjeevni.mysanjeevni.features.category.presentation.ui.CategoryScreen
-import com.mysanjeevni.mysanjeevni.features.consult.presentation.ui.ConsultScreen
-import com.mysanjeevni.mysanjeevni.features.consult.presentation.ui.MyConsultsScreen
+import com.mysanjeevni.mysanjeevni.features.consult.domnain.model.Consultation
+import com.mysanjeevni.mysanjeevni.features.consult.presentation.ui.screens.AgoraCallScreen
+import com.mysanjeevni.mysanjeevni.features.consult.presentation.ui.screens.BookConsultationScreen
+import com.mysanjeevni.mysanjeevni.features.consult.presentation.ui.screens.ConsultScreen
+import com.mysanjeevni.mysanjeevni.features.consult.presentation.ui.screens.ConsultationDetailScreen
+import com.mysanjeevni.mysanjeevni.features.consult.presentation.ui.screens.MyConsultsScreen
 import com.mysanjeevni.mysanjeevni.features.home.presentation.ui.HomeScreen
 import com.mysanjeevni.mysanjeevni.features.home.presentation.ui.SplashScreen
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.BookTestScreen
@@ -46,7 +50,8 @@ import com.mysanjeevni.mysanjeevni.features.payment.presentation.ui.PaymentScree
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.ui.result.PaymentFailedScreen
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.ui.result.PaymentSuccessScreen
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui.PharmacyScreen
-import com.mysanjeevni.mysanjeevni.features.prescription.presentation.screen.UploadPrescriptionScreen
+import com.mysanjeevni.mysanjeevni.features.prescription.presentation.ui.screen.PrescriptionScreen
+import com.mysanjeevni.mysanjeevni.features.prescription.presentation.ui.screen.UploadPrescriptionScreen
 import com.mysanjeevni.mysanjeevni.features.privacy.presentation.ui.PrivacyScreen
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.EditProfileScreen
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.HealthRecordsScreen
@@ -54,6 +59,7 @@ import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.ManageAddres
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.ProfileScreen
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.TransactionHistoryScreen
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.ui.WalletScreen
+import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.AddressViewModel
 import com.mysanjeevni.mysanjeevni.features.referral.presentation.ui.ReferralScreen
 import com.mysanjeevni.mysanjeevni.features.settings.presentation.ui.SettingsScreen
 import com.mysanjeevni.mysanjeevni.features.settings.presentation.viewmodel.SettingsViewModel
@@ -66,14 +72,16 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
 @Composable
-fun NavGraph(navController: NavHostController,
-             cartViewModel: CartViewModel,
-             paddingValues: PaddingValues,
-             orderViewModel: OrderViewModel,
-             settingsViewModel: SettingsViewModel,
-             labViewModel: BookLabTestViewModel,
-             openNotification: Boolean,
-             startDestination: String = Screen.Splash.route) {
+fun NavGraph(
+    navController: NavHostController,
+    cartViewModel: CartViewModel,
+    paddingValues: PaddingValues,
+    orderViewModel: OrderViewModel,
+    settingsViewModel: SettingsViewModel,
+    labViewModel: BookLabTestViewModel,
+    openNotification: Boolean,
+    startDestination: String = Screen.Splash.route
+) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -84,7 +92,7 @@ fun NavGraph(navController: NavHostController,
             SplashScreen(
                 navController = navController,
                 openNotification = openNotification
-                )
+            )
         }
 
         composable(
@@ -257,8 +265,8 @@ fun NavGraph(navController: NavHostController,
         }
         composable(Screen.ResetPassword.route) { backStackEntry ->
             val phone = backStackEntry.arguments?.getString("mobile") ?: ""
-            val resetPasswordToken = backStackEntry.arguments?.getString("resetPasswordToken")?:""
-            ResetPasswordScreen(navController = navController, phone,resetPasswordToken)
+            val resetPasswordToken = backStackEntry.arguments?.getString("resetPasswordToken") ?: ""
+            ResetPasswordScreen(navController = navController, phone, resetPasswordToken)
         }
         composable(Screen.ProfileScreen.route) {
             ProfileScreen(navController = navController)
@@ -274,7 +282,14 @@ fun NavGraph(navController: NavHostController,
             )
         }
         composable(Screen.CartScreen.route) {
-            CartScreen(navController = navController, cartViewModel,orderViewModel)
+            val addressViewModel: AddressViewModel = hiltViewModel()
+
+            CartScreen(
+                navController = navController,
+                cartViewModel,
+                orderViewModel,
+                addressViewModel
+            )
         }
         composable(
             route = Screen.LabTestDetail.route,
@@ -478,6 +493,104 @@ fun NavGraph(navController: NavHostController,
                     }
                 },
                 navController = navController
+            )
+        }
+        composable(
+            route = Screen.PrescriptionScreen.route,
+            arguments = listOf(
+                navArgument("consultationId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) { backStackEntry ->
+            val consultationId = backStackEntry.arguments?.getString("consultationId")
+            PrescriptionScreen(
+                navController = navController,
+                consultationId = consultationId
+            )
+        }
+        composable(
+            route = Screen.BookConsultation.route,
+            arguments = listOf(
+                navArgument("doctorId") {
+                    type = NavType.StringType
+                },
+                navArgument("rescheduleId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) { backStackEntry ->
+
+            val doctorId =
+                backStackEntry.arguments?.getString("doctorId") ?: ""
+
+            val rescheduleId =
+                backStackEntry.arguments?.getString("rescheduleId")
+
+            BookConsultationScreen(
+                doctorId = doctorId,
+                rescheduleId = rescheduleId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(
+            route = Screen.ConsultationDetail.route
+        ) {
+
+            val consultation =
+                navController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.get<Consultation>("consultation")
+
+            if (consultation != null) {
+
+                ConsultationDetailScreen(
+                    consultation = consultation,
+
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+
+                    onVideoCallClick = { channelName ->
+
+                        val participantType = "patient"
+
+                        navController.navigate(
+                            Screen.AgoraCall.createRoute(
+                                channelName = channelName,
+                                participantType = participantType
+                            )
+                        )
+                    }
+                )
+            }
+        }
+        composable(
+            route = Screen.AgoraCall.route
+        ) { backStackEntry ->
+
+            val channelName =
+                backStackEntry.arguments
+                    ?.getString("channelName")
+                    ?: return@composable
+
+            val participantType =
+                backStackEntry.arguments
+                    ?.getString("participantType")
+                    ?: return@composable
+
+            AgoraCallScreen(
+                channelName = channelName,
+                participantType = participantType,
+                onCallEnded = {
+                    navController.popBackStack()
+                }
             )
         }
     }

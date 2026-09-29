@@ -2,6 +2,7 @@ package com.mysanjeevni.mysanjeevni.features.medicines.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mysanjeevni.mysanjeevni.features.currency.domain.usecase.GetCurrencyUseCase
 import com.mysanjeevni.mysanjeevni.features.medicines.domain.useCase.GetMedicineByIdUseCase
 import com.mysanjeevni.mysanjeevni.features.medicines.domain.useCase.GetMedicinesUseCase
 import com.mysanjeevni.mysanjeevni.features.medicines.presentation.state.MedicineState
@@ -16,7 +17,9 @@ import javax.inject.Inject
 @HiltViewModel
 class MedicineViewModel @Inject constructor(
     private val getMedicinesUseCase: GetMedicinesUseCase,
-    private val getMedicineByIdUseCase: GetMedicineByIdUseCase
+    private val getMedicineByIdUseCase: GetMedicineByIdUseCase,
+    private val getCurrencyUseCase: GetCurrencyUseCase
+
 ) : ViewModel() {
 
     companion object {
@@ -34,7 +37,9 @@ class MedicineViewModel @Inject constructor(
     }
 
     private fun loadMedicines() {
+
         viewModelScope.launch {
+
             _state.update {
                 it.copy(
                     isLoading = true,
@@ -44,16 +49,36 @@ class MedicineViewModel @Inject constructor(
                     hasMorePages = true
                 )
             }
-
-            getMedicinesUseCase(page= 1, limit = PAGE_SIZE).onSuccess { medicines ->
+            val currencyResult = getCurrencyUseCase()
+            if (currencyResult.isFailure) {
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        medicines = medicines
+                        error = currencyResult.exceptionOrNull()?.message
+                            ?: "Unable to detect currency"
                     )
                 }
+                return@launch
             }
+
+            val currencyInfo = currencyResult.getOrThrow()
+
+            getMedicinesUseCase(
+                page = 1,
+                limit = PAGE_SIZE
+            )
+                .onSuccess { medicines ->
+
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            medicines = medicines,
+                            currencyInfo = currencyInfo
+                        )
+                    }
+                }
                 .onFailure { error ->
+
                     _state.update {
                         it.copy(
                             isLoading = false,

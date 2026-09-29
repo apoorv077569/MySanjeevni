@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartItem
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
+import com.mysanjeevni.mysanjeevni.features.currency.domain.model.CurrencyInfo
 import com.mysanjeevni.mysanjeevni.features.medicines.domain.model.Medicine
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 import java.util.Locale
@@ -55,7 +56,8 @@ fun PopularProductsSection(
     products: List<Medicine>,
     onProductClick: (Medicine) -> Unit,
     onAddToCart: (Medicine) -> Unit,
-    cartViewModel: CartViewModel
+    cartViewModel: CartViewModel,
+    currencyInfo: CurrencyInfo
 ) {
     val cardColor = MaterialTheme.colorScheme.surface
     val textColor = MaterialTheme.colorScheme.onSurface
@@ -80,7 +82,6 @@ fun PopularProductsSection(
                 fontWeight = FontWeight.Bold,
                 color = textColor
             )
-
         }
 
         // 📦 Horizontal Scrollable List
@@ -95,7 +96,8 @@ fun PopularProductsSection(
                     textColor = textColor,
                     onClick = { onProductClick(medicine) },
                     cartViewModel = cartViewModel,
-                    onAddToCart = { onAddToCart(medicine) }
+                    onAddToCart = { onAddToCart(medicine) },
+                    currencyInfo = currencyInfo
                 )
             }
         }
@@ -109,7 +111,8 @@ fun PopularProductCard(
     textColor: Color,
     onClick: () -> Unit,
     onAddToCart: () -> Unit,
-    cartViewModel: CartViewModel
+    cartViewModel: CartViewModel,
+    currencyInfo: CurrencyInfo
 ) {
     val cartState by cartViewModel.state.collectAsState()
 
@@ -117,6 +120,7 @@ fun PopularProductCard(
         .find { it.id == item.id }
         ?.qty ?: 0
 
+    // Keep original backend INR values for cart
     val cartItem = CartItem(
         id = item.id,
         name = item.name,
@@ -146,7 +150,9 @@ fun PopularProductCard(
             .width(160.dp)
             .height(350.dp)
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = cardColor),
+        colors = CardDefaults.cardColors(
+            containerColor = cardColor
+        ),
         elevation = CardDefaults.cardElevation(3.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -191,6 +197,7 @@ fun PopularProductCard(
                         )
                     }
                 }
+
                 if (discountPercent != null) {
                     Box(
                         modifier = Modifier
@@ -200,7 +207,10 @@ fun PopularProductCard(
                                 Color(0xFF43A047),
                                 RoundedCornerShape(4.dp)
                             )
-                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                            .padding(
+                                horizontal = 4.dp,
+                                vertical = 2.dp
+                            )
                     ) {
                         AutoText(
                             text = discountPercent,
@@ -210,6 +220,7 @@ fun PopularProductCard(
                         )
                     }
                 }
+
                 if (item.stock <= 0) {
                     Box(
                         modifier = Modifier
@@ -219,7 +230,10 @@ fun PopularProductCard(
                                 Color.Red,
                                 RoundedCornerShape(4.dp)
                             )
-                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                            .padding(
+                                horizontal = 4.dp,
+                                vertical = 2.dp
+                            )
                     ) {
                         AutoText(
                             text = "Out of Stock",
@@ -271,8 +285,13 @@ fun PopularProductCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
+                    // Converted selling price
                     AutoText(
-                        text = "₹%.2f".format(item.price),
+                        text = "${
+                            currencyInfo.currencySymbol
+                        }${"%.2f".format(
+                            item.price * currencyInfo.exchangeRate
+                        )}",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = textColor
@@ -280,8 +299,13 @@ fun PopularProductCard(
 
                     Spacer(modifier = Modifier.width(4.dp))
 
+                    // Converted MRP
                     AutoText(
-                        text = "₹%.2f".format(item.mrp),
+                        text = "${
+                            currencyInfo.currencySymbol
+                        }${"%.2f".format(
+                            item.mrp * currencyInfo.exchangeRate
+                        )}",
                         fontSize = 10.sp,
                         color = Color.Gray,
                         textDecoration = TextDecoration.LineThrough
@@ -349,7 +373,9 @@ fun PopularProductCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(36.dp)
-                        .background(MaterialTheme.colorScheme.surface)
+                        .background(
+                            MaterialTheme.colorScheme.surface
+                        )
                         .border(
                             1.dp,
                             Color(0xFF26A69A),

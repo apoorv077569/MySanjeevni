@@ -19,14 +19,22 @@ import com.mysanjeevni.mysanjeevni.utils.AutoText
 @Composable
 fun MedicinePriceCard(
     price: Double,
-    mrp: Double
+    mrp: Double,
+    currencySymbol: String
 ) {
-    val discount = if (mrp > 0) (((mrp - price) / mrp) * 100).toInt() else 0
+    val discount =
+        if (mrp > 0) {
+            (((mrp - price) / mrp) * 100).toInt()
+        } else {
+            0
+        }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
@@ -36,26 +44,41 @@ fun MedicinePriceCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
                     AutoText(
-                        text = "₹${"%.2f".format(price)}",
+                        text = "$currencySymbol${"%.2f".format(price)}",
                         fontSize = 26.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+
                     Spacer(Modifier.width(10.dp))
+
                     AutoText(
-                        text = "₹${"%.2f".format(mrp)}",
+                        text = "$currencySymbol${"%.2f".format(mrp)}",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp,
                         textDecoration = TextDecoration.LineThrough
                     )
+
                     Spacer(Modifier.width(8.dp))
+
                     Box(
                         modifier = Modifier
-                            .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(4.dp))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .background(
+                                MaterialTheme.colorScheme.primaryContainer,
+                                RoundedCornerShape(4.dp)
+                            )
+                            .padding(
+                                horizontal = 6.dp,
+                                vertical = 2.dp
+                            )
                     ) {
                         AutoText(
                             text = "$discount% OFF",
@@ -65,6 +88,7 @@ fun MedicinePriceCard(
                         )
                     }
                 }
+
                 AutoText(
                     text = "Inclusive of all taxes",
                     fontSize = 12.sp,
@@ -72,15 +96,18 @@ fun MedicinePriceCard(
                 )
             }
 
-            // ── You Save box ──
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
                 AutoText(
                     text = "You Save",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+
                 AutoText(
-                    text = "₹${"%.0f".format(mrp - price)}",
+                    text = "$currencySymbol${"%.2f".format(mrp - price)}",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF00C853)

@@ -3,15 +3,29 @@
   <component name="AppInsightsSettings">
     <option name="tabSettings">
       <map>
+        <entry key="Android vitals">
+          <value>
+            <InsightsFilterSettings>
+              <option name="connection">
+                <ConnectionSetting>
+                  <option name="appId" value="com.playzelo.ludo" />
+                </ConnectionSetting>
+              </option>
+              <option name="signal" value="SIGNAL_UNSPECIFIED" />
+              <option name="timeIntervalDays" value="SEVEN_DAYS" />
+              <option name="visibilityType" value="ALL" />
+            </InsightsFilterSettings>
+          </value>
+        </entry>
         <entry key="Firebase Crashlytics">
           <value>
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.mysanjeevni.mysanjeevni" />
-                  <option name="mobileSdkAppId" value="1:812232097107:android:b247a2d532d6c14bb8f5a6" />
-                  <option name="projectId" value="m-ysanjeevni" />
-                  <option name="projectNumber" value="812232097107" />
+                  <option name="mobileSdkAppId" value="1:842557074955:android:26822117941553fea2e10e" />
+                  <option name="projectId" value="mysanjeevni" />
+                  <option name="projectNumber" value="842557074955" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

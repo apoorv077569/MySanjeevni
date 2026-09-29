@@ -1,36 +1,55 @@
+import java.io.File
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-
-
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     id("com.google.gms.google-services")
     id("kotlin-parcelize")
 
 }
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use {
+        localProperties.load(it)
+    }
+}
+
+val keyAlias = localProperties.getProperty("keyAlias", "")
+val keyPassword = localProperties.getProperty("keyPassword", "")
+val storePassword = localProperties.getProperty("storePassword", "")
+val storeFilePath = localProperties.getProperty("storeFile", "")
+val razorpayKey = localProperties.getProperty("razorpayKey", "")
 
 android {
     namespace = "com.mysanjeevni.mysanjeevni"
     compileSdk {
         version = release(36)
     }
-    signingConfigs{
-        create("release"){
-            storeFile  = file("C:/Users/Apoorv Rathore/MySanjeevni/my-release-key.jks")
-            storePassword = "Nikhil@2026"
-            keyAlias = "my-key-alias"
-            keyPassword = "Nikhil@2026"
+    signingConfigs {
+        create("release") {
+            if (storeFilePath.isNotEmpty()) {
+                storeFile = file(storeFilePath)
+            }
+            this.storePassword = storePassword
+            this.keyAlias = keyAlias
+            this.keyPassword = keyPassword
         }
     }
-    buildTypes{
-        getByName("debug"){
-            signingConfig = signingConfigs.getByName("release")
+
+    buildTypes {
+        debug {
+            buildConfigField("String", "RAZORPAY_KEY", "\"$razorpayKey\"")
         }
-        getByName("release"){
+        release {
             signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
+            buildConfigField("String", "RAZORPAY_KEY", "\"$razorpayKey\"")
         }
     }
 
@@ -38,22 +57,13 @@ android {
         applicationId = "com.mysanjeevni.mysanjeevni"
         minSdk = 25
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 13
+        versionName = "1.0.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        debug {
-            buildConfigField("String", "RAZORPAY_KEY", "\"rzp_live_SUcsurW9fkbXe3\"")
-        }
-        release {
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            buildConfigField("String", "RAZORPAY_KEY", "\"rzp_live_SUcsurW9fkbXe3\"")
-        }
-    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -76,6 +86,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.material3)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.ui)
@@ -148,6 +159,9 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.10.1")
 //    Material Icon
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
+
+//    agora
+    implementation("io.agora.rtc:full-sdk:4.5.1")
 
 }
 

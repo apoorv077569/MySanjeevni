@@ -66,6 +66,9 @@ fun PaymentSuccessScreen(
     val labState by labViewModel.state.collectAsState()
 
     val smsState by smsViewModel.smsState.collectAsState()
+    val deliveryCharge by orderViewModel
+        .deliveryCharge
+        .collectAsState()
 
     // Lottie Animation Configuration
     val composition by rememberLottieComposition(
@@ -94,8 +97,8 @@ fun PaymentSuccessScreen(
                 medicine?.price ?: 0.0
             }
 
-        shippingCharge =
-            if (subtotal >= 299) 0.0 else 50.0
+        shippingCharge = deliveryCharge
+
 
         total = subtotal + shippingCharge
 
