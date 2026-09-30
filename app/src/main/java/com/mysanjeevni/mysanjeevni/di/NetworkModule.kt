@@ -22,3 +22,11 @@ annotation class PrescriptionRetrofit
 @Retention(AnnotationRetention.BINARY)
 annotation class PrescriptionOkHttp
 
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class AddressOkHttp
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class AddressRetrofit
+

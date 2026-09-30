@@ -11,6 +11,8 @@ import com.mysanjeevni.mysanjeevni.data.remote.api.AuthApiService
 import com.mysanjeevni.mysanjeevni.features.labs.data.remote.LabPaymentApi
 import com.mysanjeevni.mysanjeevni.features.payment.data.remote.PaymentApi
 import com.mysanjeevni.mysanjeevni.features.pharmacy.data.remote.PharmacyApi
+import com.mysanjeevni.mysanjeevni.features.profile.data.remote.AddressApiClient
+import com.mysanjeevni.mysanjeevni.features.profile.data.remote.AddressApiService
 import dagger.Module
 import dagger.Provides
 import okhttp3.OkHttpClient
@@ -73,6 +75,12 @@ object AppModule {
         @MainRetrofit retrofit: Retrofit
     ): PharmacyApi {
         return retrofit.create(PharmacyApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAddressApi(): AddressApiService {
+        return AddressApiClient.api
     }
 
     @Provides

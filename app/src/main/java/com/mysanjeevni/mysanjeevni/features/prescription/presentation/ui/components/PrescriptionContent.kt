@@ -1,6 +1,7 @@
 package com.mysanjeevni.mysanjeevni.features.prescription.presentation.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,28 +31,29 @@ import com.mysanjeevni.mysanjeevni.utils.AutoText
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-private val CardBackground = Color.White
-private val TextDark = Color(0xFF071B35)
-private val TextGrey = Color(0xFF60738A)
-private val Green = Color(0xFF00A878)
-private val DiagnosisBackground = Color(0xFFEFF6FF)
-private val DiagnosisBorder = Color(0xFFBBD7FF)
-private val MedicineBackground = Color(0xFFF8F9FA)
-private val NotesBackground = Color(0xFFFFFBEA)
-private val NotesBorder = Color(0xFFFFE28A)
 
 @Composable
 fun PrescriptionContent(
     prescription: Prescription,
     onDownload: () -> Unit = {}
 ) {
+    val isDarkTheme = isSystemInDarkTheme()
+
+    val cardBackground = if (isDarkTheme) Color(0xFF1A2421) else Color.White
+    val textDark = if (isDarkTheme) Color(0xFFF1F5F3) else Color(0xFF071B35)
+    val textGrey = if (isDarkTheme) Color(0xFFAABBB5) else Color(0xFF60738A)
+    val diagnosisBackground = if (isDarkTheme) Color(0xFF1B2C3A) else Color(0xFFEFF6FF)
+    val medicineBackground = if (isDarkTheme) Color(0xFF202825) else Color(0xFFF8F9FA)
+    val notesBackground = if (isDarkTheme) Color(0xFF332F1E) else Color(0xFFFFFBEA)
+    val statusBackground = if (isDarkTheme) Color(0xFF17382C) else Color(0xFFE7F8EF)
+    val green = Color(0xFF00A878)
 
     Card(
         modifier = Modifier
             .fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = CardBackground
+            containerColor = cardBackground
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 3.dp
@@ -70,20 +72,20 @@ fun PrescriptionContent(
             AutoText(
                 text = "Doctor",
                 fontSize = 10.sp,
-                color = TextGrey
+                color = textGrey
             )
 
             AutoText(
                 text = "Dr. ${prescription.doctorName}",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextDark
+                color = textDark
             )
 
             AutoText(
                 text = "Reg. No: ${prescription.doctorRegistrationNumber}",
                 fontSize = 10.sp,
-                color = TextGrey
+                color = textGrey
             )
 
             Spacer(
@@ -97,7 +99,7 @@ fun PrescriptionContent(
             AutoText(
                 text = "Consultation Date",
                 fontSize = 10.sp,
-                color = TextGrey
+                color = textGrey
             )
 
             AutoText(
@@ -106,7 +108,7 @@ fun PrescriptionContent(
                 ),
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextDark
+                color = textDark
             )
 
             AutoText(
@@ -116,7 +118,7 @@ fun PrescriptionContent(
                     )
                 }",
                 fontSize = 10.sp,
-                color = TextGrey
+                color = textGrey
             )
 
             Spacer(
@@ -131,7 +133,7 @@ fun PrescriptionContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = DiagnosisBackground,
+                        color = diagnosisBackground,
                         shape = RoundedCornerShape(6.dp)
                     )
                     .padding(
@@ -145,7 +147,7 @@ fun PrescriptionContent(
                     AutoText(
                         text = "Diagnosis",
                         fontSize = 10.sp,
-                        color = TextDark
+                        color = textDark
                     )
 
                     Spacer(
@@ -155,7 +157,7 @@ fun PrescriptionContent(
                     AutoText(
                         text = prescription.diagnosis,
                         fontSize = 11.sp,
-                        color = TextDark
+                        color = textDark
                     )
                 }
             }
@@ -172,7 +174,7 @@ fun PrescriptionContent(
                 text = "Medicines:",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextDark
+                color = textDark
             )
 
             Column(
@@ -185,7 +187,7 @@ fun PrescriptionContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                color = MedicineBackground,
+                                color = medicineBackground,
                                 shape = RoundedCornerShape(5.dp)
                             )
                             .padding(
@@ -202,20 +204,20 @@ fun PrescriptionContent(
                                     text = medicine.name,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = TextDark
+                                    color = textDark
                                 )
 
                                 AutoText(
                                     text = " - ${medicine.dosage}",
                                     fontSize = 10.sp,
-                                    color = TextDark
+                                    color = textDark
                                 )
                             }
 
                             AutoText(
                                 text = "${medicine.frequency} for ${medicine.duration}",
                                 fontSize = 9.sp,
-                                color = TextGrey
+                                color = textGrey
                             )
                         }
                     }
@@ -236,7 +238,7 @@ fun PrescriptionContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            color = NotesBackground,
+                            color = notesBackground,
                             shape = RoundedCornerShape(5.dp)
                         )
                         .padding(
@@ -251,13 +253,13 @@ fun PrescriptionContent(
                             text = "Additional Notes: ",
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold,
-                            color = TextDark
+                            color = textDark
                         )
 
                         AutoText(
                             text = prescription.notes,
                             fontSize = 9.sp,
-                            color = TextDark
+                            color = textDark
                         )
                     }
                 }
@@ -298,7 +300,7 @@ fun PrescriptionContent(
                                     it.uppercase()
                                 },
                             fontSize = 9.sp,
-                            color = Green,
+                            color = green,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -314,7 +316,7 @@ fun PrescriptionContent(
                             )
                         }",
                         fontSize = 8.sp,
-                        color = TextGrey
+                        color = textGrey
                     )
                 }
 
@@ -324,7 +326,7 @@ fun PrescriptionContent(
                         .height(36.dp),
                     shape = RoundedCornerShape(6.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Green
+                        containerColor = green
                     ),
                     contentPadding = ButtonDefaults.ContentPadding
                 ) {

@@ -3,15 +3,21 @@ package com.mysanjeevni.mysanjeevni.features.profile.data.repository
 import android.util.Log
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
 import com.mysanjeevni.mysanjeevni.features.profile.data.dto.AddressResponseDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.StateRequestDto
 import com.mysanjeevni.mysanjeevni.features.profile.data.mapper.toCreateRequestDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.mapper.toDomain
 import com.mysanjeevni.mysanjeevni.features.profile.data.mapper.toUpdateRequestDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.remote.AddressApiService
 import com.mysanjeevni.mysanjeevni.features.profile.domain.model.Address
+import com.mysanjeevni.mysanjeevni.features.profile.domain.model.Country
+import com.mysanjeevni.mysanjeevni.features.profile.domain.model.State
 import com.mysanjeevni.mysanjeevni.features.profile.domain.repository.AddressRepository
 import retrofit2.Response
 import javax.inject.Inject
 
 class AddressRepositoryImpl @Inject constructor(
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val addressApi: AddressApiService
 ) : AddressRepository {
 
     override suspend fun fetchAddresses(
@@ -136,5 +142,88 @@ class AddressRepositoryImpl @Inject constructor(
 
             Result.failure(e)
         }
+    }
+    override suspend fun getCountries(): List<Country> {
+
+        Log.d("LOCATION_DEBUG", "Repository getCountries() CALLED")
+
+        val response = addressApi.getCountries()
+
+        Log.d(
+            "LOCATION_DEBUG",
+            "Countries API RESPONSE | error=${response.error} | msg=${response.msg} | dataSize=${response.data.size}"
+        )
+
+        if (response.error) {
+
+            Log.e(
+                "LOCATION_DEBUG",
+                "Countries API returned error | msg=${response.msg}"
+            )
+
+            throw Exception(response.msg)
+        }
+
+        val countries: List<Country> = response.data.map { it.toDomain() }
+
+        Log.d(
+            "LOCATION_DEBUG",
+            "Countries mapped successfully | count=${countries.size}"
+        )
+
+        return countries
+    }
+
+    override suspend fun getStates(
+        country: String
+    ): List<State> {
+
+        Log.d(
+            "LOCATION_DEBUG",
+            "Repository getStates() CALLED | country='$country'"
+        )
+
+        val request = StateRequestDto(country = country)
+
+        Log.d(
+            "LOCATION_DEBUG",
+            "States API REQUEST | country='$country'"
+        )
+
+        val response = addressApi.getStates(request)
+
+        Log.d(
+            "LOCATION_DEBUG",
+            "States API RESPONSE | error=${response.error} | msg=${response.msg} | hasData=${response.data != null}"
+        )
+
+        if (response.error) {
+
+            Log.e(
+                "LOCATION_DEBUG",
+                "States API returned error | country='$country' | msg=${response.msg}"
+            )
+
+            throw Exception(response.msg)
+        }
+
+        val states = response.data
+            ?.states
+            ?.map { it.toDomain() }
+            ?: emptyList()
+
+        Log.d(
+            "LOCATION_DEBUG",
+            "States mapped successfully | country='$country' | count=${states.size}"
+        )
+
+        states.forEachIndexed { index, state ->
+            Log.d(
+                "LOCATION_DEBUG",
+                "STATE[$index] = ${state.name}"
+            )
+        }
+
+        return states
     }
 }

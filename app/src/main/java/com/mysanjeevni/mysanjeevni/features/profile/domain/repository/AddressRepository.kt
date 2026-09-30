@@ -2,6 +2,8 @@ package com.mysanjeevni.mysanjeevni.features.profile.domain.repository
 
 import com.mysanjeevni.mysanjeevni.features.profile.data.dto.AddressResponseDto
 import com.mysanjeevni.mysanjeevni.features.profile.domain.model.Address
+import com.mysanjeevni.mysanjeevni.features.profile.domain.model.Country
+import com.mysanjeevni.mysanjeevni.features.profile.domain.model.State
 import retrofit2.Response
 
 interface AddressRepository {
@@ -27,4 +29,9 @@ interface AddressRepository {
         userId: String,
         addressId: String
     ): Result<Unit>
+    suspend fun getCountries(): List<Country>
+
+    suspend fun getStates(
+        country: String
+    ): List<State>
 }

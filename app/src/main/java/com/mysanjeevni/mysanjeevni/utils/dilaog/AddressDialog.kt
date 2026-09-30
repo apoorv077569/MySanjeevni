@@ -1,6 +1,9 @@
 package com.mysanjeevni.mysanjeevni.utils.dilaog
 
+import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,14 +16,24 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +51,7 @@ import com.mysanjeevni.mysanjeevni.features.profile.domain.model.Address
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.AddressViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddressDialog(
     addressToEdit: Address? = null,
@@ -45,69 +59,33 @@ fun AddressDialog(
     addressViewModel: AddressViewModel,
     onSave: (Address) -> Unit
 ) {
-
-    val serviceabilityState by addressViewModel
-        .serviceabilityState
-        .collectAsState()
-
-    var fullName by remember(addressToEdit) {
-        mutableStateOf(
-            addressToEdit?.fullName.orEmpty()
-        )
-    }
-
-    var phone by remember(addressToEdit) {
-        mutableStateOf(
-            addressToEdit?.phone.orEmpty()
-        )
-    }
-
-    var addressLine1 by remember(addressToEdit) {
-        mutableStateOf(
-            addressToEdit?.addressLine1.orEmpty()
-        )
-    }
-
-    var addressLine2 by remember(addressToEdit) {
-        mutableStateOf(
-            addressToEdit?.addressLine2.orEmpty()
-        )
-    }
-
-    var city by remember(addressToEdit) {
-        mutableStateOf(
-            addressToEdit?.city.orEmpty()
-        )
-    }
-
-    var state by remember(addressToEdit) {
-        mutableStateOf(
-            addressToEdit?.state.orEmpty()
-        )
-    }
-
-    var pincode by remember(addressToEdit) {
-        mutableStateOf(
-            addressToEdit?.pincode.orEmpty()
-        )
-    }
-
+    val serviceabilityState by addressViewModel.serviceabilityState.collectAsState()
+    var fullName by remember(addressToEdit) { mutableStateOf(addressToEdit?.fullName.orEmpty()) }
+    var phone by remember(addressToEdit) { mutableStateOf(addressToEdit?.phone.orEmpty()) }
+    var addressLine1 by remember(addressToEdit) { mutableStateOf(addressToEdit?.addressLine1.orEmpty()) }
+    var addressLine2 by remember(addressToEdit) { mutableStateOf(addressToEdit?.addressLine2.orEmpty()) }
+    var city by remember(addressToEdit) { mutableStateOf(addressToEdit?.city.orEmpty()) }
+    var pincode by remember(addressToEdit) { mutableStateOf(addressToEdit?.pincode.orEmpty()) }
     var type by remember(addressToEdit) {
-        mutableStateOf(
-            addressToEdit?.type
-                ?.takeIf { it.isNotBlank() }
-                ?: "home"
-        )
+        mutableStateOf(addressToEdit?.type?.takeIf { it.isNotBlank() } ?: "home")
     }
-
-    var isDefault by remember(addressToEdit) {
-        mutableStateOf(
-            addressToEdit?.isDefault ?: false
-        )
+    var isDefault by remember(addressToEdit) { mutableStateOf(addressToEdit?.isDefault ?: false) }
+    var isLoading by remember { mutableStateOf(false) }
+    val locationState by addressViewModel.locationState.collectAsState()
+    var country by remember(addressToEdit) {
+        mutableStateOf(addressToEdit?.country?.takeIf { it.isNotBlank() } ?: "India")
     }
+    var state by remember(addressToEdit) { mutableStateOf(addressToEdit?.state.orEmpty()) }
+    var countryExpanded by remember { mutableStateOf(false) }
+    var stateExpanded by remember { mutableStateOf(false) }
 
-    var isLoading by remember {
-        mutableStateOf(false)
+    LaunchedEffect(Unit) {
+        addressViewModel.loadCountries()
+    }
+    LaunchedEffect(country) {
+        if (country.isNotBlank()) {
+            addressViewModel.loadStates(country)
+        }
     }
 
     Dialog(
@@ -256,9 +234,7 @@ fun AddressDialog(
 
                         AutoText("Checking delivery...")
                     }
-                }
-
-                else if (serviceabilityState.serviceable) {
+                } else if (serviceabilityState.serviceable) {
 
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -296,9 +272,7 @@ fun AddressDialog(
                             )
                         }
                     }
-                }
-
-                else {
+                } else {
 
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -316,17 +290,170 @@ fun AddressDialog(
                         }
                     }
                 }
-                OutlinedTextField(
-                    value = state,
-                    onValueChange = {
-                        state = it
-                    },
-                    label = {
-                        AutoText("State")
-                    },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+
+                    // =========================
+                    // COUNTRY
+                    // =========================
+
+                    ExposedDropdownMenuBox(
+                        expanded = countryExpanded,
+                        onExpandedChange = {
+                            Log.d(
+                                "LOCATION_DEBUG",
+                                "COUNTRY CLICK | count=${locationState.countries.size}"
+                            )
+
+                            if (locationState.countries.isNotEmpty()) {
+                                countryExpanded = !countryExpanded
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+
+                        OutlinedTextField(
+                            value = country,
+                            onValueChange = {},
+                            readOnly = true,
+                            singleLine = true,
+                            label = {
+                                AutoText("Country")
+                            },
+                            placeholder = {
+                                AutoText("Select Country")
+                            },
+                            trailingIcon = {
+                                if (locationState.isLoadingCountries) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(
+                                        expanded = countryExpanded
+                                    )
+                                }
+                            },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = countryExpanded,
+                            onDismissRequest = {
+                                countryExpanded = false
+                            }
+                        ) {
+
+                            locationState.countries.forEach { item ->
+
+                                DropdownMenuItem(
+                                    text = {
+                                        AutoText(item.name)
+                                    },
+                                    onClick = {
+
+                                        Log.d(
+                                            "LOCATION_DEBUG",
+                                            "COUNTRY SELECTED = ${item.name}"
+                                        )
+
+                                        country = item.name
+                                        state = ""
+                                        countryExpanded = false
+
+                                        addressViewModel.loadStates(item.name)
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+
+                    // =========================
+                    // STATE
+                    // =========================
+
+                    ExposedDropdownMenuBox(
+                        expanded = stateExpanded,
+                        onExpandedChange = {
+
+                            Log.d(
+                                "LOCATION_DEBUG",
+                                "STATE CLICK | count=${locationState.states.size}"
+                            )
+
+                            if (locationState.states.isNotEmpty()) {
+                                stateExpanded = !stateExpanded
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+
+                        OutlinedTextField(
+                            value = state,
+                            onValueChange = {},
+                            readOnly = true,
+                            singleLine = true,
+                            label = {
+                                AutoText("State")
+                            },
+                            placeholder = {
+                                AutoText("Select State")
+                            },
+                            trailingIcon = {
+
+                                if (locationState.isLoadingStates) {
+
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        strokeWidth = 2.dp
+                                    )
+
+                                } else {
+
+                                    ExposedDropdownMenuDefaults.TrailingIcon(
+                                        expanded = stateExpanded
+                                    )
+                                }
+                            },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = stateExpanded,
+                            onDismissRequest = {
+                                stateExpanded = false
+                            }
+                        ) {
+
+                            locationState.states.forEach { item ->
+
+                                DropdownMenuItem(
+                                    text = {
+                                        AutoText(item.name)
+                                    },
+                                    onClick = {
+
+                                        Log.d(
+                                            "LOCATION_DEBUG",
+                                            "STATE SELECTED = ${item.name}"
+                                        )
+
+                                        state = item.name
+                                        stateExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
 
                 AutoText(
                     text = "Address Type",
@@ -416,14 +543,7 @@ fun AddressDialog(
 
                             val address = Address(
                                 id = addressToEdit?.id.orEmpty(),
-
-                                // Add ke case me ViewModel
-                                // SessionManager se userId set karega.
-                                // Edit ke case me existing userId preserve hoga.
-                                userId = addressToEdit
-                                    ?.userId
-                                    .orEmpty(),
-
+                                userId = addressToEdit?.userId.orEmpty(),
                                 type = type,
                                 fullName = fullName.trim(),
                                 phone = phone.trim(),
@@ -434,17 +554,12 @@ fun AddressDialog(
                                 city = city.trim(),
                                 state = state.trim(),
                                 pincode = pincode.trim(),
-
-                                // Existing value preserve karo.
                                 country = addressToEdit
                                     ?.country
                                     ?.takeIf { it.isNotBlank() }
                                     ?: "India",
 
                                 isDefault = isDefault,
-
-                                // Edit me server values preserve honge.
-                                // Add me empty rahenge.
                                 createdAt = addressToEdit
                                     ?.createdAt
                                     .orEmpty(),

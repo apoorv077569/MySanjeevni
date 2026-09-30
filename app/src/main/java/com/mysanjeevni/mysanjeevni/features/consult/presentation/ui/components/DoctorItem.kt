@@ -1,5 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.consult.presentation.ui.components
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,11 +44,18 @@ fun DoctorCard(
     onViewSlotsClick: () -> Unit,
     onBookNowClick: () -> Unit
 ) {
-
+    val isDarkTheme = isSystemInDarkTheme()
+    val cardBackground = if (isDarkTheme) Color(0xFF1A2421) else Color.White
+    val textColor = if (isDarkTheme) Color(0xFFF1F5F3) else Color(0xFF071B35)
+    val greyColor = if (isDarkTheme) Color(0xFFAABBB5) else Color(0xFF60738A)
+    val imageBackground = if (isDarkTheme) Color(0xFF252333) else Color(0xFFF5F3FF)
+    val lightGreen = if (isDarkTheme) Color(0xFF17382C) else LightGreen
+    val iconColor = if (isDarkTheme)  Color(0xFF35C99A)  else  ConsultGreen
+    val availabilityColor = if (isDarkTheme) Color(0xFF35C99A)  else  ConsultGreen
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
+        color = cardBackground,
         shadowElevation = 3.dp
     ) {
 
@@ -64,7 +72,7 @@ fun DoctorCard(
 
                 Surface(
                     shape = RoundedCornerShape(50),
-                    color = ConsultGreen
+                    color = lightGreen
                 ) {
 
                     AutoText(
@@ -73,7 +81,7 @@ fun DoctorCard(
                             horizontal = 14.dp,
                             vertical = 7.dp
                         ),
-                        color = Color.White,
+                        color = textColor,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -81,7 +89,7 @@ fun DoctorCard(
 
                 Surface(
                     shape = RoundedCornerShape(50),
-                    color = LightGreen
+                    color = lightGreen
                 ) {
 
                     AutoText(
@@ -94,7 +102,7 @@ fun DoctorCard(
                             horizontal = 14.dp,
                             vertical = 7.dp
                         ),
-                        color = ConsultGreen,
+                        color = availabilityColor,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -112,7 +120,7 @@ fun DoctorCard(
                 Surface(
                     modifier = Modifier.size(110.dp),
                     shape = RoundedCornerShape(16.dp),
-                    color = Color(0xFFF5F3FF)
+                    color = imageBackground
                 ) {
 
                     if (doctor.avatar.isNotBlank()) {
@@ -132,7 +140,7 @@ fun DoctorCard(
                             modifier = Modifier
                                 .padding(28.dp)
                                 .fillMaxSize(),
-                            tint = ConsultGreen
+                            tint = iconColor
                         )
                     }
                 }
@@ -146,7 +154,7 @@ fun DoctorCard(
                     AutoText(
                         text = doctor.specialization.uppercase(),
                         fontSize = 13.sp,
-                        color = TextGrey,
+                        color = greyColor,
                         fontWeight = FontWeight.Medium
                     )
 
@@ -156,7 +164,7 @@ fun DoctorCard(
                         text = doctor.name,
                         fontSize = 19.sp,
                         fontWeight = FontWeight.Bold,
-                        color = TextDark
+                        color = textColor
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -177,7 +185,7 @@ fun DoctorCard(
                         AutoText(
                             text = "${doctor.rating}",
                             fontSize = 14.sp,
-                            color = TextDark
+                            color = textColor
                         )
 
                         Spacer(modifier = Modifier.width(4.dp))
@@ -185,7 +193,7 @@ fun DoctorCard(
                         AutoText(
                             text = "(${doctor.totalReviews})",
                             fontSize = 14.sp,
-                            color = TextGrey
+                            color = greyColor
                         )
                     }
                 }
@@ -195,7 +203,7 @@ fun DoctorCard(
             Text(
                 doctor.department,
                 fontSize = 14.sp,
-                color = TextGrey
+                color = greyColor
             )
 
             // Availability
@@ -208,12 +216,12 @@ fun DoctorCard(
                 Text(
                     text = "View Slots: ${doctor.isAvailable}",
                     fontSize = 14.sp,
-                    color = TextGrey
+                    color = greyColor
                 )
 
                 Surface(
                     shape = RoundedCornerShape(50),
-                    color = LightGreen
+                    color = lightGreen
                 ) {
 
                     AutoText(
@@ -222,7 +230,7 @@ fun DoctorCard(
                             horizontal = 12.dp,
                             vertical = 6.dp
                         ),
-                        color = ConsultGreen,
+                        color = iconColor,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -246,7 +254,7 @@ fun DoctorCard(
                     },
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextDark
+                    color = textColor
                 )
 
                 AutoText(
@@ -274,7 +282,7 @@ fun DoctorCard(
                     Text(
                         text = "View Slots",
                         fontWeight = FontWeight.SemiBold,
-                        color = TextDark
+                        color = textColor
                     )
                 }
 

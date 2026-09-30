@@ -9,8 +9,11 @@ import com.mysanjeevni.mysanjeevni.features.profile.domain.model.Address
 import com.mysanjeevni.mysanjeevni.features.profile.domain.usecase.AddAddressUseCase
 import com.mysanjeevni.mysanjeevni.features.profile.domain.usecase.DeleteAddressUseCase
 import com.mysanjeevni.mysanjeevni.features.profile.domain.usecase.GetAddressUseCase
+import com.mysanjeevni.mysanjeevni.features.profile.domain.usecase.GetCountriesUseCase
+import com.mysanjeevni.mysanjeevni.features.profile.domain.usecase.GetStatesUseCase
 import com.mysanjeevni.mysanjeevni.features.profile.domain.usecase.UpdateAddressUseCase
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressUiState
+import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.LocationState
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.ServiceabilityUiState
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,31 +32,25 @@ class AddressViewModel @Inject constructor(
     private val updateAddressUseCase: UpdateAddressUseCase,
     private val deleteAddressUseCase: DeleteAddressUseCase,
     private val sessionManager: SessionManager,
-    private val checkServiceabilityUseCase: CheckServiceabilityUseCase
+    private val checkServiceabilityUseCase: CheckServiceabilityUseCase,
+    private val getCountriesUseCase: GetCountriesUseCase,
+    private val getStatesUseCase: GetStatesUseCase
 
 ) : AndroidViewModel(application) {
-
-    private val _state = MutableStateFlow(
-        AddressUiState()
-    )
-
-    val state: StateFlow<AddressUiState> =
-        _state.asStateFlow()
-    private val _serviceabilityState =
-        MutableStateFlow(ServiceabilityUiState())
-
-    val serviceabilityState =
-        _serviceabilityState.asStateFlow()
+    private val _state = MutableStateFlow(AddressUiState())
+    val state: StateFlow<AddressUiState> = _state.asStateFlow()
+    private val _locationState = MutableStateFlow(LocationState())
+    val locationState: StateFlow<LocationState> = _locationState.asStateFlow()
+    private val _serviceabilityState = MutableStateFlow(ServiceabilityUiState())
+    val serviceabilityState = _serviceabilityState.asStateFlow()
 
     init {
         loadAddresses()
     }
 
     fun loadAddresses() {
-
         val token = sessionManager.getToken()
         val userId = sessionManager.getUserId()
-
         Log.d("ADDRESS_VM", "==============================")
         Log.d("ADDRESS_VM", "LOAD ADDRESSES")
         Log.d("ADDRESS_VM", "UserId = $userId")
@@ -174,7 +171,6 @@ class AddressViewModel @Inject constructor(
     }
 
     fun addAddress(address: Address) {
-
         val token = sessionManager.getToken()
         val userId = sessionManager.getUserId()
 
@@ -254,10 +250,7 @@ class AddressViewModel @Inject constructor(
         }
     }
 
-    fun updateAddress(
-        id: String,
-        address: Address
-    ) {
+    fun updateAddress(id: String, address: Address) {
 
         val token = sessionManager.getToken()
         val userId = sessionManager.getUserId()
@@ -403,9 +396,7 @@ class AddressViewModel @Inject constructor(
         }
     }
 
-    fun checkServiceability(
-        pincode: String
-    ) {
+    fun checkServiceability(pincode: String) {
         Log.d("SERVICEABILITY_VM", "============================")
         Log.d("SERVICEABILITY_VM", "CHECK SERVICEABILITY")
         Log.d("SERVICEABILITY_VM", "Pincode = $pincode")
@@ -498,10 +489,7 @@ class AddressViewModel @Inject constructor(
                 )
         }
     }
-
-    suspend fun checkServiceabilityForCheckout(
-        pincode: String
-    ): Boolean {
+    suspend fun checkServiceabilityForCheckout(pincode: String): Boolean {
 
         Log.d("CHECKOUT_SERVICEABILITY", "==========================")
         Log.d("CHECKOUT_SERVICEABILITY", "CHECK SERVICEABILITY")
@@ -565,27 +553,167 @@ class AddressViewModel @Inject constructor(
                 }
             )
     }
+    fun clearServiceability() { _serviceabilityState.value = ServiceabilityUiState() }
 
-    fun clearServiceability() {
-        _serviceabilityState.value = ServiceabilityUiState()
-    }
     fun selectAddress(address: Address) {
-        _state.update {
-            it.copy(
-                selectedAddress = address
-            )
-        }
+        _state.update { it.copy(selectedAddress = address) }
     }
 
     fun clearError() {
-        _state.update {
-            it.copy(error = null)
-        }
+        _state.update { it.copy(error = null) }
     }
 
     fun clearSuccessMessage() {
-        _state.update {
-            it.copy(successMessage = null)
+        _state.update { it.copy(successMessage = null) }
+    }
+    fun loadCountries() {
+        Log.d("LOCATION_DEBUG", "loadCountries() CALLED")
+
+        viewModelScope.launch {
+
+            Log.d("LOCATION_DEBUG", "Setting isLoadingCountries = true")
+
+            _locationState.update {
+                it.copy(
+                    isLoadingCountries = true,
+                    countryError = null
+                )
+            }
+
+            try {
+                Log.d("LOCATION_DEBUG", "Calling getCountriesUseCase()")
+
+                val countries = getCountriesUseCase()
+
+                Log.d(
+                    "LOCATION_DEBUG",
+                    "Countries API SUCCESS | count=${countries.size}"
+                )
+
+                countries.forEachIndexed { index, country ->
+                    Log.d(
+                        "LOCATION_DEBUG",
+                        "COUNTRY[$index] = ${country.name}"
+                    )
+                }
+
+                _locationState.update {
+                    it.copy(
+                        countries = countries,
+                        isLoadingCountries = false
+                    )
+                }
+
+                Log.d(
+                    "LOCATION_DEBUG",
+                    "Country state updated | count=${countries.size}"
+                )
+
+            } catch (e: Exception) {
+
+                Log.e(
+                    "LOCATION_DEBUG",
+                    "Countries API ERROR | message=${e.message}",
+                    e
+                )
+
+                _locationState.update {
+                    it.copy(
+                        isLoadingCountries = false,
+                        countryError = e.message
+                            ?: "Unable to load countries"
+                    )
+                }
+            }
+        }
+    }
+    fun loadStates(country: String) {
+
+        Log.d(
+            "LOCATION_DEBUG",
+            "loadStates() CALLED | country='$country'"
+        )
+
+        if (country.isBlank()) {
+            Log.d(
+                "LOCATION_DEBUG",
+                "loadStates() SKIPPED | country is blank"
+            )
+            return
+        }
+
+        viewModelScope.launch {
+
+            Log.d(
+                "LOCATION_DEBUG",
+                "Setting isLoadingStates = true | country='$country'"
+            )
+
+            _locationState.update {
+                it.copy(
+                    states = emptyList(),
+                    isLoadingStates = true,
+                    stateError = null
+                )
+            }
+
+            try {
+
+                Log.d(
+                    "LOCATION_DEBUG",
+                    "Calling getStatesUseCase() | country='$country'"
+                )
+
+                val states = getStatesUseCase(country)
+
+                Log.d(
+                    "LOCATION_DEBUG",
+                    "States API SUCCESS | country='$country' | count=${states.size}"
+                )
+
+                states.forEachIndexed { index, state ->
+                    Log.d(
+                        "LOCATION_DEBUG",
+                        "STATE[$index] = ${state.name}"
+                    )
+                }
+
+                _locationState.update {
+                    it.copy(
+                        states = states,
+                        isLoadingStates = false
+                    )
+                }
+
+                Log.d(
+                    "LOCATION_DEBUG",
+                    "State state updated | count=${states.size}"
+                )
+
+            } catch (e: Exception) {
+
+                Log.e(
+                    "LOCATION_DEBUG",
+                    "States API ERROR | country='$country' | message=${e.message}",
+                    e
+                )
+
+                _locationState.update {
+                    it.copy(
+                        isLoadingStates = false,
+                        stateError = e.message
+                            ?: "Unable to load states"
+                    )
+                }
+            }
+        }
+    }
+    fun clearStates() {
+        _locationState.update {
+            it.copy(
+                states = emptyList(),
+                stateError = null
+            )
         }
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -16,6 +17,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,20 +42,13 @@ fun MyConsultsScreen(
     val state by viewModel.state.collectAsState()
     val isDark = LocalIsDarkTheme.current || isSystemInDarkTheme()
     val bgColor = if (isDark) Color(0xFF121212) else Color(0xFFF5F7FA)
-
-    val cardColor =
-        if (isDark) Color(0xFF1E1E1E)
-        else Color.White
-
-    val textColor =
-        if (isDark) Color.White
-        else Color.Black
-
-    val secondaryText =
-        if (isDark) Color.LightGray
-        else Color.Gray
-
+    val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
+    val textColor = if (isDark) Color.White else Color.Black
+    val secondaryText = if (isDark) Color.LightGray else Color.Gray
     val primaryColor = MaterialTheme.colorScheme.primary
+    val topBarColor = if (isDark) Color(0xFF162A25) else Color(0xFFE9FAF6)
+    val topCircleColor = if (isDark) Color(0xFF1D3932) else Color(0xFFD4F5EA)
+    val topCircleColor2 = if (isDark) Color(0xFF23483E) else Color(0xFFC8F0E2)
 
     Column(
         modifier = Modifier
@@ -62,34 +57,100 @@ fun MyConsultsScreen(
             .statusBarsPadding()
     ) {
 
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .height(112.dp)
+                .clip(
+                    RoundedCornerShape(
+                        bottomStart = 28.dp,
+                        bottomEnd = 28.dp
+                    )
+                )
+                .background(topBarColor)
         ) {
 
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.back),
-                tint = textColor,
+            // Decorative circle
+            Box(
                 modifier = Modifier
-                    .size(24.dp)
-                    .clickable {
-                        navController.popBackStack()
+                    .size(110.dp)
+                    .offset(x = 285.dp, y = (-35).dp)
+                    .background(
+                        color = topCircleColor,
+                        shape = CircleShape
+                    )
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(85.dp)
+                    .offset(x = 325.dp, y = 55.dp)
+                    .background(
+                        color = topCircleColor2,
+                        shape = CircleShape
+                    )
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = 20.dp,
+                        vertical = 16.dp
+                    ),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Surface(
+                    modifier = Modifier.size(48.dp),
+                    shape = CircleShape,
+                    color = if (isDark) {
+                        Color(0xFF23483E)
+                    } else {
+                        Color.White
+                    },
+                    shadowElevation = 2.dp
+                ) {
+
+                    IconButton(
+                        onClick = {
+                            navController.popBackStack()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                            tint = textColor,
+                            modifier = Modifier.size(25.dp)
+                        )
                     }
-            )
+                }
 
-            Spacer(
-                modifier = Modifier.width(16.dp)
-            )
+                Spacer(
+                    modifier = Modifier.width(14.dp)
+                )
 
-            AutoText(
-                text = stringResource(R.string.my_consultations),
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = textColor
-            )
+                Column {
+
+                    AutoText(
+                        text = stringResource(R.string.my_consultations),
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = textColor
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(2.dp)
+                    )
+
+                    AutoText(
+                        text = "Manage your appointments",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = secondaryText
+                    )
+                }
+            }
         }
 
         // -----------------------------------------------------
@@ -100,52 +161,35 @@ fun MyConsultsScreen(
             selectedTabIndex = state.selectedTab,
             containerColor = cardColor,
             contentColor = primaryColor,
-            modifier = Modifier.padding(horizontal = 16.dp),
-
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                .clip(RoundedCornerShape(14.dp)),
             indicator = { tabPositions ->
-
                 if (state.selectedTab < tabPositions.size) {
-
                     Box(
                         modifier = Modifier
-                            .tabIndicatorOffset(
-                                tabPositions[state.selectedTab]
-                            )
-                            .padding(
-                                horizontal = 4.dp,
-                                vertical = 4.dp
-                            )
+                            .tabIndicatorOffset(tabPositions[state.selectedTab])
+                            .padding(4.dp)
                             .fillMaxHeight()
                             .background(
                                 color = primaryColor,
-                                shape = RoundedCornerShape(10.dp)
+                                shape = RoundedCornerShape(12.dp)
                             )
                     )
                 }
             },
-
             divider = {}
         ) {
-
-            // -----------------------------------------------------
-            // Upcoming
-            // -----------------------------------------------------
-
             Tab(
                 selected = state.selectedTab == 0,
-
-                onClick = {
-                    viewModel.onTabSelected(0)
-                },
-
+                onClick = { viewModel.onTabSelected(0) },
                 modifier = Modifier
-                    .height(48.dp)
+                    .height(56.dp)
                     .zIndex(1f)
             ) {
 
                 AutoText(
                     text = stringResource(R.string.upcoming),
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = if (state.selectedTab == 0) {
                         FontWeight.Bold
                     } else {
@@ -159,25 +203,20 @@ fun MyConsultsScreen(
                 )
             }
 
-            // -----------------------------------------------------
             // Past Consults
-            // -----------------------------------------------------
-
             Tab(
                 selected = state.selectedTab == 1,
-
                 onClick = {
                     viewModel.onTabSelected(1)
                 },
-
                 modifier = Modifier
-                    .height(48.dp)
+                    .height(56.dp)
                     .zIndex(1f)
             ) {
 
                 AutoText(
                     text = stringResource(R.string.past_consults),
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = if (state.selectedTab == 1) {
                         FontWeight.Bold
                     } else {
