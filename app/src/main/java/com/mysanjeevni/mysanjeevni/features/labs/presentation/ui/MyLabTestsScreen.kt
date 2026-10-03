@@ -35,7 +35,7 @@ val Teal = Color(0xFF00897B)
 @Composable
 fun MyLabTestsScreen(
     navController: NavController,
-    viewModel: LabTestViewModel = hiltViewModel()
+    viewModel: LabTestViewModel
 ) {
     val labTests = viewModel.labTests.collectAsLazyPagingItems()
     val currentFilter by viewModel.filter.collectAsState()

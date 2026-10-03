@@ -2,6 +2,7 @@ package com.mysanjeevni.mysanjeevni.features.profile.presentation.ui
 
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +27,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -48,6 +50,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -239,126 +242,145 @@ fun ManageAddresses(
                 hostState = snackbarHostState
             )
         },
-
         topBar = {
+
+            val colors = MaterialTheme.colorScheme
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                colors.surface,
+                                colors.surfaceVariant
+                            )
+                        )
+                    )
                     .statusBarsPadding()
-                    .padding(16.dp),
-
-                verticalAlignment =
-                    Alignment.CenterVertically
+                    .height(125.dp)
+                    .padding(
+                        start = 20.dp,
+                        end = 20.dp,
+                        top = 16.dp,
+                        bottom = 14.dp
+                    ),
+                verticalAlignment = Alignment.CenterVertically
             ) {
 
-                Icon(
-                    imageVector =
-                        Icons.AutoMirrored.Filled.ArrowBack,
-
-                    contentDescription =
-                        stringResource(R.string.back),
-
-                    tint = textColor,
-
+                // Back
+                Box(
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(44.dp)
+                        .background(
+                            color = colors.primaryContainer,
+                            shape = RoundedCornerShape(50)
+                        )
                         .clickable {
                             navController.popBackStack()
-                        }
-                )
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.back),
+                        tint = colors.onPrimaryContainer,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
 
                 Spacer(
-                    modifier = Modifier.width(16.dp)
+                    modifier = Modifier.width(14.dp)
                 )
 
-                AutoText(
-                    text = stringResource(
-                        R.string.manage_addresses
-                    ),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = textColor
+                // Title
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    AutoText(
+                        text = stringResource(R.string.manage_addresses),
+                        fontSize = 23.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.onSurface
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(2.dp)
+                    )
+
+                    AutoText(
+                        text = "Manage your saved addresses",
+                        fontSize = 13.sp,
+                        color = colors.onSurfaceVariant
+                    )
+                }
+
+                Spacer(
+                    modifier = Modifier.width(10.dp)
                 )
+                Box(
+                    modifier = Modifier
+                        .size(58.dp)
+                        .background(
+                            color = colors.primaryContainer,
+                            shape = RoundedCornerShape(50)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = colors.primary,
+                        modifier = Modifier.size(34.dp)
+                    )
+                }
             }
         },
-
         floatingActionButton = {
-
             FloatingActionButton(
                 onClick = {
-
-                    // New address
                     selectedAddressForEdit = null
                     showDialog = true
                 },
                 containerColor = primaryColor,
                 contentColor = Color.White
             ) {
-
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription =
-                        stringResource(
-                            R.string.add_address
-                        )
+                    contentDescription = stringResource(R.string.add_address)
                 )
             }
         }
     ) { paddingValues ->
-
         when {
-
-            // =====================================================
-            // LOADING
-            // =====================================================
-
             state.isLoading -> {
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
-
-                    contentAlignment =
-                        Alignment.Center
+                    contentAlignment = Alignment.Center
                 ) {
-
                     CircularProgressIndicator(
                         color = primaryColor
                     )
                 }
             }
-
-            // =====================================================
-            // EMPTY
-            // =====================================================
-
             state.addresses.isEmpty() -> {
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
-
-                    contentAlignment =
-                        Alignment.Center
+                    contentAlignment = Alignment.Center
                 ) {
-
                     Column(
-                        horizontalAlignment =
-                            Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-
                         AutoText(
                             text = "No addresses saved",
                             fontSize = 16.sp,
                             color = secondaryText
                         )
-
-                        Spacer(
-                            modifier = Modifier.height(8.dp)
-                        )
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         AutoText(
                             text = "Tap + to add new address",
@@ -368,28 +390,16 @@ fun ManageAddresses(
                     }
                 }
             }
-
-            // =====================================================
-            // ADDRESS LIST
-            // =====================================================
-
             else -> {
-
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues)
                         .padding(
-                            horizontal = 16.dp
-                        ),
-
-                    verticalArrangement =
-                        Arrangement.spacedBy(16.dp),
-
-                    contentPadding =
-                        PaddingValues(
-                            bottom = 80.dp
+                            top = paddingValues.calculateTopPadding()
                         )
+                        .padding(horizontal = 16.dp),
+
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
 
                     items(

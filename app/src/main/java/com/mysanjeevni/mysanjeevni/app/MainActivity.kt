@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -28,7 +29,9 @@ import com.mysanjeevni.mysanjeevni.app.components.AppBottomBar
 import com.mysanjeevni.mysanjeevni.app.navigation.NavGraph
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
+import com.mysanjeevni.mysanjeevni.features.home.presentation.viewmodel.HomeViewModel
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel.BookLabTestViewModel
+import com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel.LabTestViewModel
 import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
 import com.mysanjeevni.mysanjeevni.features.settings.presentation.state.AppTheme
 import com.mysanjeevni.mysanjeevni.features.settings.presentation.viewmodel.SettingsViewModel
@@ -113,6 +116,7 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun attachBaseContext(newBase: Context) {
         val prefs = newBase.getSharedPreferences("settings_prefs", MODE_PRIVATE)
         val language = prefs.getString("language", "English") ?: "English"
@@ -202,6 +206,8 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
                         val cartViewModel: CartViewModel = hiltViewModel(this@MainActivity)
                         val orderViewModel: OrderViewModel = hiltViewModel(this@MainActivity)
                         val labViewModel: BookLabTestViewModel = hiltViewModel(this@MainActivity)
+                        val myLabTestViewModel:LabTestViewModel = hiltViewModel(this@MainActivity)
+                        val homeViewModel: HomeViewModel = hiltViewModel(this@MainActivity)
 
                         Scaffold(
                             containerColor = MaterialTheme.colorScheme.background,
@@ -222,7 +228,9 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
                                 orderViewModel = orderViewModel,
                                 settingsViewModel = settingsViewModel,
                                 labViewModel = labViewModel,
-                                openNotification = openNotification
+                                openNotification = openNotification,
+                                homeViewModel = homeViewModel,
+                                labTestViewModel = myLabTestViewModel
                             )
                         }
                     }

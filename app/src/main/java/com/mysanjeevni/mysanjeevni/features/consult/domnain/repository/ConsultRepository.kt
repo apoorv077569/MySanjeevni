@@ -1,5 +1,7 @@
 package com.mysanjeevni.mysanjeevni.features.consult.domnain.repository
 
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.DoctorConsultationSmsRequestDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.DoctorConsultationSmsResponseDto
 import com.mysanjeevni.mysanjeevni.features.consult.domnain.model.BookConsultationRequest
 import com.mysanjeevni.mysanjeevni.features.consult.domnain.model.BookConsultationResponse
 import com.mysanjeevni.mysanjeevni.features.consult.domnain.model.CancelConsultationResponse
@@ -23,4 +25,8 @@ interface ConsultRepository {
     suspend fun cancelConsultation(
         consultationId: String
     ): Result<CancelConsultationResponse>
+
+    suspend fun sendConsultationBookingSms(
+        request: DoctorConsultationSmsRequestDto
+    ):Result<DoctorConsultationSmsResponseDto>
 }

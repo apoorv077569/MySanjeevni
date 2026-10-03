@@ -117,7 +117,6 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
         modifier = Modifier
             .padding(top = 20.dp)
             .fillMaxSize()
-            .padding(bottom = 8.dp)
             .background(bgColor)
             .verticalScroll(rememberScrollState())
     ) {
@@ -196,11 +195,9 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .horizontalScroll(rememberScrollState()),
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
-
-        ) {
+        )  {
             ProfileStatCard(
                 Icons.Outlined.ShoppingBag,
                 "Orders",

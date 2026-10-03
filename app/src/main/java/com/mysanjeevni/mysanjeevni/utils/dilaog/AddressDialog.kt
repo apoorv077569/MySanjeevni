@@ -234,13 +234,13 @@ fun AddressDialog(
 
                         AutoText("Checking delivery...")
                     }
-                } else if (serviceabilityState.serviceable) {
+
+                } else if (pincode.length == 6 && serviceabilityState.serviceable) {
 
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-
                         Column(
                             modifier = Modifier.padding(12.dp)
                         ) {
@@ -272,17 +272,16 @@ fun AddressDialog(
                             )
                         }
                     }
-                } else {
+
+                } else if (pincode.length == 6 && !serviceabilityState.serviceable) {
 
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-
                         Column(
                             modifier = Modifier.padding(12.dp)
                         ) {
-
                             AutoText(
                                 text = "❌ Sorry! Delivery is not available for this pincode.",
                                 fontWeight = FontWeight.Bold
@@ -294,11 +293,6 @@ fun AddressDialog(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-
-                    // =========================
-                    // COUNTRY
-                    // =========================
-
                     ExposedDropdownMenuBox(
                         expanded = countryExpanded,
                         onExpandedChange = {

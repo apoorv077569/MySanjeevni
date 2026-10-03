@@ -57,9 +57,8 @@ android {
         applicationId = "com.mysanjeevni.mysanjeevni"
         minSdk = 25
         targetSdk = 36
-        versionCode = 13
-        versionName = "1.0.5"
-
+        versionCode = 15
+        versionName = "1.0.7"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

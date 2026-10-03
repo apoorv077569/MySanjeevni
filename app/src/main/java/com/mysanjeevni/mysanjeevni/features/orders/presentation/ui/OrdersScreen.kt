@@ -110,7 +110,9 @@ fun OrdersScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
+                    .padding(
+                        top = paddingValues.calculateTopPadding()
+                    )
             ) {
 
                 if (currencyState.isLoading) {
@@ -204,7 +206,10 @@ fun OrdersScreen(
 
                                     LazyColumn(
                                         modifier = Modifier.fillMaxSize(),
-                                        contentPadding = PaddingValues(16.dp),
+                                        contentPadding = PaddingValues(
+                                            horizontal = 16.dp,
+                                            vertical = 16.dp
+                                        ),
                                         verticalArrangement = Arrangement.spacedBy(12.dp)
                                     ) {
 

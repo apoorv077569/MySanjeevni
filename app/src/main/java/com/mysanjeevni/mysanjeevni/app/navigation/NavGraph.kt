@@ -31,12 +31,14 @@ import com.mysanjeevni.mysanjeevni.features.consult.presentation.ui.screens.Cons
 import com.mysanjeevni.mysanjeevni.features.consult.presentation.ui.screens.MyConsultsScreen
 import com.mysanjeevni.mysanjeevni.features.home.presentation.ui.HomeScreen
 import com.mysanjeevni.mysanjeevni.features.home.presentation.ui.SplashScreen
+import com.mysanjeevni.mysanjeevni.features.home.presentation.viewmodel.HomeViewModel
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.BookTestScreen
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.BookingDetailScreen
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.MyLabTestsScreen
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.components.BookingHistoryScreen
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.components.LabDetailRoute
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel.BookLabTestViewModel
+import com.mysanjeevni.mysanjeevni.features.labs.presentation.viewmodel.LabTestViewModel
 import com.mysanjeevni.mysanjeevni.features.medicines.presentation.ui.MedicineDetailScreen
 import com.mysanjeevni.mysanjeevni.features.notification.presentation.ui.NotificationScreen
 import com.mysanjeevni.mysanjeevni.features.onboarding.ui.onBoarding.OnBoardingScreen
@@ -79,6 +81,8 @@ fun NavGraph(
     orderViewModel: OrderViewModel,
     settingsViewModel: SettingsViewModel,
     labViewModel: BookLabTestViewModel,
+    homeViewModel: HomeViewModel,
+    labTestViewModel: LabTestViewModel,
     openNotification: Boolean,
     startDestination: String = Screen.Splash.route
 ) {
@@ -136,7 +140,14 @@ fun NavGraph(
                     navController.popBackStack()
                 },
                 onContinueShopping = {
-                    navController.navigate(Screen.Home.route)
+                    navController.navigate(Screen.Home.route) {
+                        launchSingleTop = true
+                        restoreState = true
+
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                    }
                 }
             )
         }
@@ -247,7 +258,8 @@ fun NavGraph(
             HomeScreen(
                 navController = navController,
                 scrollTo = scrollTo,
-                cartViewModel = cartViewModel
+                cartViewModel = cartViewModel,
+                viewModel = homeViewModel
             )
         }
         composable(Screen.Forget.route) {
@@ -386,7 +398,12 @@ fun NavGraph(
                 onHome = {
 
                     navController.navigate(Screen.Home.route) {
-                        popUpTo(0)
+                        launchSingleTop = true
+                        restoreState = true
+
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
                     }
 
                 }
@@ -440,7 +457,7 @@ fun NavGraph(
             TransactionHistoryScreen(navController = navController)
         }
         composable(Screen.MyLabTestsScreen.route) {
-            MyLabTestsScreen(navController = navController)
+            MyLabTestsScreen(navController = navController, viewModel = labTestViewModel)
         }
 
 
@@ -489,7 +506,11 @@ fun NavGraph(
                 },
                 onGoToHome = {
                     navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.OrderSuccessScreen.route) { inclusive = true }
+                        launchSingleTop = true
+                        restoreState = true
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
                     }
                 },
                 navController = navController

@@ -523,7 +523,6 @@ private fun PaymentBottomBar(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
             Row(

@@ -1,12 +1,16 @@
 package com.mysanjeevni.mysanjeevni.features.consult.presentation.viewmodel
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.DoctorConsultationSmsRequestDto
 import com.mysanjeevni.mysanjeevni.features.consult.domnain.model.BookConsultationRequest
 import com.mysanjeevni.mysanjeevni.features.consult.domnain.model.Doctor
 import com.mysanjeevni.mysanjeevni.features.consult.domnain.usecase.BookConsultationUseCase
 import com.mysanjeevni.mysanjeevni.features.consult.domnain.usecase.GetDoctorUseCase
+import com.mysanjeevni.mysanjeevni.features.consult.domnain.usecase.SendConsultationSmsUseCase
 import com.mysanjeevni.mysanjeevni.features.consult.presentation.state.BookConsultationUiState
 import com.mysanjeevni.mysanjeevni.utils.FcmHelper
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
@@ -16,12 +20,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
 class BookConsultationViewModel @Inject constructor(
     private val getDoctorUseCase: GetDoctorUseCase,
     private val bookConsultationUseCase: BookConsultationUseCase,
+    private val sendConsultationSmsUseCase: SendConsultationSmsUseCase,
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
@@ -30,16 +37,8 @@ class BookConsultationViewModel @Inject constructor(
     }
 
     private val _state = MutableStateFlow(BookConsultationUiState())
-
-    val state: StateFlow<BookConsultationUiState> =
-        _state.asStateFlow()
-
+    val state: StateFlow<BookConsultationUiState> = _state.asStateFlow()
     val userId = sessionManager.getUserId()
-
-
-    // ---------------------------------------------------------
-    // Doctor
-    // ---------------------------------------------------------
 
     fun updateDoctor(doctor: Doctor) {
         _state.update {
@@ -49,58 +48,36 @@ class BookConsultationViewModel @Inject constructor(
             )
         }
     }
-
-
-    // ---------------------------------------------------------
-    // Patient
-    // ---------------------------------------------------------
-
     fun onPatientNameChange(name: String) {
         _state.update {
             it.copy(patientName = name)
         }
     }
-
     fun onPhoneChange(phone: String) {
         _state.update {
             it.copy(phone = phone)
         }
     }
-
     fun onEmailChange(email: String) {
         _state.update {
             it.copy(email = email)
         }
     }
-
-
-    // ---------------------------------------------------------
-    // Appointment
-    // ---------------------------------------------------------
-
     fun onDateChange(date: String) {
         _state.update {
             it.copy(appointmentDate = date)
         }
     }
-
     fun onConsultationTypeChange(type: String) {
         _state.update {
             it.copy(consultationType = type)
         }
     }
-
     fun onSymptomChange(symptom: String) {
         _state.update {
             it.copy(symptoms = symptom)
         }
     }
-
-
-    // ---------------------------------------------------------
-    // Load Doctor
-    // ---------------------------------------------------------
-
     fun loadDoctor(doctorId: String) {
 
         Log.d(TAG, "loadDoctor() called")
@@ -172,6 +149,7 @@ class BookConsultationViewModel @Inject constructor(
                 }
         }
     }
+    @RequiresApi(Build.VERSION_CODES.O)
     fun onBookAppointment() {
 
         val currentState = _state.value
@@ -306,6 +284,17 @@ class BookConsultationViewModel @Inject constructor(
                         TAG,
                         "consultationId = ${response.consultation?.id}"
                     )
+                    sendConsultationSms(
+                        phone = currentState.phone,
+                        email = currentState.email,
+                        patientName = currentState.patientName,
+                        doctorId = doctor.id,
+                        consultationType = currentState.consultationType,
+                        consultationDate = currentState.appointmentDate,
+                        symptoms = currentState.symptoms
+                            .takeIf { it.isNotBlank() },
+                        medicalHistory = null
+                    )
                     FcmHelper.sendNotification(
                         userId.toString(),
                         "Consultation Booked",
@@ -378,6 +367,73 @@ class BookConsultationViewModel @Inject constructor(
                 phone = phone.orEmpty(),
                 email = email.orEmpty()
             )
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun sendConsultationSms(
+        phone: String,
+        email: String,
+        patientName: String,
+        doctorId: String,
+        consultationType: String,
+        consultationDate: String,
+        symptoms: String? = null,
+        medicalHistory: String? = null
+    ) {
+        viewModelScope.launch {
+
+            Log.d("APPU_SMS", "========== SEND SMS METHOD ==========")
+            Log.d("APPU_SMS", "Preparing SMS request")
+
+            val currentTime = java.time.LocalTime.now()
+                .format(
+                    java.time.format.DateTimeFormatter.ofPattern("HH:mm")
+                )
+
+            val request = DoctorConsultationSmsRequestDto(
+                phone = phone,
+                email = email,
+                patientName = patientName,
+                doctorId = doctorId,
+
+                // Backend expects VIDEO / AUDIO / CHAT
+                consultationType = consultationType.uppercase(),
+
+                // Backend expects YYYY-MM-DD
+                consultationDate = consultationDate.take(10),
+
+                // Current mobile/system time
+                consultationTime = currentTime,
+
+                symptoms = symptoms,
+                medicalHistory = medicalHistory
+            )
+
+            Log.d("APPU_SMS", "========== SMS REQUEST ==========")
+            Log.d("APPU_SMS", "Phone: ${request.phone}")
+            Log.d("APPU_SMS", "Email: ${request.email}")
+            Log.d("APPU_SMS", "Patient: ${request.patientName}")
+            Log.d("APPU_SMS", "Doctor ID: ${request.doctorId}")
+            Log.d("APPU_SMS", "Type: ${request.consultationType}")
+            Log.d("APPU_SMS", "Date: ${request.consultationDate}")
+            Log.d("APPU_SMS", "Time: ${request.consultationTime}")
+            Log.d("APPU_SMS", "Symptoms: ${request.symptoms}")
+            Log.d("APPU_SMS", "Medical History: ${request.medicalHistory}")
+
+            sendConsultationSmsUseCase(request)
+                .onSuccess { response ->
+                    Log.d("APPU_SMS", "========== SMS API SUCCESS ==========")
+                    Log.d("APPU_SMS", "Consultation ID: ${response.consultationId}")
+                    Log.d("APPU_SMS", "Message: ${response.message}")
+                }
+                .onFailure { error ->
+                    Log.e(
+                        "APPU_SMS",
+                        "SMS API FAILED: ${error.message}",
+                        error
+                    )
+                }
         }
     }
 }

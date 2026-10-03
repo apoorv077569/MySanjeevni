@@ -263,7 +263,6 @@ fun OrderSummaryScreen(
             onClick = { navController.navigate(Screen.PaymentScreen.route) },
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
                 .height(56.dp),
             shape = RoundedCornerShape(16.dp),

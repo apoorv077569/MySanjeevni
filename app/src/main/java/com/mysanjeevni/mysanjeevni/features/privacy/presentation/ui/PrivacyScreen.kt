@@ -10,7 +10,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.LocalHospital
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.MedicalInformation
+import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -132,7 +146,12 @@ fun PrivacyScreen(navController: NavController) {
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    AutoText(text = "🔒", fontSize = 44.sp)
+                    Icon(
+                        imageVector = Icons.Default.Security,
+                        contentDescription = "Privacy",
+                        tint = TealPrimary,
+                        modifier = Modifier.size(44.dp)
+                    )
                 }
             }
 
@@ -141,7 +160,7 @@ fun PrivacyScreen(navController: NavController) {
             // ── Card 1: We collect user data ────────────────────────────────
             SectionCard(bg = cardBg, isDark = isDark, divider = divider) {
                 SectionHeader(
-                    emoji = "👤",
+                    icon = Icons.Default.Person,
                     title = "We collect user data",
                     subtitle = "to provide healthcare services",
                     iconBg = TealPrimary.copy(alpha = 0.18f),
@@ -152,11 +171,29 @@ fun PrivacyScreen(navController: NavController) {
 
                 HorizontalDivider(color = divider, thickness = 0.5.dp, modifier = Modifier.padding(vertical = 4.dp))
 
-                DataRow(emoji = "🪪", title = "Personal Info", subtitle = "Name, phone, address", textCol = textCol, subText = subText)
-                HorizontalDivider(color = divider, thickness = 0.5.dp)
-                DataRow(emoji = "💙", title = "Health Data", subtitle = "Reports, prescriptions", textCol = textCol, subText = subText)
-                HorizontalDivider(color = divider, thickness = 0.5.dp)
-                DataRow(emoji = "💳", title = "Payment Data", subtitle = "Via secure gateways", textCol = textCol, subText = subText)
+                DataRow(
+                    icon = Icons.Default.Badge,
+                    title = "Personal Info",
+                    subtitle = "Name, phone, address",
+                    textCol = textCol,
+                    subText = subText
+                )
+
+                DataRow(
+                    icon = Icons.Default.MedicalInformation,
+                    title = "Health Data",
+                    subtitle = "Reports, prescriptions",
+                    textCol = textCol,
+                    subText = subText
+                )
+
+                DataRow(
+                    icon = Icons.Default.CreditCard,
+                    title = "Payment Data",
+                    subtitle = "Via secure gateways",
+                    textCol = textCol,
+                    subText = subText
+                )
             }
 
             Spacer(Modifier.height(12.dp))
@@ -164,7 +201,7 @@ fun PrivacyScreen(navController: NavController) {
             // ── Card 2: We share data with ──────────────────────────────────
             SectionCard(bg = cardBg, isDark = isDark, divider = divider) {
                 SectionHeader(
-                    emoji = "👥",
+                    icon = Icons.Default.Groups,
                     title = "We share data with",
                     subtitle = "trusted healthcare partners",
                     iconBg = PurpleAccent.copy(alpha = 0.18f),
@@ -179,11 +216,33 @@ fun PrivacyScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    SharePartnerItem(emoji = "🏥", label = "Pharmacies", textCol = textCol, subText = subText, divider = divider)
+                    SharePartnerItem(
+                        icon = Icons.Default.LocalHospital,
+                        label = "Pharmacies",
+                        textCol = textCol,
+                        subText = subText,
+                        divider = divider
+                    )
+
                     VerticalDivider(color = divider)
-                    SharePartnerItem(emoji = "🧪", label = "Labs", textCol = textCol, subText = subText, divider = divider)
+
+                    SharePartnerItem(
+                        icon = Icons.Default.Science,
+                        label = "Labs",
+                        textCol = textCol,
+                        subText = subText,
+                        divider = divider
+                    )
+
                     VerticalDivider(color = divider)
-                    SharePartnerItem(emoji = "🩺", label = "Doctors", textCol = textCol, subText = subText, divider = divider)
+
+                    SharePartnerItem(
+                        icon = Icons.Default.MedicalServices,
+                        label = "Doctors",
+                        textCol = textCol,
+                        subText = subText,
+                        divider = divider
+                    )
                 }
 
                 Spacer(Modifier.height(4.dp))
@@ -212,7 +271,12 @@ fun PrivacyScreen(navController: NavController) {
                             .background(TealPrimary.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        AutoText("🛡️", fontSize = 20.sp)
+                        Icon(
+                            imageVector = Icons.Default.Security,
+                            contentDescription = "Security",
+                            tint = TealPrimary,
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
 
                     Spacer(Modifier.width(12.dp))
@@ -244,7 +308,12 @@ fun PrivacyScreen(navController: NavController) {
                         lineHeight = 18.sp
                     )
                     Spacer(Modifier.width(8.dp))
-                    AutoText("🔒", fontSize = 22.sp)
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Encrypted",
+                        tint = TealPrimary,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
             }
             Spacer(Modifier.height(12.dp))
@@ -257,7 +326,12 @@ fun PrivacyScreen(navController: NavController) {
                             .background(PurpleAccent.copy(alpha = 0.18f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        AutoText("⚙️", fontSize = 20.sp)
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = PurpleAccent,
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
                     Spacer(Modifier.width(12.dp))
                     AutoText(
@@ -275,13 +349,14 @@ fun PrivacyScreen(navController: NavController) {
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     UserActionButton(
-                        emoji = "✏️",
+                        icon = Icons.Default.Edit,
                         label = "Edit your data",
                         accentColor = PurpleAccent,
                         modifier = Modifier.weight(1f)
                     )
+
                     UserActionButton(
-                        emoji = "🗑️",
+                        icon = Icons.Default.Delete,
                         label = "Request deletion",
                         accentColor = PurpleAccent,
                         modifier = Modifier.weight(1f)
@@ -318,7 +393,7 @@ private fun SectionCard(
 
 @Composable
 private fun SectionHeader(
-    emoji: String,
+    icon: ImageVector,
     title: String,
     subtitle: String,
     iconBg: Color,
@@ -327,6 +402,7 @@ private fun SectionHeader(
     subText: Color
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
+
         Box(
             modifier = Modifier
                 .size(44.dp)
@@ -334,19 +410,36 @@ private fun SectionHeader(
                 .background(iconBg),
             contentAlignment = Alignment.Center
         ) {
-            AutoText(text = emoji, fontSize = 22.sp)
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(24.dp)
+            )
         }
+
         Spacer(Modifier.width(12.dp))
+
         Column {
-            AutoText(text = title, color = textCol, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-            AutoText(text = subtitle, color = subText, fontSize = 12.sp)
+            AutoText(
+                text = title,
+                color = textCol,
+                fontWeight = FontWeight.Bold,
+                fontSize = 15.sp
+            )
+
+            AutoText(
+                text = subtitle,
+                color = subText,
+                fontSize = 12.sp
+            )
         }
     }
 }
 
 @Composable
 private fun DataRow(
-    emoji: String,
+    icon: ImageVector,
     title: String,
     subtitle: String,
     textCol: Color,
@@ -359,6 +452,7 @@ private fun DataRow(
             .padding(vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+
         Box(
             modifier = Modifier
                 .size(36.dp)
@@ -366,13 +460,31 @@ private fun DataRow(
                 .background(TealPrimary.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center
         ) {
-            AutoText(text = emoji, fontSize = 18.sp)
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = TealPrimary,
+                modifier = Modifier.size(20.dp)
+            )
         }
+
         Spacer(Modifier.width(12.dp))
+
         Column(modifier = Modifier.weight(1f)) {
-            AutoText(text = title, color = textCol, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-            AutoText(text = subtitle, color = subText, fontSize = 12.sp)
+            AutoText(
+                text = title,
+                color = textCol,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp
+            )
+
+            AutoText(
+                text = subtitle,
+                color = subText,
+                fontSize = 12.sp
+            )
         }
+
         Icon(
             imageVector = Icons.Default.ChevronRight,
             contentDescription = null,
@@ -384,7 +496,7 @@ private fun DataRow(
 
 @Composable
 private fun SharePartnerItem(
-    emoji: String,
+    icon: ImageVector,
     label: String,
     textCol: Color,
     subText: Color,
@@ -392,7 +504,10 @@ private fun SharePartnerItem(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        modifier = Modifier.padding(
+            horizontal = 8.dp,
+            vertical = 4.dp
+        )
     ) {
         Box(
             modifier = Modifier
@@ -401,10 +516,22 @@ private fun SharePartnerItem(
                 .background(PurpleAccent.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center
         ) {
-            AutoText(text = emoji, fontSize = 26.sp)
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = PurpleAccent,
+                modifier = Modifier.size(28.dp)
+            )
         }
+
         Spacer(Modifier.height(6.dp))
-        AutoText(text = label, color = textCol, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+
+        AutoText(
+            text = label,
+            color = textCol,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
@@ -420,7 +547,7 @@ private fun VerticalDivider(color: Color) {
 
 @Composable
 private fun UserActionButton(
-    emoji: String,
+    icon: ImageVector,
     label: String,
     accentColor: Color,
     modifier: Modifier = Modifier
@@ -439,8 +566,16 @@ private fun UserActionButton(
         contentAlignment = Alignment.Center
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            AutoText(text = emoji, fontSize = 18.sp)
+
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = accentColor,
+                modifier = Modifier.size(19.dp)
+            )
+
             Spacer(Modifier.width(6.dp))
+
             AutoText(
                 text = label,
                 color = accentColor,

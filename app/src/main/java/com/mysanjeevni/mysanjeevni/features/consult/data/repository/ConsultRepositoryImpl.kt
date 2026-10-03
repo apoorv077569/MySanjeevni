@@ -3,6 +3,8 @@ package com.mysanjeevni.mysanjeevni.features.consult.data.repository
 import android.util.Log
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
 import com.mysanjeevni.mysanjeevni.features.consult.data.dto.CancelConsultationRequestDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.DoctorConsultationSmsRequestDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.DoctorConsultationSmsResponseDto
 import com.mysanjeevni.mysanjeevni.features.consult.data.mapper.toDomain
 import com.mysanjeevni.mysanjeevni.features.consult.data.mapper.toDto
 import com.mysanjeevni.mysanjeevni.features.consult.domnain.model.BookConsultationRequest
@@ -398,6 +400,46 @@ class ConsultRepositoryImpl @Inject constructor(
                 "Cancel consultation exception: ${e.message}",
                 e
             )
+
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun sendConsultationBookingSms(
+        request: DoctorConsultationSmsRequestDto
+    ): Result<DoctorConsultationSmsResponseDto> {
+
+        Log.d(TAG, "========== SMS API START ==========")
+        Log.d(TAG, "Phone: ${request.phone}")
+        Log.d(TAG, "Email: ${request.email}")
+        Log.d(TAG, "Patient Name: ${request.patientName}")
+        Log.d(TAG, "Doctor ID: ${request.doctorId}")
+        Log.d(TAG, "Consultation Type: ${request.consultationType}")
+        Log.d(TAG, "Consultation Date: ${request.consultationDate}")
+        Log.d(TAG, "Consultation Time: ${request.consultationTime}")
+        Log.d(TAG, "Symptoms: ${request.symptoms}")
+        Log.d(TAG, "Medical History: ${request.medicalHistory}")
+
+        return try {
+
+            Log.d(TAG, "Calling SMS API...")
+
+            val response = consultApi.sendConsultationBookingSms(request)
+
+            Log.d(TAG, "SMS API SUCCESS")
+            Log.d(TAG, "Success: ${response.success}")
+            Log.d(TAG, "Consultation ID: ${response.consultationId}")
+            Log.d(TAG, "Consultation DateTime: ${response.consultationDateTime}")
+            Log.d(TAG, "Message: ${response.message}")
+
+            Log.d(TAG, "========== SMS API END ==========")
+
+            Result.success(response)
+
+        } catch (e: Exception) {
+
+            Log.e(TAG, "SMS API FAILED", e)
+            Log.e(TAG, "Error: ${e.message}")
 
             Result.failure(e)
         }

@@ -20,6 +20,8 @@ import com.mysanjeevni.mysanjeevni.features.consult.data.dto.BookConsultationRes
 import com.mysanjeevni.mysanjeevni.features.consult.data.dto.CancelConsultationRequestDto
 import com.mysanjeevni.mysanjeevni.features.consult.data.dto.CancelConsultationResponseDto
 import com.mysanjeevni.mysanjeevni.features.consult.data.dto.ConsultationResponseDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.DoctorConsultationSmsRequestDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.DoctorConsultationSmsResponseDto
 import com.mysanjeevni.mysanjeevni.features.consult.data.dto.DoctorResponseDto
 import com.mysanjeevni.mysanjeevni.features.currency.data.dto.CountryResponseDto
 import com.mysanjeevni.mysanjeevni.features.currency.data.dto.ExchangeRateResponseDto
@@ -361,4 +363,9 @@ interface ApiService {
     suspend fun getExchangeRate(
         @Url url: String = "https://api.exchangerate-api.com/v4/latest/INR"
     ): Response<ExchangeRateResponseDto>
+
+    @POST("api/doctor-consultation/book/with-sms")
+    suspend fun sendConsultationBookingSms(
+        @Body request: DoctorConsultationSmsRequestDto
+    ): DoctorConsultationSmsResponseDto
 }

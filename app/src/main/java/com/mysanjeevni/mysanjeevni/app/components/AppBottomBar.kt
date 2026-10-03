@@ -1,5 +1,6 @@
 package com.mysanjeevni.mysanjeevni.app.components
 
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,6 +50,7 @@ import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 private val ConsultGreen = Color(0xFF00A878)
+
 @Composable
 fun AppBottomBar(
     navController: NavHostController,
@@ -68,7 +70,7 @@ fun AppBottomBar(
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .height(100.dp)
+            .height(80.dp)
     ) {
 
         // Bottom white bar
@@ -112,6 +114,7 @@ fun AppBottomBar(
                         label = "Home",
                         isSelected = currentRoute == Screen.Home.route,
                         onClick = {
+                            Log.d("HOME_NAV", "HOME CLICK")
                             navController.navigate(Screen.Home.route) {
                                 popUpTo(
                                     navController.graph.findStartDestination().id
@@ -206,7 +209,7 @@ fun AppBottomBar(
             modifier = Modifier
                 .size(60.dp)
                 .align(Alignment.TopCenter)
-                .offset(y = (-2).dp)
+                .offset(y = (-20).dp)
                 .shadow(
                     elevation = 10.dp,
                     shape = CircleShape

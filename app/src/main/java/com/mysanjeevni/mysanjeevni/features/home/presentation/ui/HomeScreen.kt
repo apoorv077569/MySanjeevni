@@ -28,6 +28,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -79,7 +80,7 @@ val TealAccent = Color(0xFF26A69A)
 fun HomeScreen(
     navController: NavController,
     scrollTo: String? = null,
-    viewModel: HomeViewModel = hiltViewModel(),
+    viewModel: HomeViewModel,
     cartViewModel: CartViewModel
 ) {
     val isDark = LocalIsDarkTheme.current|| isSystemInDarkTheme()
@@ -111,6 +112,14 @@ fun HomeScreen(
     val highlightBg = if (isDark) Color(0xFF16242B) else Color(0xFFE3F2FD)
     val snackbarHostState = remember {
         SnackbarHostState()
+    }
+
+    DisposableEffect(Unit) {
+        Log.d("HOME_NAV", "HomeScreen ENTER")
+
+        onDispose {
+            Log.d("HOME_NAV", "HomeScreen DISPOSE")
+        }
     }
 
     LaunchedEffect(cartState.error) {
@@ -148,10 +157,7 @@ fun HomeScreen(
         Log.d("HOME_DEBUG", "========== CATEGORIES ==========")
 
         categoryState.categories.forEach {
-            Log.d(
-                "HOME_DEBUG",
-                "Category=${it}"
-            )
+            Log.d("HOME_DEBUG", "Category=${it}")
         }
     }
 
