@@ -1,42 +1,68 @@
+import java.io.File
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-
-
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     id("com.google.gms.google-services")
     id("kotlin-parcelize")
 
 }
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use {
+        localProperties.load(it)
+    }
+}
+
+val keyAlias = localProperties.getProperty("keyAlias", "")
+val keyPassword = localProperties.getProperty("keyPassword", "")
+val storePassword = localProperties.getProperty("storePassword", "")
+val storeFilePath = localProperties.getProperty("storeFile", "")
+val razorpayKey = localProperties.getProperty("razorpayKey", "")
 
 android {
     namespace = "com.mysanjeevni.mysanjeevni"
     compileSdk {
         version = release(36)
     }
+    signingConfigs {
+        create("release") {
+            if (storeFilePath.isNotEmpty()) {
+                storeFile = file(storeFilePath)
+            }
+            this.storePassword = storePassword
+            this.keyAlias = keyAlias
+            this.keyPassword = keyPassword
+        }
+    }
+
+    buildTypes {
+        debug {
+            buildConfigField("String", "RAZORPAY_KEY", "\"$razorpayKey\"")
+        }
+        release {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            buildConfigField("String", "RAZORPAY_KEY", "\"$razorpayKey\"")
+        }
+    }
 
     defaultConfig {
         applicationId = "com.mysanjeevni.mysanjeevni"
         minSdk = 25
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
-
+        versionCode = 15
+        versionName = "1.0.7"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        debug {
-            buildConfigField("String", "RAZORPAY_KEY", "\"rzp_live_SUcsurW9fkbXe3\"")
-        }
-        release {
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            buildConfigField("String", "RAZORPAY_KEY", "\"rzp_live_SUcsurW9fkbXe3\"")
-        }
-    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -59,6 +85,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.material3)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.ui)
@@ -109,13 +136,18 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:31.5.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-auth-ktx:23.2.1")
 //    google auth
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
     implementation("com.hbb20:ccp:2.7.0")
 //    ml kit translator
-    implementation("com.google.mlkit:translate:17.0.1")
-//    Pagination
+    implementation("com.google.mlkit:translate:17.0.3")
+
+    //    Pagination
     implementation("androidx.paging:paging-runtime-ktx:3.3.0")
     implementation("androidx.paging:paging-compose:3.3.0")
 
@@ -126,6 +158,9 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.10.1")
 //    Material Icon
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
+
+//    agora
+    implementation("io.agora.rtc:full-sdk:4.5.1")
 
 }
 

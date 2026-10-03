@@ -1,7 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.labs.presentation.ui
 
 import android.content.Intent
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -19,30 +18,43 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
+import com.mysanjeevni.mysanjeevni.features.currency.presentation.viewmodel.CurrencyViewModel
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.state.LabDetailState
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.components.LabBottomBar
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.components.LabHeaderSection
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.components.LabInfoSection
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.ui.components.LabTestsSection
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabDetailScreen(
     navController: NavController,
     state: LabDetailState,
-    onAddToCart: () -> Unit
+    onAddToCart: () -> Unit,
+    currencyViewModel: CurrencyViewModel = hiltViewModel()
 ) {
-    val isDark = isSystemInDarkTheme()
+
+    val isDark = LocalIsDarkTheme.current
+
+    val currencyState by currencyViewModel.state.collectAsState()
+
+    // Fallback to INR (rate = 1.0) while loading or if currency fetch failed
+    val currencySymbol = currencyState.currencyInfo?.currencySymbol ?: "₹"
+    val exchangeRate = currencyState.currencyInfo?.exchangeRate ?: 1.0
 
     val screenBg =
         if (isDark) Color(0xFF121212)
@@ -71,7 +83,7 @@ fun LabDetailScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
+                AutoText(
                     text = "Loading test details...",
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -89,7 +101,7 @@ fun LabDetailScreen(
             contentAlignment = Alignment.Center
         ) {
 
-            Text(
+            AutoText(
                 text = state.error,
                 color = MaterialTheme.colorScheme.error
             )
@@ -100,11 +112,20 @@ fun LabDetailScreen(
 
     val labTest = state.labTestDetail ?: return
 
+    val convertedPrice = labTest.price.toDouble() * exchangeRate
+    val formattedSharePrice = "$currencySymbol${
+        String.format(
+            java.util.Locale.getDefault(),
+            if (exchangeRate == 1.0) "%.0f" else "%.2f",
+            convertedPrice
+        )
+    }"
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
+                    AutoText(
                         text = "Lab Test Details",
                         style = MaterialTheme.typography.titleMedium
                     )
@@ -134,19 +155,15 @@ fun LabDetailScreen(
                                 putExtra(
                                     Intent.EXTRA_TEXT,
                                     """
-🧪 ${labTest.name}
-
-Price: ₹${labTest.price}
-
-Book this test on MySanjeevni:
-https://www.mysanjeevni.com/labtest/${labTest.id}
-
-Download MySanjeevni:
-https://www.mysanjeevni.com
-                """.trimIndent()
+                                🧪 ${labTest.name}
+                                    Price: $formattedSharePrice
+                                    Book this test on MySanjeevni:
+                                    https://www.mysanjeevni.com/labtest/${labTest.id}
+                                    Download MySanjeevni:
+                                    https://www.mysanjeevni.com
+                                    """.trimIndent()
                                 )
                             }
-
                             context.startActivity(
                                 Intent.createChooser(
                                     shareIntent,

@@ -1,11 +1,9 @@
 package com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui
 
-import android.Manifest
-import android.content.pm.PackageManager
+
 import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,33 +42,31 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.mysanjeevni.mysanjeevni.core.location.LocationHelper
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.core.presentation.StylishHeader
 import com.mysanjeevni.mysanjeevni.features.cart.presentation.viewmodel.CartViewModel
 import com.mysanjeevni.mysanjeevni.features.home.presentation.viewmodel.HomeViewModel
-import com.mysanjeevni.mysanjeevni.features.location.ui.LocationSearchSDialog
+import com.mysanjeevni.mysanjeevni.features.notification.presentation.viewmodel.NotificationViewModel
 import com.mysanjeevni.mysanjeevni.features.pharmacy.data.mapper.toCartItem
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui.components.MedicineItem
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.viewmodel.PharmacyViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 // --- THEME COLORS ---
 val TealPrimary = Color(0xFF38D6C6)
 val LavenderPrimary = Color(0xFF7E57C2)
-val BackgroundColor = Color(0xFFF5F5F5)
 
 private val SortOptions = listOf("Relevance", "Price: Low to High", "Price: High to Low", "Discount")
 
@@ -80,24 +77,44 @@ fun PharmacyScreen(
     viewModel: PharmacyViewModel = hiltViewModel(),
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
-    val cartViewModel: CartViewModel =
-        hiltViewModel(LocalContext.current as ComponentActivity)
+    val activity = LocalActivity.current as ComponentActivity
+    val cartViewModel: CartViewModel = hiltViewModel(activity)
+
     val state by viewModel.state.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
     val bgColor = colorScheme.background
     val city by homeViewModel.userCity.collectAsState()
 
+    val notificationViewModel: NotificationViewModel = hiltViewModel()
+    val unreadCount by notificationViewModel.unreadCount.collectAsState()
 
 
     val searchQuery by viewModel.searchQuery.collectAsState()
     var selectedFilter by remember { mutableStateOf("All") }
     var selectedSort by remember { mutableStateOf("Relevance") }
     val focusRequester = remember { FocusRequester() }
+    val listState = rememberLazyListState()
 
-    val availableCategories: List<String> = remember(state.medicines) {
-        state.medicines
-            .mapNotNull { it.category?.takeIf { c -> c.isNotBlank() } }
-            .distinct()
+    val availableCategories=state.categories
+
+
+
+    LaunchedEffect(state.medicines) {
+
+        Log.d("PHARMACY_DEBUG", "========== CATEGORIES ==========")
+
+        availableCategories.forEach {
+            Log.d("PHARMACY_DEBUG", "Category=$it")
+        }
+
+        Log.d("PHARMACY_DEBUG", "========== MEDICINES ==========")
+
+        state.medicines.forEach {
+            Log.d(
+                "PHARMACY_DEBUG",
+                "Medicine=${it.name}, category=${it.category}, productType=${it.productType}"
+            )
+        }
     }
 
     LaunchedEffect(city) {
@@ -105,22 +122,11 @@ fun PharmacyScreen(
     }
     val displayedMedicines = remember(
         state.medicines,
-        selectedFilter,
         selectedSort,
         searchQuery
     ) {
 
         var filtered = state.medicines
-
-        // Category Filter
-        if (selectedFilter != "All") {
-            filtered = filtered.filter {
-                it.category?.equals(
-                    selectedFilter,
-                    ignoreCase = true
-                ) == true
-            }
-        }
 
         // Search Filter
         if (searchQuery.isNotBlank()) {
@@ -145,6 +151,7 @@ fun PharmacyScreen(
 
             "Discount" ->
                 filtered.sortedByDescending {
+
                     val mrp = it.mrp
                     val price = it.price
 
@@ -157,7 +164,44 @@ fun PharmacyScreen(
 
             else -> filtered
         }
-    }    // ─────────────────────────────────────────────────────────────────────────
+    }
+
+
+    LaunchedEffect(displayedMedicines) {
+        Log.d(
+            "PHARMACY_DEBUG",
+            "Displayed Medicines = ${displayedMedicines.size}"
+        )
+    }
+
+    LaunchedEffect(listState) {
+
+        snapshotFlow {
+            val layoutInfo = listState.layoutInfo
+
+            val lastVisibleItem =
+                layoutInfo.visibleItemsInfo.lastOrNull()?.index
+
+            val totalItems =
+                layoutInfo.totalItemsCount
+
+            lastVisibleItem != null &&
+                    lastVisibleItem >= totalItems - 3
+        }
+            .distinctUntilChanged()
+            .collect { shouldLoadMore ->
+
+                if (shouldLoadMore) {
+
+                    Log.d(
+                        "PHARMACY_PAGINATION",
+                        "Bottom reached → loading next page"
+                    )
+
+                    viewModel.loadNextPage()
+                }
+            }
+    }
 
     Scaffold(
         containerColor = bgColor,
@@ -169,13 +213,21 @@ fun PharmacyScreen(
                     onClear = { viewModel.onSearchQueryChanged("") },
                     focusRequester = focusRequester,
                     location = city,
-                        onLocationClick = { navController.navigate("${Screen.ManageAddresses.route}?checkout=false&home=true") },
+                    onLocationClick = { navController.navigate("${Screen.ManageAddresses.route}?checkout=false&home=true") },
+                    unreadCount = unreadCount,
                     onNotificationClick = { navController.navigate(Screen.NotificationScreen.route) }
                 )
                 FilterAndSortRow(
                     categories = availableCategories,
                     selectedFilter = selectedFilter,
-                    onFilterSelected = { selectedFilter = it },
+                    onFilterSelected = { category ->
+                        Log.d(
+                            "PHARMACY_CATEGORY",
+                            "Category clicked = $category"
+                        )
+                        selectedFilter = category
+                        viewModel.onCategorySelected(category)
+                    },
                     selectedSort = selectedSort,
                     onSortSelected = { selectedSort = it }
                 )
@@ -189,13 +241,14 @@ fun PharmacyScreen(
         ) {
             if (!state.isLoading && state.error.isBlank()) {
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     item {
                         AutoText(
-                            text = "${displayedMedicines.size} Products found",
+                            text = "${state.totalMedicines} Products found",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground
@@ -206,6 +259,9 @@ fun PharmacyScreen(
                     items(displayedMedicines) { medicine ->
                         MedicineItem(
                             medicine = medicine,
+                            onClick = {
+                                navController.navigate(Screen.MedicineDetail.createRoute(it.id))
+                            },
                             onAddToCart = {
                                 val cartItem = medicine.toCartItem()
                                 Log.d("CART_DEBUG", "Pharmacy → Adding: ${cartItem.name}")

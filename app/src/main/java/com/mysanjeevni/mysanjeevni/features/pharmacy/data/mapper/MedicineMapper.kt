@@ -8,9 +8,11 @@ fun Medicine.toCartItem(): CartItem {
     return CartItem(
         id = this.id,
         name = this.name,
-        price = this.price.toDouble(),
-        originalPrice = this.price.toDouble(),
+        price = this.price,
+        originalPrice = this.price,
         qty = 1,
         imageUrl = this.image,
+        stock =stock,
+        requirePrescription = requiresPrescription
     )
 }

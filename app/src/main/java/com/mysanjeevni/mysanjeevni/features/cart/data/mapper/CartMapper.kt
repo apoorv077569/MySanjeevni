@@ -1,7 +1,7 @@
 package com.mysanjeevni.mysanjeevni.features.cart.data.mapper
 
 import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartItem
-import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartItemDto
+import com.mysanjeevni.mysanjeevni.features.cart.data.dto.CartItemDto
 
 fun CartItemDto.toDomain(): CartItem {
     return CartItem(
@@ -11,5 +11,7 @@ fun CartItemDto.toDomain(): CartItem {
         price,
         qty,
         image,
+        stock,
+        requirePrescription = requirePrescription
     )
 }

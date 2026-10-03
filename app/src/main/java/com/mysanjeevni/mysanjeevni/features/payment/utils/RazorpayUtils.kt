@@ -3,14 +3,16 @@ package com.mysanjeevni.mysanjeevni.features.payment.utils
 
 import android.app.Activity
 import android.util.Log
-import com.mysanjeevni.mysanjeevni.app.MainActivity
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.RazorpayOrder
+import com.mysanjeevni.mysanjeevni.BuildConfig
+import com.mysanjeevni.mysanjeevni.R
+import com.mysanjeevni.mysanjeevni.features.payment.data.dto.RazorpayOrder
 import com.razorpay.Checkout
 import org.json.JSONObject
 
 fun startRazorpayCheckout(
     activity: Activity,
     order: RazorpayOrder,
+    description:String,
     onSuccess: (String, String, String) -> Unit,
     onFailure: (String) -> Unit
 ) {
@@ -30,25 +32,23 @@ fun startRazorpayCheckout(
 
         Log.d(
             "RZP_DEBUG",
-            "Razorpay Key = ${"rzp_test_T4zV3iEH7GKUvL"}"
+            "Razorpay Key = ${BuildConfig.RAZORPAY_KEY}"
         )
 
-//        checkout.setKeyID(
-//            BuildConfig.RAZORPAY_KEY
-//        )
+        checkout.setKeyID(
+            BuildConfig.RAZORPAY_KEY
+        )
 
-//        checkout.setKeyID("rzp_test_1DP5mmOlF5G5ag")
-        checkout.setKeyID("rzp_test_T4zV3iEH7GKUvL")
 
         Log.d("RZP_DEBUG", "Preparing Options")
 
         val options = JSONObject().apply {
 
-            put("name", "MySanjeevni")
+            put("name", R.string.app_name)
 
             put(
                 "description",
-                "Lab Test Booking"
+                description
             )
 
             put(
@@ -73,13 +73,13 @@ fun startRazorpayCheckout(
                 }
             )
 
-//            put(
-//                "prefill",
-//                JSONObject().apply {
-//                    put("contact", "")
-//                    put("email", "")
-//                }
-//            )
+            put(
+                "prefill",
+                JSONObject().apply {
+                    put("contact", "")
+                    put("email", "")
+                }
+            )
         }
 
         Log.d(

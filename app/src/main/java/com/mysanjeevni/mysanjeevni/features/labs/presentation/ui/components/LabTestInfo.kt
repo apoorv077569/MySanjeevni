@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mysanjeevni.mysanjeevni.features.labs.domain.model.LabTest
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun LabTestInfo(
@@ -24,7 +25,7 @@ fun LabTestInfo(
         modifier = modifier.fillMaxWidth()
     ) {
         Spacer(modifier = Modifier.height(4.dp))
-        Text(
+        AutoText(
             text = test.name,
             fontSize = 14.sp,
             fontWeight = FontWeight.ExtraBold,

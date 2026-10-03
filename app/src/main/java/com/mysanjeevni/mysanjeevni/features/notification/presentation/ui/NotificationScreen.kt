@@ -13,13 +13,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -33,6 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.features.notification.presentation.ui.components.NotificationCard
 import com.mysanjeevni.mysanjeevni.features.notification.presentation.viewmodel.NotificationViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,7 +46,7 @@ fun NotificationScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Notifications")
+                    AutoText("Notifications")
                 },
                 navigationIcon = {
                     IconButton(
@@ -56,7 +55,7 @@ fun NotificationScreen(
                         }
                     ) {
                         Icon(
-                            Icons.Default.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null
                         )
                     }
@@ -67,7 +66,7 @@ fun NotificationScreen(
                             viewModel.clearAll()
                         }
                     ) {
-                        Text("Clear All")
+                        AutoText("Clear All")
                     }
                 }
             )
@@ -96,7 +95,7 @@ fun NotificationScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Text(
+                    AutoText(
                         "No Notifications Yet"
                     )
                 }

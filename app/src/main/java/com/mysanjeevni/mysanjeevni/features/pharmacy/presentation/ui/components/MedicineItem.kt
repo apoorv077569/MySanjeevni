@@ -1,7 +1,9 @@
 package com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -15,11 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.mysanjeevni.mysanjeevni.features.medicines.domain.model.Medicine
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 import java.util.Locale
@@ -27,7 +32,8 @@ import java.util.Locale
 @Composable
 fun MedicineItem(
     medicine: Medicine,
-    onAddToCart: (Medicine) -> Unit
+    onAddToCart: (Medicine) -> Unit,
+    onClick:(Medicine) -> Unit
 ) {
 
     val colorScheme = MaterialTheme.colorScheme
@@ -41,7 +47,11 @@ fun MedicineItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .height(145.dp)
+            .padding(vertical = 6.dp)
+            .clickable{
+                onClick(medicine)
+            },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(8.dp),
         colors = CardDefaults.cardColors(
@@ -57,23 +67,29 @@ fun MedicineItem(
 
 
             Box(
-                modifier = Modifier.wrapContentSize(),
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                if (medicine.image.isNotEmpty()) {
+
+                if (medicine.image.isNotBlank()) {
 
                     AsyncImage(
-                        model = medicine.image,
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(medicine.image)
+                            .crossfade(true)
+                            .build(),
                         contentDescription = medicine.name,
                         modifier = Modifier
-                            .size(60.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(colorScheme.surfaceVariant),
-                        contentScale = ContentScale.Crop
+                            .fillMaxSize()
+                            .padding(6.dp),
+                        contentScale = ContentScale.Fit
                     )
 
                 } else {
-                    Text(
+
+                    AutoText(
                         text = medicine.icon ?: "💊",
                         fontSize = 36.sp
                     )
@@ -84,23 +100,37 @@ fun MedicineItem(
 
             Column(
                 modifier = Modifier.weight(1f)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.SpaceEvenly
             ) {
 
                 AutoText(
                     text = medicine.brand,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF00A884),
-                    maxLines = 1
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
+                AutoText(
+                    text = medicine.name,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 15.sp
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
-                    Text(
+                    AutoText(
                         text = "₹${medicine.price}",
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
@@ -128,6 +158,7 @@ fun MedicineItem(
             }
 
             Button(
+                modifier = Modifier.width(78.dp),
                 onClick = {
                     onAddToCart(medicine)
                 },

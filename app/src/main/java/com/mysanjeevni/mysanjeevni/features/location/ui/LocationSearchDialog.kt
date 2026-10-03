@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun LocationSearchSDialog(
@@ -21,16 +22,16 @@ fun LocationSearchSDialog(
         onDismissRequest = {onDismiss()},
         confirmButton = {
             Button(onClick = {onConfirm(query)}) {
-                Text("Confirm")
+                AutoText("Confirm")
             }
         },
         dismissButton = {
             Button(onClick = {onDismiss()}) {
-                Text("Cancel")
+                AutoText("Cancel")
             }
         },
         title = {
-            Text("Enter Delivery Location")
+            AutoText("Enter Delivery Location")
         },
         text = {
             Column {
@@ -38,7 +39,7 @@ fun LocationSearchSDialog(
                     value = query,
                     onValueChange = {query = it},
                     placeholder = {
-                        Text("Enter city or pincode")
+                        AutoText("Enter city or pincode")
                     }
                 )
             }

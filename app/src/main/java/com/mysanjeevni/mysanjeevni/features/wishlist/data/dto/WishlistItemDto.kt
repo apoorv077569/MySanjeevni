@@ -9,5 +9,7 @@ data class WishlistItemDto(
     val productId:String,
     val productName: String,
     val price: Double,
-    val image: String
+    val image: String,
+    val stock:Int,
+    val requirePrescription: Boolean
 )

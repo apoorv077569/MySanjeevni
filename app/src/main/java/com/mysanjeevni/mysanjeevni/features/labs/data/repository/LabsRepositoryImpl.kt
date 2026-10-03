@@ -81,7 +81,7 @@ class LabsRepositoryImpl @Inject constructor(
         return try {
 
             val response =
-                authApi.createLabTestBooking(userId,request)
+                api.createLabTestBooking(userId,request)
             Log.d("LAB_BOOKING_REPO","Url = ${response.raw().request.url}")
 
             Log.d(

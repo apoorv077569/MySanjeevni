@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mysanjeevni.mysanjeevni.features.onboarding.model.OnBoardingPage
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun OnBoardPageUI(page: OnBoardingPage) {
@@ -35,7 +35,7 @@ fun OnBoardPageUI(page: OnBoardingPage) {
             modifier = Modifier.size(260.dp)
         )
         Spacer(modifier = Modifier.height(30.dp))
-        Text(
+        AutoText(
             page.title,
             fontSize = 26.sp,
             fontWeight = FontWeight.Bold,
@@ -43,7 +43,7 @@ fun OnBoardPageUI(page: OnBoardingPage) {
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(10.dp))
-        Text(
+        AutoText(
             page.description,
             fontSize = 16.sp,
             color = Color.White,

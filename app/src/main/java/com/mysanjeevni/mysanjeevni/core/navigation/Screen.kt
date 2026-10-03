@@ -17,8 +17,8 @@ sealed class Screen(val route: String) {
         fun createRoute(mobile: String) = "verify/$mobile"
     }
 
-    object ResetPassword : Screen("resetPassword/{mobile}") {
-        fun createRoute(mobile: String) = "resetPassword/$mobile"
+    object ResetPassword : Screen("resetPassword/{mobile}/{resetPasswordToken}") {
+        fun createRoute(mobile: String,resetPasswordToken: String) = "resetPassword/$mobile/$resetPasswordToken"
     }
 
     object MedicineDetail : Screen("medicine_detail/{id}") {
@@ -92,7 +92,20 @@ sealed class Screen(val route: String) {
         }
     }
 
-    object UploadPrescription : Screen("upload_prescription")
+    data object UploadPrescription : Screen(
+        route = "upload_prescription/{productId}/{productName}/{userId}"
+    ) {
+        fun createRoute(
+            productId: String,
+            productName: String,
+            userId: String
+        ): String {
+            return "upload_prescription/" +
+                    "${Uri.encode(productId)}/" +
+                    "${Uri.encode(productName)}/" +
+                    "${Uri.encode(userId)}"
+        }
+    }
     object WishlistScreen : Screen("wishlist_screen")
     object BookLabTestScreen {
         const val route =
@@ -102,16 +115,40 @@ sealed class Screen(val route: String) {
     object NotificationScreen : Screen("notification_screen")
     object BookingHistoryScreen : Screen("booking_history")
     object LabBookingDetail : Screen("lab_booking_detail")
+
     object PaymentSuccess : Screen(
-        "payment_success/{paymentId}/{razorpayOrderId}/{signature}"
+        "payment_success/{flow}/{paymentId}/{razorpayOrderId}/{signature}"
     ) {
         fun createRoute(
+            flow: String,
             paymentId: String,
             razorpayOrderId: String,
             signature: String
         ) =
-            "payment_success/$paymentId/$razorpayOrderId/$signature"
+            "payment_success/$flow/$paymentId/$razorpayOrderId/$signature"
     }
 
     object PaymentFailed : Screen("payment_failed")
+    object PrescriptionScreen : Screen(
+        route = "prescription?consultationId={consultationId}"
+    ) {
+
+        fun createRoute(
+            consultationId: String? = null
+        ): String {
+
+            return if (consultationId.isNullOrBlank()) {
+                "prescription"
+            } else {
+                "prescription?consultationId=$consultationId"
+            }
+        }
+    }
+    object BookConsultation : Screen("book_consultation/{doctorId}") {
+        fun createRoute(doctorId: String) = "book_consultation/$doctorId"
+    }
+    object ConsultationDetail : Screen("consultation_detail")
+    object AgoraCall:Screen("agora_call/{channelName}/{participantType}"){
+        fun createRoute(channelName:String,participantType: String) = "agora_call/$channelName/$participantType"
+    }
 }

@@ -27,15 +27,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.automirrored.filled.Note
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MedicalServices
-import androidx.compose.material.icons.filled.Note
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.VideoCall
+import androidx.compose.material.icons.outlined.MedicalServices
 import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -44,14 +43,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,32 +62,39 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.R
+import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
-import com.mysanjeevni.mysanjeevni.data.remote.ApiClient
-import com.mysanjeevni.mysanjeevni.data.remote.AuthApiClient
-import com.mysanjeevni.mysanjeevni.data.remote.model.User
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.ProfileViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
-import com.mysanjeevni.mysanjeevni.utils.SessionManager
-import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val isDark = isSystemInDarkTheme()
-    val scope = rememberCoroutineScope()
+    val isDark = LocalIsDarkTheme.current || isSystemInDarkTheme()
     val bgColor = if (isDark) Color(0xFF121212) else Color(0xFFF5F7FA)
     val cardColor = if (isDark) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDark) Color.White else Color.Black
     val secondaryText = if (isDark) Color.LightGray else Color(0xFF26A69A)
     val state by viewModel.state.collectAsState()
 
-    val user = state.user
-//    var user by remember { mutableStateOf<User?>(null) }
-    val context = LocalContext.current
-    val sessionManager = SessionManager(context)
+    val currentBackStackEntry = navController.currentBackStackEntry
+    val profileUpdatedFlow = remember(currentBackStackEntry) {
+        currentBackStackEntry
+            ?.savedStateHandle
+            ?.getStateFlow(
+                "profile_updated",
+                false
+            )
+    }
+    val profileUpdated by profileUpdatedFlow
+        ?.collectAsState()
+        ?: remember {
+            mutableStateOf(false)
+        }
 
-    val token = sessionManager.getToken()
+    val user = state.user
+    val context = LocalContext.current
+
 
     val initials = user?.fullName
         ?.split(" ")
@@ -99,12 +102,21 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
         ?.mapNotNull { it.firstOrNull()?.uppercase() }
         ?.joinToString("")?:"U"
 
+    LaunchedEffect(profileUpdated) {
+        if (profileUpdated) {
+            Log.d("PROFILE_REFRESH", "Profile update result received")
+            Log.d("PROFILE_REFRESH", "Refreshing profile from API")
+            viewModel.getProfile()
+            currentBackStackEntry?.savedStateHandle?.set("profile_updated", false)
+            Log.d("PROFILE_REFRESH", "Profile update result consumed")
+        }
+    }
+
 
     Column(
         modifier = Modifier
             .padding(top = 20.dp)
             .fillMaxSize()
-            .padding(bottom = 100.dp)
             .background(bgColor)
             .verticalScroll(rememberScrollState())
     ) {
@@ -183,11 +195,9 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .horizontalScroll(rememberScrollState()),
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
-
-        ) {
+        )  {
             ProfileStatCard(
                 Icons.Outlined.ShoppingBag,
                 "Orders",
@@ -240,8 +250,11 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
             }
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
             ProfileMenuItem(
-                Icons.Default.Note, "My Prescription", textColor, secondaryText, onClick =
-                    { navController.navigate(Screen.UploadPrescription.route) })
+                Icons.AutoMirrored.Filled.Note, "My Prescription", textColor, secondaryText, onClick =
+                    { navController.navigate(Screen.PrescriptionScreen.route) })
+            ProfileMenuItem(
+                Icons.Default.MedicalServices, "My Consultation", textColor, secondaryText, onClick =
+                    { navController.navigate(Screen.MyConsultScreen.route) })
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = bgColor)
             ProfileMenuItem(Icons.Default.CardGiftcard, "Share With Friends", textColor, secondaryText, onClick = {
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
@@ -288,7 +301,7 @@ fun ProfileScreen(navController: NavController,viewModel: ProfileViewModel = hil
                 .height(50.dp)
 
         ) {
-            Text(stringResource(R.string.logout), color = Color.Red, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            AutoText(stringResource(R.string.logout), color = Color.Red, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
         Spacer(modifier = Modifier.height(30.dp))
     }
@@ -319,7 +332,7 @@ fun ProfileStatCard(
         ) {
             Icon(imageVector = icon, contentDescription = null, tint = Color(0xFF26A69A))
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = title, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = textColor)
+            AutoText(text = title, fontSize = 12.sp, fontWeight = FontWeight.Medium, color = textColor)
         }
     }
 }
@@ -341,7 +354,7 @@ fun ProfileMenuItem(
     ) {
         Icon(imageVector = icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.width(16.dp))
-        Text(text = title, fontSize = 16.sp, color = textColor, modifier = Modifier.weight(1f))
+        AutoText(text = title, fontSize = 16.sp, color = textColor, modifier = Modifier.weight(1f))
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,

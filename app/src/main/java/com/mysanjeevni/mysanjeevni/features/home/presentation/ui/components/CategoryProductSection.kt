@@ -25,7 +25,7 @@ import com.mysanjeevni.mysanjeevni.utils.AutoText
 @Composable
 fun CategoryProductsSection(
     title: String,
-    subCategories: List<String> = emptyList(), // children ke names pass karo
+    subCategories: List<String> = emptyList(),
     medicines: List<Medicine>,
     isDark: Boolean,
     navController: NavController,
@@ -36,7 +36,7 @@ fun CategoryProductsSection(
 
     val lavender = MaterialTheme.colorScheme.surfaceVariant
     val subtitle = if (subCategories.isNotEmpty()) {
-        subCategories.take(3).joinToString(", ") // max 3 dikhao
+        subCategories.take(3).joinToString(", ")
     } else {
         "Explore trusted products"
     }

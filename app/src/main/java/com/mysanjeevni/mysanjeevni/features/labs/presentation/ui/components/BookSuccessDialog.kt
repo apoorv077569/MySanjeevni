@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun BookingSuccessDialog(
@@ -17,21 +18,21 @@ fun BookingSuccessDialog(
 ) {
     AlertDialog(
         onDismissRequest = {},
-        title = { Text("Booking Confirmed") },
+        title = { AutoText("Booking Confirmed") },
         text = {
             Column {
-                Text("Your lab test has been booked successfully.")
+                AutoText("Your lab test has been booked successfully.")
                 Spacer(Modifier.height(8.dp))
-                Text(testName)
-                Text(collectionDate)
-                Text(collectionTime)
+                AutoText(testName)
+                AutoText(collectionDate)
+                AutoText(collectionTime)
             }
         },
         confirmButton = {
-            Button(onClick = onViewBooking) { Text("View Booking") }
+            Button(onClick = onViewBooking) { AutoText("View Booking") }
         },
         dismissButton = {
-            TextButton(onClick = onClose) { Text("Close") }
+            TextButton(onClick = onClose) { AutoText("Close") }
         }
     )
 }

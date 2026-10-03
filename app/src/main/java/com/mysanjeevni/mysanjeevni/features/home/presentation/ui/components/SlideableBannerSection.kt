@@ -27,7 +27,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -35,6 +34,7 @@ import com.mysanjeevni.mysanjeevni.features.home.model.HomeBannerData
 import com.mysanjeevni.mysanjeevni.features.home.model.promoBanners
 import com.mysanjeevni.mysanjeevni.features.pharmacy.presentation.ui.LavenderPrimary
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -42,7 +42,7 @@ fun SlideableBannerSection() {
     val pagerState = rememberPagerState(pageCount = { promoBanners.size })
     LaunchedEffect(Unit) {
         while (true) {
-            delay(3000)
+            delay(3000.milliseconds)
             val nextPage = (pagerState.currentPage + 1) % promoBanners.size
             pagerState.animateScrollToPage(nextPage)
         }

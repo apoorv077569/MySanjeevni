@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun ProductNotFound() {
@@ -41,7 +41,7 @@ fun ProductNotFound() {
                 modifier = Modifier.height(16.dp)
             )
 
-            Text(
+            AutoText(
                 text = "Product Not Found",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
@@ -51,7 +51,7 @@ fun ProductNotFound() {
                 modifier = Modifier.height(6.dp)
             )
 
-            Text(
+            AutoText(
                 text = "Try another medicine name",
                 color = Color.Gray
             )

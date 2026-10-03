@@ -33,7 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -57,16 +56,21 @@ import androidx.navigation.NavController
 import com.mysanjeevni.mysanjeevni.app.MainActivity
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.OrderItemDto
-import com.mysanjeevni.mysanjeevni.features.orders.presntation.state.OrderState
-import com.mysanjeevni.mysanjeevni.features.orders.presntation.viewmodel.OrderViewModel
+import com.mysanjeevni.mysanjeevni.features.orders.data.dto.SendOrderSmsRequest
+import com.mysanjeevni.mysanjeevni.features.orders.data.dto.SmsOrderItemDto
+import com.mysanjeevni.mysanjeevni.features.orders.data.dto.SmsShippingAddressDto
+import com.mysanjeevni.mysanjeevni.features.orders.presentation.state.OrderSmsUiState
+import com.mysanjeevni.mysanjeevni.features.orders.presentation.ui.components.formatDate
+import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderSmsViewModel
+import com.mysanjeevni.mysanjeevni.features.orders.presentation.viewmodel.OrderViewModel
 import com.mysanjeevni.mysanjeevni.features.payment.domain.model.PaymentMethod
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.state.PaymentState
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.viewmodel.PaymentViewModel
 import com.mysanjeevni.mysanjeevni.features.payment.utils.startRazorpayCheckout
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.FcmHelper
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
-import com.mysanjeevni.mysanjeevni.utils.dilaog.PaymentErrorDialog
-import kotlinx.coroutines.flow.first
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,6 +81,7 @@ fun PaymentScreen(
     deliveryAddress: String,
     orderViewModel: OrderViewModel,
     viewModel: PaymentViewModel = hiltViewModel(),
+    smsViewModel: OrderSmsViewModel = hiltViewModel(),
     onPaymentSuccess: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -89,7 +94,10 @@ fun PaymentScreen(
         .collectAsState()
     val address by orderViewModel.selectedAddress.collectAsState()
     val cartItems by orderViewModel.cartItems.collectAsState()
-    val colorScheme = MaterialTheme.colorScheme
+    val deliveryCharge by orderViewModel
+        .deliveryCharge
+        .collectAsState()
+    colorScheme
     var selectedMethod by remember { mutableStateOf(PaymentMethod.RAZORPAY) }
     val userId = sessionManager.getUserId()
     val subtotal = if (cartItems.isNotEmpty()) {
@@ -97,12 +105,15 @@ fun PaymentScreen(
     } else {
         medicine?.price ?: 0.0
     }
+    val smsState by smsViewModel
+        .smsState
+        .collectAsStateWithLifecycle()
 
-    val deliveryFee = when {
-        subtotal == 0.0 -> 0.0
-        subtotal >= 299.0 -> 0.0
-        else -> 50.0
-    }
+    val isProcessing =
+        paymentState is PaymentState.Loading ||
+                smsState is OrderSmsUiState.Loading
+
+    val deliveryFee = deliveryCharge
 
     val finalAmount = subtotal + deliveryFee
     var checkoutOpened by remember {
@@ -129,15 +140,100 @@ fun PaymentScreen(
         )
     }
 
+    LaunchedEffect(smsState) {
+
+        when (val state = smsState) {
+
+            is OrderSmsUiState.Success -> {
+
+                Log.d("ORDER_SMS_FLOW", "================================")
+                Log.d("ORDER_SMS_FLOW", "SMS SUCCESS RECEIVED")
+                Log.d("ORDER_SMS_FLOW", "Message: ${state.message}")
+                Log.d("ORDER_SMS_FLOW", "Now navigating to Order Success...")
+
+                val addressId = address?.id
+
+                if (addressId.isNullOrBlank()) {
+                    Log.e(
+                        "ORDER_SMS_FLOW",
+                        "Navigation failed: Address ID is empty"
+                    )
+                    return@LaunchedEffect
+                }
+
+                // Reset before navigation
+                viewModel.resetState()
+                smsViewModel.resetSmsState()
+
+                navController.navigate(
+                    Screen.OrderSuccessScreen.createRoute(addressId)
+                ) {
+                    popUpTo(Screen.PaymentScreen.route) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
+
+                Log.d(
+                    "ORDER_SMS_FLOW",
+                    "Navigation triggered successfully"
+                )
+            }
+
+            is OrderSmsUiState.Error -> {
+
+                Log.e("ORDER_SMS_FLOW", "================================")
+                Log.e("ORDER_SMS_FLOW", "SMS FAILED")
+                Log.e("ORDER_SMS_FLOW", "Error: ${state.message}")
+                Log.e(
+                    "ORDER_SMS_FLOW",
+                    "Order already created, navigating anyway..."
+                )
+
+                val addressId = address?.id
+
+                if (addressId.isNullOrBlank()) {
+                    Log.e(
+                        "ORDER_SMS_FLOW",
+                        "Navigation failed: Address ID is empty"
+                    )
+                    return@LaunchedEffect
+                }
+
+                viewModel.resetState()
+                smsViewModel.resetSmsState()
+
+                navController.navigate(
+                    Screen.OrderSuccessScreen.createRoute(addressId)
+                ) {
+                    popUpTo(Screen.PaymentScreen.route) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
+            }
+
+            OrderSmsUiState.Loading -> {
+                Log.d(
+                    "ORDER_SMS_FLOW",
+                    "SMS request loading..."
+                )
+            }
+
+            OrderSmsUiState.Idle -> Unit
+        }
+    }
+
     LaunchedEffect(Unit) {
         MainActivity.Companion.RazorpayCallbackHolder.onSuccess =
             { paymentId, orderId, signature ->
 
                 navController.navigate(
                     Screen.PaymentSuccess.createRoute(
-                        paymentId,
-                        orderId,
-                        signature
+                        flow = "medicine",
+                        paymentId = paymentId,
+                        razorpayOrderId = orderId,
+                        signature = signature
                     )
                 ) {
                     popUpTo(Screen.PaymentScreen.route) {
@@ -146,7 +242,7 @@ fun PaymentScreen(
                 }
             }
 
-        MainActivity.Companion.RazorpayCallbackHolder.onFailure = { error ->
+        MainActivity.Companion.RazorpayCallbackHolder.onFailure = { _ ->
             Log.d("PAYMENT_TRACE", "2. PaymentScreen onFailure")
 
             checkoutOpened = false
@@ -173,10 +269,11 @@ fun PaymentScreen(
                     startRazorpayCheckout(
                         activity = activity,
                         order = state.order,
+                        description = "Medicine Order",
                         onSuccess = { paymentId, orderId, signature ->
-
                             navController.navigate(
                                 Screen.PaymentSuccess.createRoute(
+                                    flow ="medicine",
                                     paymentId,
                                     orderId,
                                     signature
@@ -199,7 +296,128 @@ fun PaymentScreen(
                 }
             }
 
+//            is PaymentState.CodOrderCreated -> {
+//
+//                viewModel.resetState()
+//                orderViewModel.setRecentOrder(state.order)
+//
+//                val shorterId = state.order.id.takeLast(8).uppercase()
+//                val orderDate = formatDate(state.order.createdAt)
+//
+//                val phone = address?.phone?:""
+//                Log.d("ORDER_SMS_FLOW", "Full Order ID : ${state.order.id}")
+//                Log.d("ORDER_SMS_FLOW", "Short Order ID: $shorterId")
+//                Log.d("ORDER_SMS_FLOW", "Phone         : $phone")
+//                Log.d("ORDER_SMS_FLOW", "Order Date    : $orderDate")
+//
+//
+//                if (phone.isNotBlank()) {
+//
+//                    Log.d("ORDER_SMS_FLOW", "Calling SMS ViewModel...")
+//
+//                    smsViewModel.sendOrderConfirmationSms(
+//                        phone = phone,
+//                        orderId = shorterId
+//                    )
+//
+//                } else {
+//                    Log.e(
+//                        "ORDER_SMS_FLOW",
+//                        "SMS NOT SENT: Customer phone is empty"
+//                    )
+//                }
+//
+//
+//                navController.navigate(
+//                    Screen.OrderSuccessScreen.createRoute(address!!.id)
+//                ) {
+//                    popUpTo(Screen.PaymentScreen.route) {
+//                        inclusive = true
+//                    }
+//                    launchSingleTop = true
+//                }
+//
+//                FcmHelper.sendNotification(
+//                    userId = userId ?: "",
+//                    title = "Order Confirmed 🎉 \t\t  $orderDate",
+//                    body = "Your order #$shorterId has been placed successfully."
+//                )
+//            }
 
+            is PaymentState.CodOrderCreated -> {
+
+                Log.d("ORDER_SMS_FLOW", "================================")
+                Log.d("ORDER_SMS_FLOW", "COD ORDER CREATED SUCCESSFULLY")
+
+                orderViewModel.setRecentOrder(state.order)
+
+                val fullOrderId = state.order.id
+                val shorterId = fullOrderId.takeLast(8).uppercase()
+                val orderDate = formatDate(state.order.createdAt)
+                val phone = address?.phone ?: ""
+
+                Log.d("ORDER_SMS_FLOW", "Full Order ID : $fullOrderId")
+                Log.d("ORDER_SMS_FLOW", "Short Order ID: $shorterId")
+                Log.d("ORDER_SMS_FLOW", "Phone         : $phone")
+                Log.d("ORDER_SMS_FLOW", "Order Date    : $orderDate")
+
+                // FCM
+                FcmHelper.sendNotification(
+                    userId = userId ?: "",
+                    title = "Order Confirmed 🎉  $orderDate",
+                    body = "Your order #$shorterId has been placed successfully."
+                )
+
+                if (phone.isNotBlank()) {
+
+                    Log.d(
+                        "ORDER_SMS_FLOW",
+                        "Calling SMS ViewModel..."
+                    )
+                    val smsRequest = SendOrderSmsRequest(
+                        phone = phone,
+                        email = sessionManager.getUserEmail() ?: "",
+                        items = orderItems.map { item ->
+                            SmsOrderItemDto(
+                                productId = item.productId,
+                                quantity = item.quantity,
+                                price = item.price
+                            )
+                        },
+                        shippingAddress = SmsShippingAddressDto(
+                            street = (address?.addressLine1 + address?.addressLine2),
+                            city = address?.city ?: "",
+                            state = address?.state ?: "",
+                            zipCode = address?.pincode ?: ""
+                        )
+                    )
+
+                    smsViewModel.sendOrderConfirmationSms(
+                        smsRequest
+                    )
+
+                } else {
+
+                    Log.e(
+                        "ORDER_SMS_FLOW",
+                        "SMS NOT SENT: Customer phone is empty"
+                    )
+
+                    viewModel.resetState()
+
+                    navController.navigate(
+                        Screen.OrderSuccessScreen.createRoute(
+                            address!!.id
+                        )
+                    ) {
+                        popUpTo(Screen.PaymentScreen.route) {
+                            inclusive = true
+                        }
+
+                        launchSingleTop = true
+                    }
+                }
+            }
 
             else -> Unit
         }
@@ -211,12 +429,12 @@ fun PaymentScreen(
         }
     }
 
-    PaymentErrorDialog()
+//    PaymentErrorDialog()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Payment") },
+                title = { AutoText("Payment") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -230,7 +448,7 @@ fun PaymentScreen(
         bottomBar = {
             PaymentBottomBar(
                 totalPrice = finalAmount,
-                isLoading = paymentState is PaymentState.Loading,
+                isLoading = isProcessing,
                 onProceed = {
                     when (selectedMethod) {
                         PaymentMethod.RAZORPAY -> {
@@ -250,8 +468,9 @@ fun PaymentScreen(
                                 totalPrice = finalAmount,
                                 deliveryAddress = address!!.id,
                                 notes = "COD",
-                                shippingCharge = 0.0
+                                shippingCharge = deliveryFee
                             )
+
                         }
                     }
                 }
@@ -265,7 +484,7 @@ fun PaymentScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
+            AutoText(
                 text = "Select Payment Method",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
@@ -280,9 +499,9 @@ fun PaymentScreen(
             }
 
             if (paymentState is PaymentState.Error) {
-                Text(
+                AutoText(
                     text = (paymentState as PaymentState.Error).message,
-                    color = MaterialTheme.colorScheme.error,
+                    color = colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -304,7 +523,6 @@ private fun PaymentBottomBar(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
             Row(
@@ -325,22 +543,22 @@ private fun PaymentBottomBar(
                         Icon(
                             imageVector = Icons.Default.AccountBalanceWallet,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = colorScheme.primary,
                             modifier = Modifier.size(24.dp)
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text(
+                        AutoText(
                             text = "Total Amount",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = colorScheme.onSurfaceVariant
                         )
-                        Text(
+                        AutoText(
                             text = "₹$totalPrice",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = colorScheme.onSurface
                         )
                     }
                 }
@@ -350,7 +568,7 @@ private fun PaymentBottomBar(
                     enabled = !isLoading,
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
+                        containerColor = colorScheme.primary,
                         disabledContainerColor = Color(0xFF5B3FD9).copy(alpha = 0.6f)
                     ),
                     modifier = Modifier.height(52.dp)
@@ -358,7 +576,7 @@ private fun PaymentBottomBar(
                     if (isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(20.dp),
-                            MaterialTheme.colorScheme.onPrimary,
+                            colorScheme.onPrimary,
                             strokeWidth = 2.dp
                         )
                     } else {
@@ -369,7 +587,7 @@ private fun PaymentBottomBar(
                             tint = Color.White
                         )
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(
+                        AutoText(
                             text = "Proceed to Pay",
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White
@@ -389,67 +607,16 @@ private fun PaymentBottomBar(
                 Icon(
                     imageVector = Icons.Default.Security,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(13.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
+                AutoText(
                     text = "100% Secure Payments",
                     fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = colorScheme.onSurfaceVariant
                 )
             }
         }
     }
 }
-
-//private fun startRazorpayCheckout(
-//    activity: Activity,
-//    order: RazorpayOrder,
-//    userId: String?,
-//    onSuccess: (String, String, String) -> Unit,
-//    onFailure: (String) -> Unit
-//) {
-//    val checkout = Checkout()
-////    checkout.setKeyID("rzp_live_SUcsurW9fkbXe3")
-////    checkout.setKeyID("rzp_test_1DP5mmOlF5G5ag")
-//
-//    checkout.setKeyID("rzp_test_T4zV3iEH7GKUvL")
-//
-//    val options = JSONObject().apply {
-//        put("name", R.string.app_name)
-//        put("description", "Order Payment")
-//        put("order_id", order.id)
-//        put("amount", order.amount)
-//        put("currency", order.currency)
-//        put("prefill", JSONObject().apply {
-//            put("contact", "")
-//            put("email", "")
-//        })
-//    }
-//
-//    checkout.open(activity, options)
-//
-//    activity.let {
-//        object : PaymentResultWithDataListener {
-//            override fun onPaymentSuccess(
-//                razorpayPaymentId: String?,
-//                paymentData: PaymentData?
-//            ) {
-//                onSuccess(
-//                    razorpayPaymentId ?: "",
-//                    paymentData?.orderId ?: "",
-//                    paymentData?.signature ?: ""
-//                )
-//            }
-//
-//            override fun onPaymentError(
-//                errorCode: Int,
-//                errorDescription: String?,
-//                paymentData: PaymentData?
-//            ) {
-//                onFailure(errorDescription ?: "Payment failed")
-//            }
-//        }
-//    }
-//}

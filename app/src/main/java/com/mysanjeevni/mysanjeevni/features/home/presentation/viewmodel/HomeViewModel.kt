@@ -1,10 +1,11 @@
 package com.mysanjeevni.mysanjeevni.features.home.presentation.viewmodel
 
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
-import com.mysanjeevni.mysanjeevni.features.home.data.repository.LocationRepository
+import com.mysanjeevni.mysanjeevni.features.home.domain.repository.LocationRepository
 import com.mysanjeevni.mysanjeevni.features.medicines.domain.model.Medicine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -13,19 +14,26 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val locationRepository: LocationRepository,
     private val api: ApiService,
-
+    private val savedStateHandle: SavedStateHandle
     ) : ViewModel() {
-    private val _isLoading = MutableStateFlow(true)
+    private val _isLoading = MutableStateFlow(
+        savedStateHandle.get<Boolean>("home_loaded") != true
+    )
+
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
     private val _dealTimeLeft = MutableStateFlow(36000L)
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
     private val _popularProducts = MutableStateFlow<List<Medicine>>(emptyList())
     val popularProducts: StateFlow<List<Medicine>> =
         _popularProducts.asStateFlow()
@@ -37,9 +45,15 @@ class HomeViewModel @Inject constructor(
     val userCity = locationRepository.city
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
+    companion object{
+        private const val PAGE_SIZE = 20
+    }
 
     init {
-        loadHomeData()
+        Log.d("HOME_NAV", "HomeViewModel CREATED")
+        viewModelScope.launch {
+            loadHomeData(isInitialLoad = true)
+        }
         loadPopularProducts()
         startDealTimer()
 
@@ -48,7 +62,7 @@ class HomeViewModel @Inject constructor(
     private fun startDealTimer() {
         viewModelScope.launch {
             while (_dealTimeLeft.value > 0) {
-                delay(1000)
+                delay(1000.milliseconds)
                 _dealTimeLeft.value--
             }
         }
@@ -60,61 +74,103 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadHomeData() {
+    fun refresh() {
         viewModelScope.launch {
-            _isLoading.value = true
+            _isRefreshing.value = true
             try {
-                Log.d("HOME_DEBUG", "Calling getMedicines API...")
-                val res = api.getMedicines()
-                Log.d("HOME_DEBUG", "Response code: ${res.code()}")
-                Log.d("HOME_DEBUG", "Response body: ${res.body()}")
-                Log.d("HOME_DEBUG", "Error body: ${res.errorBody()?.string()}")
-
-                if (res.isSuccessful) {
-                    val data = res.body()?.products ?: emptyList()
-                    Log.d("HOME_DEBUG", "Products count: ${data.size}")
-
-                    _allMedicines.value = data.map { dto ->
-                        Medicine(
-                            id = dto._id,
-                            name = dto.name,
-                            description = dto.description.orEmpty(),
-                            price = dto.price,
-                            mrp = dto.mrp,
-                            category = dto.category,
-                            diseaseCategory = dto.diseaseCategory.orEmpty(),
-                            diseaseSubcategory = dto.diseaseSubcategory.orEmpty(),
-                            productType = dto.productType,
-                            brand = dto.brand.orEmpty(),
-                            stock = dto.stock,
-                            quantity = dto.quantity,
-                            quantityUnit = dto.quantityUnit,
-                            image = dto.image.orEmpty(),
-                            images = dto.images.orEmpty(),
-                            specifications = dto.specifications.orEmpty(),
-                            safetyInformation = dto.safetyInformation.orEmpty(),
-                            requiresPrescription = dto.requiresPrescription,
-                            vendorName = dto.vendorName.orEmpty(),
-                            vendorRating = dto.vendorRating ?: 0.0,
-                            rating = dto.rating,
-                            reviews = dto.reviews,
-                            icon = dto.icon
-                        )
-                    }
-                    Log.d("HOME_DEBUG", "Medicines set: ${_allMedicines.value.size}")
-                } else {
-                    Log.e("HOME_DEBUG", "API Failed: ${res.code()} - ${res.message()}")
-                }
-            } catch (e: Exception) {
-                Log.e("HOME_DEBUG", "Exception: ${e.localizedMessage}")
-                e.printStackTrace()
+                loadHomeData(isInitialLoad = false)
+                loadPopularProducts()
             } finally {
-                _isLoading.value = false
+                _isRefreshing.value = false
             }
         }
     }
 
+    private suspend fun loadHomeData(isInitialLoad: Boolean = false) {
 
+        if (isInitialLoad) {
+            _isLoading.value = true
+        }
+
+        try {
+            Log.d(
+                "HOME_PAGINATION",
+                "Starting medicine pagination"
+            )
+
+            val allProducts = mutableListOf<Medicine>()
+
+            var currentPage = 1
+            var hasMorePages = true
+
+            while (hasMorePages) {
+
+                val res = api.getMedicines(
+                    page = currentPage,
+                    limit = PAGE_SIZE
+                )
+
+                if (!res.isSuccessful) {
+                    break
+                }
+
+                val products = res.body()?.products.orEmpty()
+
+                val mappedMedicines = products.map { dto ->
+                    Medicine(
+                        id = dto._id,
+                        name = dto.name,
+                        description = dto.description.orEmpty(),
+                        price = dto.price,
+                        mrp = dto.mrp,
+                        category = dto.category,
+                        diseaseCategory = dto.diseaseCategory.orEmpty(),
+                        diseaseSubcategory = dto.diseaseSubcategory.orEmpty(),
+                        productType = dto.productType,
+                        brand = dto.brand.orEmpty(),
+                        stock = dto.stock,
+                        quantity = dto.quantity,
+                        quantityUnit = dto.quantityUnit,
+                        image = dto.image.orEmpty(),
+                        images = dto.images.orEmpty(),
+                        specifications = dto.specifications.orEmpty(),
+                        safetyInformation = dto.safetyInformation.orEmpty(),
+                        requiresPrescription = dto.requiresPrescription,
+                        vendorName = dto.vendorName.orEmpty(),
+                        vendorRating = dto.vendorRating ?: 0.0,
+                        rating = dto.rating,
+                        reviews = dto.reviews,
+                        icon = dto.icon
+                    )
+                }
+
+                allProducts.addAll(mappedMedicines)
+
+                if (products.size < PAGE_SIZE) {
+                    hasMorePages = false
+                } else {
+                    currentPage++
+                }
+            }
+
+            _allMedicines.value = allProducts.distinctBy { it.id }
+
+        } catch (e: Exception) {
+
+            Log.e(
+                "HOME_PAGINATION",
+                "Exception=${e.localizedMessage}",
+                e
+            )
+
+        } finally {
+
+            if (isInitialLoad) {
+                _isLoading.value = false
+                savedStateHandle["home_loaded"] = true
+            }
+        }
+    }
     private fun loadPopularProducts() {
         viewModelScope.launch {
             try {

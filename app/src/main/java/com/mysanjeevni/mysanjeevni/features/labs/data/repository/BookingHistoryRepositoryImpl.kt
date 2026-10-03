@@ -26,7 +26,7 @@ class BookingHistoryRepositoryImpl @Inject constructor(
                 "UserId = $userId"
             )
 
-            val response = authApi.getBookingHistory(userId)
+            val response = apiService.getBookingHistory(userId)
 
             Log.d(
                 "LAB_HISTORY",
@@ -107,7 +107,7 @@ class BookingHistoryRepositoryImpl @Inject constructor(
 
         return try {
 
-            val response = authApi.cancelBooking(
+            val response = apiService.cancelBooking(
                 bookingId = bookingId,
                 userId = sessionManager.getUserId()
             )
@@ -162,7 +162,7 @@ class BookingHistoryRepositoryImpl @Inject constructor(
 
         return try {
 
-            val response = authApi.syncBooking(
+            val response = apiService.syncBooking(
                 bookingId = bookingId,
                 userId = sessionManager.getUserId()
             )

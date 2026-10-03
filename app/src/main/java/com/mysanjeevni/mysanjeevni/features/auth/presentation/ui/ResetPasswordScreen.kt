@@ -35,7 +35,7 @@ import com.mysanjeevni.mysanjeevni.features.auth.presentation.viewmodel.AuthView
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
-fun ResetPasswordScreen(navController: NavController, mobile: String) {
+fun ResetPasswordScreen(navController: NavController, mobile: String,resetPasswordToken:String) {
 
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -102,7 +102,7 @@ fun ResetPasswordScreen(navController: NavController, mobile: String) {
                 )
 
                 AutoText(
-                    text = "Create a new password",
+                    text = stringResource(R.string.create_a_new_password),
                     fontSize = 14.sp,
                     color = colorScheme.onSurfaceVariant
                 )
@@ -111,13 +111,13 @@ fun ResetPasswordScreen(navController: NavController, mobile: String) {
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { AutoText("New Password") },
+                    label = { AutoText(stringResource(R.string.new_password)) },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     trailingIcon = {
                         Icon(
                             imageVector = if (passwordVisible) Icons.Default.Visibility
                             else Icons.Default.VisibilityOff,
-                            contentDescription = if (passwordVisible) "Hide" else "Show",
+                            contentDescription = if (passwordVisible) stringResource(R.string.hide) else stringResource(R.string.show),
                             modifier = Modifier.clickable { passwordVisible = !passwordVisible }
                         )
                     },
@@ -137,7 +137,7 @@ fun ResetPasswordScreen(navController: NavController, mobile: String) {
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
-                    label = { AutoText("Confirm Password") },
+                    label = { AutoText(stringResource(R.string.confirm_password)) },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                     trailingIcon = {
                         Icon(
@@ -165,7 +165,7 @@ fun ResetPasswordScreen(navController: NavController, mobile: String) {
                             Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
-                        viewModel.resetPassword(mobile, password)
+                        viewModel.resetPassword(mobile, resetPasswordToken,password)
                     },
                     enabled = isFormValid && uiState !is AuthUiState.Loading,
                     modifier = Modifier.fillMaxWidth().height(52.dp),
@@ -184,7 +184,7 @@ fun ResetPasswordScreen(navController: NavController, mobile: String) {
                             strokeWidth = 2.dp
                         )
                     } else {
-                        AutoText("Reset Password")
+                        AutoText(stringResource(R.string.reset_password))
                     }
                 }
             }
@@ -192,7 +192,7 @@ fun ResetPasswordScreen(navController: NavController, mobile: String) {
             LaunchedEffect(uiState) {
                 when (val state = uiState) {
                     is AuthUiState.PasswordResetSuccess -> {
-                        Toast.makeText(context, "Password Updated", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.password_updated, Toast.LENGTH_SHORT).show()
                         navController.navigate(Screen.Login.route) { popUpTo(0) }
                     }
                     is AuthUiState.Error -> {

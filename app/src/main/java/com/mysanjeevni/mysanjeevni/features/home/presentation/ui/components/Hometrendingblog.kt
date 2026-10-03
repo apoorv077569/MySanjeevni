@@ -58,21 +58,21 @@ fun TrendingProductsSection(
                     onAdd = {
                         cartViewModel.addToCart(CartItem(
                             id = medicine.id, name = medicine.name, price = medicine.price,
-                            originalPrice = medicine.mrp, qty = 1, imageUrl = medicine.image
+                            originalPrice = medicine.mrp, qty = 1, imageUrl = medicine.image, stock = medicine.stock, requirePrescription = medicine.requiresPrescription
                         ))
                     },
                     onIncrement = {
                         val qty = cartState.cartItem.find { it.id == medicine.id }?.qty ?: 0
                         cartViewModel.incrementQty(CartItem(
                             id = medicine.id, name = medicine.name, price = medicine.price,
-                            originalPrice = medicine.mrp, qty = qty, imageUrl = medicine.image
+                            originalPrice = medicine.mrp, qty = qty, imageUrl = medicine.image, stock = medicine.stock, requirePrescription = medicine.requiresPrescription
                         ))
                     },
                     onDecrement = {
                         val qty = cartState.cartItem.find { it.id == medicine.id }?.qty ?: 0
                         cartViewModel.decrementQty(CartItem(
                             id = medicine.id, name = medicine.name, price = medicine.price,
-                            originalPrice = medicine.mrp, qty = qty, imageUrl = medicine.image
+                            originalPrice = medicine.mrp, qty = qty, imageUrl = medicine.image, stock = medicine.stock, requirePrescription = medicine.requiresPrescription
                         ))
                     },
                     onClick = { navController.navigate(Screen.MedicineDetail.createRoute(medicine.id)) }

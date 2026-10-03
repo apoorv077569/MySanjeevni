@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.mysanjeevni.mysanjeevni.data.local.entity.NotificationEntity
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun NotificationCard(
@@ -51,14 +51,14 @@ fun NotificationCard(
                 modifier = Modifier.weight(1f)
             ) {
 
-                Text(
+                AutoText(
                     text = notification.title,
                     fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                Text(
+                AutoText(
                     text = notification.body,
                     color = Color.Gray
                 )

@@ -1,12 +1,10 @@
 package com.mysanjeevni.mysanjeevni.data.remote.api
 
-import com.mysanjeevni.mysanjeevni.data.remote.model.AuthResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.GenericResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.GoogleLoginRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.ProfileResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.SaveTokenRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.SendNotificationRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.UploadResponse
+import com.mysanjeevni.mysanjeevni.data.remote.model.notification.GenericResponse
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.GoogleLoginRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.notification.SaveTokenRequest
+import com.mysanjeevni.mysanjeevni.data.remote.model.notification.SendNotificationRequest
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.AuthResponseDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.CreateLabBookingRequestDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.LabBookingResponseDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.cancel.CancelBookingResponseDto
@@ -20,7 +18,6 @@ import com.mysanjeevni.mysanjeevni.features.wishlist.data.dto.AddWishlistRequest
 import com.mysanjeevni.mysanjeevni.features.wishlist.data.dto.GetWishlistResponse
 import com.mysanjeevni.mysanjeevni.features.wishlist.data.dto.WishlistItemDto
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -28,7 +25,6 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
-import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -51,11 +47,7 @@ interface AuthApiService {
         @Header("x-user-id") userId: String?
     ): Response<BookingHistoryResponseDto>
 
-    @Multipart
-    @POST("api/upload")
-    suspend fun uploadPrescription(
-        @Part image: MultipartBody.Part
-    ):Response<UploadResponse>
+
 
 
     @POST("api/lab-test-bookings/{id}/cancel")
@@ -108,5 +100,5 @@ interface AuthApiService {
     @POST("api/auth/signin-google")
     suspend fun googleSignin(
         @Body request: GoogleLoginRequest
-    ): Response<AuthResponse>
+    ): Response<AuthResponseDto>
 }

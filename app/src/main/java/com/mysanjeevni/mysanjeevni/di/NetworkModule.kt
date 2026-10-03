@@ -14,3 +14,19 @@ annotation class AuthRetrofit
 @Retention(AnnotationRetention.BINARY)
 annotation class MainRetrofit
 
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class PrescriptionRetrofit
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class PrescriptionOkHttp
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class AddressOkHttp
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class AddressRetrofit
+

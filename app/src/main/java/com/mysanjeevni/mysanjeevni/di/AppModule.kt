@@ -3,7 +3,7 @@ package com.mysanjeevni.mysanjeevni.di
 import android.app.Application
 import androidx.room.Room
 import com.mysanjeevni.mysanjeevni.core.Constants
-import com.mysanjeevni.mysanjeevni.data.local.dao.CartDao
+import com.mysanjeevni.mysanjeevni.features.cart.data.local.dao.CartDao
 import com.mysanjeevni.mysanjeevni.data.local.dao.NotificationDao
 import com.mysanjeevni.mysanjeevni.data.local.db.AppDatabase
 import com.mysanjeevni.mysanjeevni.data.remote.api.ApiService
@@ -11,6 +11,8 @@ import com.mysanjeevni.mysanjeevni.data.remote.api.AuthApiService
 import com.mysanjeevni.mysanjeevni.features.labs.data.remote.LabPaymentApi
 import com.mysanjeevni.mysanjeevni.features.payment.data.remote.PaymentApi
 import com.mysanjeevni.mysanjeevni.features.pharmacy.data.remote.PharmacyApi
+import com.mysanjeevni.mysanjeevni.features.profile.data.remote.AddressApiClient
+import com.mysanjeevni.mysanjeevni.features.profile.data.remote.AddressApiService
 import dagger.Module
 import dagger.Provides
 import okhttp3.OkHttpClient
@@ -77,12 +79,24 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideCartDatabase(app: Application): AppDatabase {
+    fun provideAddressApi(): AddressApiService {
+        return AddressApiClient.api
+    }
+
+    @Provides
+    @Singleton
+    fun provideCartDatabase(
+        app: Application
+    ): AppDatabase {
         return Room.databaseBuilder(
             app,
             AppDatabase::class.java,
             "mysanjeevni_db"
-        ).build()
+        )
+            .addMigrations(
+                AppDatabase.MIGRATION_4_5
+            )
+            .build()
     }
 
     @Provides

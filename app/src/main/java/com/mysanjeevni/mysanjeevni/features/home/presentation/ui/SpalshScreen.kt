@@ -32,6 +32,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.FcmHelper
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import kotlinx.coroutines.Dispatchers
@@ -39,7 +40,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun SplashScreen(navController: NavController) {
+fun SplashScreen(navController: NavController,openNotification: Boolean) {
 
     val context = LocalContext.current
     val session = remember { SessionManager(context) }
@@ -74,6 +75,11 @@ fun SplashScreen(navController: NavController) {
                     popUpTo(Screen.Splash.route){inclusive = true}
                 }
             }
+            openNotification ->{
+                navController.navigate(Screen.NotificationScreen.route){
+                    popUpTo(Screen.Splash.route){inclusive = true}
+                }
+            }
             else ->{
                 navController.navigate(Screen.Home.route){
                     popUpTo(Screen.Splash.route){inclusive = true}
@@ -102,7 +108,7 @@ fun SplashScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
+            AutoText(
                 text = stringResource(R.string.app_name),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,

@@ -1,12 +1,44 @@
 package com.mysanjeevni.mysanjeevni.utils.dilaog
 
-import androidx.compose.foundation.layout.*
+import android.util.Log
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -15,59 +47,53 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.mysanjeevni.mysanjeevni.data.remote.model.AddressModel
-import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressItem
+import com.mysanjeevni.mysanjeevni.features.profile.domain.model.Address
+import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.AddressViewModel
 import com.mysanjeevni.mysanjeevni.utils.AutoText
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddressDialog(
-    addressToEdit: AddressItem? = null,
+    addressToEdit: Address? = null,
     onDismiss: () -> Unit,
-    onSave: (AddressModel) -> Unit
+    addressViewModel: AddressViewModel,
+    onSave: (Address) -> Unit
 ) {
-
-    var fullName by remember {
-        mutableStateOf(addressToEdit?.fullName ?: "")
+    val serviceabilityState by addressViewModel.serviceabilityState.collectAsState()
+    var fullName by remember(addressToEdit) { mutableStateOf(addressToEdit?.fullName.orEmpty()) }
+    var phone by remember(addressToEdit) { mutableStateOf(addressToEdit?.phone.orEmpty()) }
+    var addressLine1 by remember(addressToEdit) { mutableStateOf(addressToEdit?.addressLine1.orEmpty()) }
+    var addressLine2 by remember(addressToEdit) { mutableStateOf(addressToEdit?.addressLine2.orEmpty()) }
+    var city by remember(addressToEdit) { mutableStateOf(addressToEdit?.city.orEmpty()) }
+    var pincode by remember(addressToEdit) { mutableStateOf(addressToEdit?.pincode.orEmpty()) }
+    var type by remember(addressToEdit) {
+        mutableStateOf(addressToEdit?.type?.takeIf { it.isNotBlank() } ?: "home")
     }
-
-    var phone by remember {
-        mutableStateOf(addressToEdit?.phone ?: "")
+    var isDefault by remember(addressToEdit) { mutableStateOf(addressToEdit?.isDefault ?: false) }
+    var isLoading by remember { mutableStateOf(false) }
+    val locationState by addressViewModel.locationState.collectAsState()
+    var country by remember(addressToEdit) {
+        mutableStateOf(addressToEdit?.country?.takeIf { it.isNotBlank() } ?: "India")
     }
+    var state by remember(addressToEdit) { mutableStateOf(addressToEdit?.state.orEmpty()) }
+    var countryExpanded by remember { mutableStateOf(false) }
+    var stateExpanded by remember { mutableStateOf(false) }
 
-    var addressLine1 by remember {
-        mutableStateOf(addressToEdit?.addressLine1 ?: "")
+    LaunchedEffect(Unit) {
+        addressViewModel.loadCountries()
     }
-
-    var addressLine2 by remember {
-        mutableStateOf(addressToEdit?.addressLine2 ?: "")
-    }
-
-    var city by remember {
-        mutableStateOf(addressToEdit?.city ?: "")
-    }
-
-    var state by remember {
-        mutableStateOf(addressToEdit?.state ?: "")
-    }
-
-    var pincode by remember {
-        mutableStateOf(addressToEdit?.pincode ?: "")
-    }
-
-    var type by remember {
-        mutableStateOf(addressToEdit?.type ?: "home")
-    }
-
-    var isDefault by remember {
-        mutableStateOf(addressToEdit?.isDefault ?: false)
-    }
-
-    var isLoading by remember {
-        mutableStateOf(false)
+    LaunchedEffect(country) {
+        if (country.isNotBlank()) {
+            addressViewModel.loadStates(country)
+        }
     }
 
     Dialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {
+            if (!isLoading) {
+                onDismiss()
+            }
+        },
         properties = DialogProperties(
             usePlatformDefaultWidth = false
         )
@@ -83,15 +109,19 @@ fun AddressDialog(
             Column(
                 modifier = Modifier
                     .padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .verticalScroll(
+                        rememberScrollState()
+                    ),
+                verticalArrangement =
+                    Arrangement.spacedBy(12.dp)
             ) {
 
                 AutoText(
-                    text = if (addressToEdit == null)
+                    text = if (addressToEdit == null) {
                         "Add Address"
-                    else
-                        "Edit Address",
+                    } else {
+                        "Edit Address"
+                    },
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -104,13 +134,16 @@ fun AddressDialog(
                     label = {
                         AutoText("Full Name")
                     },
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
                     value = phone,
-                    onValueChange = {
-                        phone = it
+                    onValueChange = { value ->
+                        phone = value
+                            .filter { it.isDigit() }
+                            .take(10)
                     },
                     label = {
                         AutoText("Phone Number")
@@ -118,6 +151,7 @@ fun AddressDialog(
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Phone
                     ),
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -145,7 +179,8 @@ fun AddressDialog(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement =
+                        Arrangement.spacedBy(8.dp)
                 ) {
 
                     OutlinedTextField(
@@ -156,13 +191,23 @@ fun AddressDialog(
                         label = {
                             AutoText("City")
                         },
+                        singleLine = true,
                         modifier = Modifier.weight(1f)
                     )
 
                     OutlinedTextField(
                         value = pincode,
-                        onValueChange = {
-                            pincode = it
+                        onValueChange = { value ->
+                            pincode = value
+                                .filter { it.isDigit() }
+                                .take(6)
+                            if (pincode.length == 6) {
+                                addressViewModel.checkServiceability(
+                                    pincode
+                                )
+                            } else {
+                                addressViewModel.clearServiceability()
+                            }
                         },
                         label = {
                             AutoText("Pincode")
@@ -170,20 +215,239 @@ fun AddressDialog(
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
                         ),
+                        singleLine = true,
                         modifier = Modifier.weight(1f)
                     )
-                }
 
-                OutlinedTextField(
-                    value = state,
-                    onValueChange = {
-                        state = it
-                    },
-                    label = {
-                        AutoText("State")
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                }
+                if (serviceabilityState.isLoading) {
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp
+                        )
+
+                        Spacer(Modifier.width(8.dp))
+
+                        AutoText("Checking delivery...")
+                    }
+
+                } else if (pincode.length == 6 && serviceabilityState.serviceable) {
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp)
+                        ) {
+
+                            AutoText(
+                                text = "✅ Deliverable via ${serviceabilityState.courierName}",
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(Modifier.height(6.dp))
+
+                            AutoText(
+                                text = "Shipping Charge: ₹${serviceabilityState.deliveryCharge}"
+                            )
+
+                            AutoText(
+                                text = "Estimated Delivery: ${serviceabilityState.estimatedDeliveryDate}"
+                            )
+
+                            AutoText(
+                                text = "Delivery Time: ${serviceabilityState.estimatedDeliveryDays} Days"
+                            )
+
+                            AutoText(
+                                text = if (serviceabilityState.codAvailable)
+                                    "COD Available"
+                                else
+                                    "COD Not Available"
+                            )
+                        }
+                    }
+
+                } else if (pincode.length == 6 && !serviceabilityState.serviceable) {
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp)
+                        ) {
+                            AutoText(
+                                text = "❌ Sorry! Delivery is not available for this pincode.",
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    ExposedDropdownMenuBox(
+                        expanded = countryExpanded,
+                        onExpandedChange = {
+                            Log.d(
+                                "LOCATION_DEBUG",
+                                "COUNTRY CLICK | count=${locationState.countries.size}"
+                            )
+
+                            if (locationState.countries.isNotEmpty()) {
+                                countryExpanded = !countryExpanded
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+
+                        OutlinedTextField(
+                            value = country,
+                            onValueChange = {},
+                            readOnly = true,
+                            singleLine = true,
+                            label = {
+                                AutoText("Country")
+                            },
+                            placeholder = {
+                                AutoText("Select Country")
+                            },
+                            trailingIcon = {
+                                if (locationState.isLoadingCountries) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(
+                                        expanded = countryExpanded
+                                    )
+                                }
+                            },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = countryExpanded,
+                            onDismissRequest = {
+                                countryExpanded = false
+                            }
+                        ) {
+
+                            locationState.countries.forEach { item ->
+
+                                DropdownMenuItem(
+                                    text = {
+                                        AutoText(item.name)
+                                    },
+                                    onClick = {
+
+                                        Log.d(
+                                            "LOCATION_DEBUG",
+                                            "COUNTRY SELECTED = ${item.name}"
+                                        )
+
+                                        country = item.name
+                                        state = ""
+                                        countryExpanded = false
+
+                                        addressViewModel.loadStates(item.name)
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+
+                    // =========================
+                    // STATE
+                    // =========================
+
+                    ExposedDropdownMenuBox(
+                        expanded = stateExpanded,
+                        onExpandedChange = {
+
+                            Log.d(
+                                "LOCATION_DEBUG",
+                                "STATE CLICK | count=${locationState.states.size}"
+                            )
+
+                            if (locationState.states.isNotEmpty()) {
+                                stateExpanded = !stateExpanded
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+
+                        OutlinedTextField(
+                            value = state,
+                            onValueChange = {},
+                            readOnly = true,
+                            singleLine = true,
+                            label = {
+                                AutoText("State")
+                            },
+                            placeholder = {
+                                AutoText("Select State")
+                            },
+                            trailingIcon = {
+
+                                if (locationState.isLoadingStates) {
+
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        strokeWidth = 2.dp
+                                    )
+
+                                } else {
+
+                                    ExposedDropdownMenuDefaults.TrailingIcon(
+                                        expanded = stateExpanded
+                                    )
+                                }
+                            },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = stateExpanded,
+                            onDismissRequest = {
+                                stateExpanded = false
+                            }
+                        ) {
+
+                            locationState.states.forEach { item ->
+
+                                DropdownMenuItem(
+                                    text = {
+                                        AutoText(item.name)
+                                    },
+                                    onClick = {
+
+                                        Log.d(
+                                            "LOCATION_DEBUG",
+                                            "STATE SELECTED = ${item.name}"
+                                        )
+
+                                        state = item.name
+                                        stateExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
 
                 AutoText(
                     text = "Address Type",
@@ -191,7 +455,9 @@ fun AddressDialog(
                 )
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement =
+                        Arrangement.spacedBy(8.dp)
                 ) {
 
                     listOf(
@@ -207,7 +473,7 @@ fun AddressDialog(
                             },
                             label = {
                                 AutoText(
-                                    item.replaceFirstChar {
+                                    text = item.replaceFirstChar {
                                         it.uppercase()
                                     }
                                 )
@@ -217,7 +483,8 @@ fun AddressDialog(
                 }
 
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment =
+                        Alignment.CenterVertically
                 ) {
 
                     Checkbox(
@@ -228,26 +495,33 @@ fun AddressDialog(
                     )
 
                     AutoText(
-                        "Set as default address"
+                        text = "Set as default address"
                     )
                 }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement =
+                        Arrangement.End,
+                    verticalAlignment =
+                        Alignment.CenterVertically
                 ) {
 
                     TextButton(
+                        enabled = !isLoading,
                         onClick = onDismiss
                     ) {
                         AutoText("Cancel")
                     }
+
                     Spacer(
                         modifier = Modifier.width(8.dp)
                     )
+
                     Button(
                         enabled = !isLoading,
                         onClick = {
+
                             if (
                                 fullName.isBlank() ||
                                 phone.isBlank() ||
@@ -261,32 +535,53 @@ fun AddressDialog(
 
                             isLoading = true
 
-                            onSave(
-                                AddressModel(
-                                    id = addressToEdit?.id ?: "",
-                                    userId = "",
-                                    type = type,
-                                    fullName = fullName,
-                                    phone = phone,
-                                    addressLine1 = addressLine1,
-                                    addressLine2 = addressLine2,
-                                    city = city,
-                                    state = state,
-                                    pincode = pincode,
-                                    isDefault = isDefault
-                                )
+                            val address = Address(
+                                id = addressToEdit?.id.orEmpty(),
+                                userId = addressToEdit?.userId.orEmpty(),
+                                type = type,
+                                fullName = fullName.trim(),
+                                phone = phone.trim(),
+                                addressLine1 =
+                                    addressLine1.trim(),
+                                addressLine2 =
+                                    addressLine2.trim(),
+                                city = city.trim(),
+                                state = state.trim(),
+                                pincode = pincode.trim(),
+                                country = addressToEdit
+                                    ?.country
+                                    ?.takeIf { it.isNotBlank() }
+                                    ?: "India",
+
+                                isDefault = isDefault,
+                                createdAt = addressToEdit
+                                    ?.createdAt
+                                    .orEmpty(),
+
+                                updatedAt = addressToEdit
+                                    ?.updatedAt
+                                    .orEmpty()
                             )
-                            onDismiss()
+
+                            onSave(address)
                         }
                     ) {
+
                         if (isLoading) {
+
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
                                 strokeWidth = 2.dp
                             )
+
                         } else {
+
                             AutoText(
-                                "Save Address"
+                                text = if (addressToEdit == null) {
+                                    "Save Address"
+                                } else {
+                                    "Update Address"
+                                }
                             )
                         }
                     }

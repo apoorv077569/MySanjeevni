@@ -15,7 +15,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mysanjeevni.mysanjeevni.features.currency.presentation.viewmodel.CurrencyViewModel
 import com.mysanjeevni.mysanjeevni.features.labs.presentation.state.LabFilterState
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 val CATEGORIES = listOf("All", "General", "Thyroid", "Diabetes", "Cardiac", "Vitamin", "Liver")
 
@@ -24,11 +28,31 @@ val CATEGORIES = listOf("All", "General", "Thyroid", "Diabetes", "Cardiac", "Vit
 fun LabFilterBottomSheet(
     currentFilter: LabFilterState,
     onApply: (LabFilterState) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    currencyViewModel: CurrencyViewModel = hiltViewModel()
 ) {
     var selectedCategory by remember { mutableStateOf(currentFilter.category) }
     var priceRange by remember { mutableStateOf(currentFilter.maxPrice) }
     val colors = MaterialTheme.colorScheme
+
+    val currencyState by currencyViewModel.state.collectAsStateWithLifecycle()
+
+    // Fallback to INR (rate = 1.0) while loading or if currency fetch failed
+    val currencySymbol = currencyState.currencyInfo?.currencySymbol ?: "₹"
+    val exchangeRate = currencyState.currencyInfo?.exchangeRate ?: 1.0
+
+    // priceRange itself stays in INR (used for actual filtering against backend data),
+    // only the displayed labels are converted for the user's local currency
+    fun formatConverted(inrValue: Float): String {
+        val converted = inrValue * exchangeRate
+        return "$currencySymbol${
+            String.format(
+                java.util.Locale.getDefault(),
+                if (exchangeRate == 1.0) "%.0f" else "%.2f",
+                converted
+            )
+        }"
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -47,19 +71,19 @@ fun LabFilterBottomSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Filter Tests", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = colors.onSurface)
+                AutoText("Filter Tests", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = colors.onSurface)
                 TextButton(onClick = {
                     selectedCategory = "All"
                     priceRange = 10000f
                 }) {
-                    Text("Reset", color = Teal, fontSize = 13.sp)
+                    AutoText("Reset", color = Teal, fontSize = 13.sp)
                 }
             }
 
             Spacer(Modifier.height(20.dp))
 
             // Category
-            Text("Category", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.onSurface)
+            AutoText("Category", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.onSurface)
             Spacer(Modifier.height(10.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 CATEGORIES.forEach { cat ->
@@ -72,7 +96,7 @@ fun LabFilterBottomSheet(
                             .clickable { selectedCategory = cat }
                             .padding(horizontal = 14.dp, vertical = 8.dp)
                     ) {
-                        Text(
+                        AutoText(
                             text = cat,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -89,8 +113,8 @@ fun LabFilterBottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Max Price", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.onSurface)
-                Text("₹${priceRange.toInt()}", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.surfaceVariant)
+                AutoText("Max Price", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.onSurface)
+                AutoText(formatConverted(priceRange), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colors.surfaceVariant)
             }
             Spacer(Modifier.height(8.dp))
             Slider(
@@ -105,8 +129,8 @@ fun LabFilterBottomSheet(
                         colors.surfaceVariant                )
             )
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("₹100", fontSize = 11.sp, color = Color(0xFF9E9E9E))
-                Text("₹10,000", fontSize = 11.sp, color = Color(0xFF9E9E9E))
+                AutoText(formatConverted(100f), fontSize = 11.sp, color = Color(0xFF9E9E9E))
+                AutoText(formatConverted(10000f), fontSize = 11.sp, color = Color(0xFF9E9E9E))
             }
 
             Spacer(Modifier.height(28.dp))
@@ -126,7 +150,7 @@ fun LabFilterBottomSheet(
                 shape = RoundedCornerShape(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Teal)
             ) {
-                Text("Apply Filters", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.White)
+                AutoText("Apply Filters", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.White)
             }
         }
     }

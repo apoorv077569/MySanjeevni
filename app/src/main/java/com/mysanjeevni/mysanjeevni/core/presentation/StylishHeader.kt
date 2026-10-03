@@ -48,6 +48,7 @@ fun StylishHeader(
     focusRequester: FocusRequester,
     location: String,
     onLocationClick: () -> Unit,
+    unreadCount: Int,
     onNotificationClick: () -> Unit
 ) {
 
@@ -120,12 +121,14 @@ fun StylishHeader(
                         modifier = Modifier.size(22.dp)
                     )
 
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .background(Color.Red, CircleShape)
-                            .align(Alignment.TopEnd)
-                    )
+                    if (unreadCount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .background(Color.Red, CircleShape)
+                                .align(Alignment.TopEnd)
+                        )
+                    }
                 }
             }
         }

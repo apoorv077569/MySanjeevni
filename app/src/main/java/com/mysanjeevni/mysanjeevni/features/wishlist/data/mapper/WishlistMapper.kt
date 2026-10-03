@@ -10,5 +10,7 @@ fun WishlistItemDto.toDomain(): WishlistItem {
         productName = productName,
         price = price,
         image = image,
+        stock = stock,
+        requirePrescription = requirePrescription
     )
 }

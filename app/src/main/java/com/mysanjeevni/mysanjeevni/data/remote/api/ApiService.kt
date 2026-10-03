@@ -1,20 +1,30 @@
 package com.mysanjeevni.mysanjeevni.data.remote.api
 
-import com.mysanjeevni.mysanjeevni.data.remote.model.AddToCartRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.AuthResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.CreateAddressRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.GenericResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.LoginRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.ProfileResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.RegisterRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.ResetPasswordRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.SendOtpBeforeSignupRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.SendOtpRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.UpdateAddressRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.UpdateCartRequest
-import com.mysanjeevni.mysanjeevni.data.remote.model.VerifyOtpRequest
-import com.mysanjeevni.mysanjeevni.features.cart.domain.model.CartResponse
+import com.mysanjeevni.mysanjeevni.data.remote.model.notification.GenericResponse
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.GoogleLoginRequest
+import com.mysanjeevni.mysanjeevni.features.cart.data.dto.UpdateCartRequest
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.AuthResponseDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.LoginRequestDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.RegisterRequestDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.ResetPasswordRequestDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.SendOtpBeforeSignupRequestDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.SendOtpRequestDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.VerifyOtpBeforeSignupDto
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.VerifyOtpRequestDto
+import com.mysanjeevni.mysanjeevni.features.cart.data.dto.CartResponse
 import com.mysanjeevni.mysanjeevni.features.category.data.dto.CategoryResponseDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.AgoraTokenRequestDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.AgoraTokenResponseDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.BookConsultationRequestDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.BookConsultationResponseDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.CancelConsultationRequestDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.CancelConsultationResponseDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.ConsultationResponseDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.DoctorConsultationSmsRequestDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.DoctorConsultationSmsResponseDto
+import com.mysanjeevni.mysanjeevni.features.consult.data.dto.DoctorResponseDto
+import com.mysanjeevni.mysanjeevni.features.currency.data.dto.CountryResponseDto
+import com.mysanjeevni.mysanjeevni.features.currency.data.dto.ExchangeRateResponseDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.CreateLabBookingRequestDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.LabBookingResponseDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.LabTestDetailResponse
@@ -27,13 +37,20 @@ import com.mysanjeevni.mysanjeevni.features.labs.data.dto.slot.SlotsRequestDto
 import com.mysanjeevni.mysanjeevni.features.labs.data.dto.slot.SlotsResponseDto
 import com.mysanjeevni.mysanjeevni.features.medicines.data.dto.MedicineDetailResponseDto
 import com.mysanjeevni.mysanjeevni.features.medicines.data.dto.MedicineResponseDto
+import com.mysanjeevni.mysanjeevni.features.orders.data.dto.CancelOrderRequest
+import com.mysanjeevni.mysanjeevni.features.orders.data.dto.CancelOrderResponse
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.CreateOrderRequest
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.CreateOrderResponse
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.GetOrdersResponse
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.RazorpayOrderResponse
-import com.mysanjeevni.mysanjeevni.features.profile.data.model.UpdateProfileRequest
-import com.mysanjeevni.mysanjeevni.features.profile.data.model.UpdateProfileResponse
-import com.mysanjeevni.mysanjeevni.features.profile.presentation.state.AddressResponse
+import com.mysanjeevni.mysanjeevni.features.orders.data.dto.ServiceabilityRequestDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.AddressResponseDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.CreateAddressRequestDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.ProfileImageUploadResponseDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.ProfileResponseDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.UpdateAddressRequestDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.UpdateProfileRequestDto
+import com.mysanjeevni.mysanjeevni.features.profile.data.dto.UpdateProfileResponseDto
 import com.mysanjeevni.mysanjeevni.features.review.data.dto.CreateReviewRequestDto
 import com.mysanjeevni.mysanjeevni.features.review.data.dto.CreateReviewResponseDto
 import com.mysanjeevni.mysanjeevni.features.review.data.dto.ReviewListResponseDto
@@ -47,23 +64,27 @@ import com.mysanjeevni.mysanjeevni.features.support.returns.data.dto.ReturnRespo
 import com.mysanjeevni.mysanjeevni.features.support.ticket.data.dto.CreateTicketRequestDto
 import com.mysanjeevni.mysanjeevni.features.support.ticket.data.dto.CreateTicketResponseDto
 import com.mysanjeevni.mysanjeevni.features.support.ticket.data.dto.TicketsResponseDto
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Url
 
 interface ApiService {
 
     @POST("api/auth/login")
     suspend fun loginUser(
-        @Body request: LoginRequest
-    ): Response<AuthResponse>
+        @Body request: LoginRequestDto
+    ): Response<AuthResponseDto>
 
     @POST("api/user/support/chat")
     suspend fun sendChatMessage(
@@ -89,7 +110,7 @@ interface ApiService {
     @GET("api/user/profile")
     suspend fun getProfile(
         @Query("id") userId: String?
-    ): Response<ProfileResponse>
+    ): Response<ProfileResponseDto>
 
     @POST("api/inquiries")
     suspend fun raiseTicket(
@@ -112,8 +133,14 @@ interface ApiService {
 
     @PUT("api/user/update-profile")
     suspend fun updateProfile(
-        @Body request: UpdateProfileRequest
-    ): Response<UpdateProfileResponse>
+        @Body request: UpdateProfileRequestDto
+    ): Response<UpdateProfileResponseDto>
+
+    @Multipart
+    @POST("api/user/upload-profile-image")
+    suspend fun uploadProfileImage(
+        @Part image: MultipartBody.Part
+    ): Response<ProfileImageUploadResponseDto>
 
     @GET("api/lab-partners/serviceability")
     suspend fun checkServiceability(
@@ -135,7 +162,7 @@ interface ApiService {
     suspend fun cancelBooking(
         @Path("id") bookingId: String,
         @Header("x-user-id") userId: String?
-    ): CancelBookingResponseDto
+    ): Response<CancelBookingResponseDto>
 
     @POST("api/lab-test-bookings/{id}/sync")
     suspend fun syncBooking(
@@ -145,38 +172,43 @@ interface ApiService {
 
     @POST("api/auth/signup")
     suspend fun registerUser(
-        @Body request: RegisterRequest
-    ): Response<AuthResponse>
+        @Body request: RegisterRequestDto
+    ): Response<AuthResponseDto>
 
     @POST("api/auth/phone/signup")
     suspend fun sendOtpBeforeSignup(
-        @Body request: SendOtpBeforeSignupRequest
-    ): Response<AuthResponse>
+        @Body request: SendOtpBeforeSignupRequestDto
+    ): Response<AuthResponseDto>
 
     @POST("api/auth/phone/verify-signup-otp")
     suspend fun verifyBeforeSignup(
-        @Body request: VerifyOtpRequest
-    ): Response<AuthResponse>
+        @Body request: VerifyOtpBeforeSignupDto
+    ): Response<AuthResponseDto>
 
     @GET("api/cart")
     suspend fun getCart(
-        @Query("userId") userId:String
+        @Query("userId") userId: String
     ): Response<CartResponse>
 
     @POST("api/auth/phone/send-otp")
     suspend fun sendOtp(
-        @Body request: SendOtpRequest
+        @Body request: SendOtpRequestDto
     ): Response<GenericResponse>
 
-    @POST("api/auth/reset-password")
+    @POST("api/shiprocket/serviceability")
+    suspend fun checkServiceability(
+        @Body request: ServiceabilityRequestDto
+    ): Response<com.mysanjeevni.mysanjeevni.features.orders.data.dto.ServiceabilityResponseDto>
+
+    @POST("api/auth/forgot-password/reset")
     suspend fun resetPassword(
-        @Body request: ResetPasswordRequest
+        @Body request: ResetPasswordRequestDto
     ): Response<GenericResponse>
 
     @POST("api/auth/phone/verify-otp")
     suspend fun verifyOtp(
-        @Body request: VerifyOtpRequest
-    ): Response<AuthResponse>
+        @Body request: VerifyOtpRequestDto
+    ): Response<AuthResponseDto>
 
     @GET("api/lab-tests")
     suspend fun getLabTests(
@@ -191,16 +223,13 @@ interface ApiService {
     suspend fun getLabTestById(
         @Path("id") id: String
     ): Response<LabTestDetailResponse>
+
     @GET("api/products")
-    suspend fun getMedicines(): Response<MedicineResponseDto>
-
-    @POST("api/cart/add")
-    suspend fun addToCart(
-        @Body request: AddToCartRequest
-    ): Response<CartResponse>
-
-
-
+    suspend fun getMedicines(
+        @Query("page") page: Int,
+        @Query("limit") limit: Int = 20,
+        @Query("category") category:String ?= null,
+    ): Response<MedicineResponseDto>
 
 
     @POST("api/cart")
@@ -222,6 +251,8 @@ interface ApiService {
     ): Response<ReviewListResponseDto>
 
 
+
+
     @POST("api/reviews")
     suspend fun createReview(
         @Header("Authorization") token: String,
@@ -234,13 +265,6 @@ interface ApiService {
         @Path("id") id: String,
         @Body request: UpdateReviewRequestDto
     ): Response<UpdateReviewResponseDto>
-
-
-    @DELETE("api/cart")
-    suspend fun clearCart(
-        @Query("userId") userId: String
-    ):  Result<Unit>
-
 
 
     @GET("api/orders")
@@ -263,8 +287,8 @@ interface ApiService {
     @POST("api/addresses")
     suspend fun addAddress(
         @Header("Authorization") token: String,
-        @Body address: CreateAddressRequest
-    ): Response<AddressResponse>
+        @Body address: CreateAddressRequestDto
+    ): Response<AddressResponseDto>
 
     @GET("api/products/popular")
     suspend fun getPopularProducts(): Response<MedicineResponseDto>
@@ -273,7 +297,7 @@ interface ApiService {
     suspend fun getAddresses(
         @Header("Authorization") token: String,
         @Query("userId") userId: String
-    ): Response<AddressResponse>
+    ): Response<AddressResponseDto>
 
     @DELETE("api/addresses/{id}")
     suspend fun deleteAddress(
@@ -286,12 +310,62 @@ interface ApiService {
     suspend fun updateAddress(
         @Header("Authorization") token: String,
         @Path("id") id: String,
-        @Body address: UpdateAddressRequest
-    ): Response<AddressResponse>
+        @Body address: UpdateAddressRequestDto
+    ): Response<AddressResponseDto>
 
     @GET("api/categories")
     suspend fun getCategories(): Response<CategoryResponseDto>
 
+    @POST("api/auth/google")
+    suspend fun googleSignin(
+        @Body request: GoogleLoginRequest
+    ): Response<AuthResponseDto>
 
 
+    @PUT("api/orders")
+    suspend fun cancelOrder(
+        @Body request: CancelOrderRequest
+    ): Response<CancelOrderResponse>
+
+    @GET("/api/doctors")
+    suspend fun getDoctors(
+        @Query("department") department: String? = null,
+        @Query("search") search: String? = null
+    ): Response<DoctorResponseDto>
+
+    @GET("api/consultations")
+    suspend fun getConsultations(
+        @Query("userId") userId: String
+    ): ConsultationResponseDto
+
+    @POST("api/consultations")
+    suspend fun bookConsultation(
+        @Body request: BookConsultationRequestDto
+    ): Response<BookConsultationResponseDto>
+
+    @PUT("api/consultations/{id}")
+    suspend fun cancelConsultation(
+        @Path("id") consultationId: String,
+        @Body request: CancelConsultationRequestDto
+    ): Response<CancelConsultationResponseDto>
+
+    @POST("api/agora/token")
+    suspend fun generateAgoraToken(
+        @Body request: AgoraTokenRequestDto
+    ):Response<AgoraTokenResponseDto>
+
+    @GET
+    suspend fun getUserCountry(
+        @Url url: String = "https://ipwho.is/"
+    ): Response<CountryResponseDto>
+
+    @GET
+    suspend fun getExchangeRate(
+        @Url url: String = "https://api.exchangerate-api.com/v4/latest/INR"
+    ): Response<ExchangeRateResponseDto>
+
+    @POST("api/doctor-consultation/book/with-sms")
+    suspend fun sendConsultationBookingSms(
+        @Body request: DoctorConsultationSmsRequestDto
+    ): DoctorConsultationSmsResponseDto
 }

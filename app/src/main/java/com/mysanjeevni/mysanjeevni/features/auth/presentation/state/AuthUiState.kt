@@ -1,24 +1,26 @@
 package com.mysanjeevni.mysanjeevni.features.auth.presentation.state
 
-import com.mysanjeevni.mysanjeevni.data.remote.model.AuthResponse
-import com.mysanjeevni.mysanjeevni.data.remote.model.GenericResponse
+
+import com.mysanjeevni.mysanjeevni.data.remote.model.notification.GenericResponse
+import com.mysanjeevni.mysanjeevni.features.auth.data.dto.AuthResponseDto
+import com.mysanjeevni.mysanjeevni.features.auth.domain.model.AuthResult
 
 sealed class AuthUiState {
 
-    object Idle : AuthUiState()
+    data object Idle : AuthUiState()
 
-    object Loading : AuthUiState()
+    data object Loading : AuthUiState()
 
     data class LoginSuccess(
-        val data: AuthResponse
+        val data: AuthResult
     ) : AuthUiState()
 
     data class GoogleLoginSuccess(
-        val data: AuthResponse
+        val data: AuthResponseDto
     ) : AuthUiState()
 
     data class SignupSuccess(
-        val data: AuthResponse
+        val data: AuthResult
     ) : AuthUiState()
 
     data class OtpSent(
@@ -26,15 +28,15 @@ sealed class AuthUiState {
     ) : AuthUiState()
 
     data class SignupOtpSent(
-        val data: AuthResponse
+        val data: AuthResult
     ) : AuthUiState()
 
     data class OtpVerified(
-        val data: AuthResponse
+        val data: AuthResult
     ) : AuthUiState()
 
     data class SignupOtpVerified(
-        val data: AuthResponse
+        val data: AuthResult
     ) : AuthUiState()
 
     data class PasswordResetSuccess(

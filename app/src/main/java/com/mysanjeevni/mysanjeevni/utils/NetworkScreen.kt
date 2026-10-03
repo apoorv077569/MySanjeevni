@@ -29,7 +29,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -158,7 +157,7 @@ fun NoInternetScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
+        AutoText(
             text = "No Internet Connection",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
@@ -168,7 +167,7 @@ fun NoInternetScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
+        AutoText(
             text = "Please check your internet connection and try again.",
             fontSize = 15.sp,
             textAlign = TextAlign.Center,
@@ -194,7 +193,7 @@ fun NoInternetScreen(
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
+            AutoText(
                 text = "Retry",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold
@@ -226,7 +225,7 @@ fun NoInternetScreen(
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(
+                    AutoText(
                         text = "Tips",
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
@@ -252,7 +251,7 @@ fun NoInternetScreen(
                             )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text(
+                        AutoText(
                             text = tip.text,
                             fontSize = 14.sp,
                             color = palette.tipText,

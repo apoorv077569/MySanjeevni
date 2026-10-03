@@ -10,9 +10,9 @@ class MedicineRepositoryImpl @Inject constructor(
     private val api: ApiService
 ) : MedicineRepository {
 
-    override suspend fun getMedicines(): Result<List<Medicine>> {
+    override suspend fun getMedicines(page:Int,limit:Int): Result<List<Medicine>> {
         return try {
-            val response = api.getMedicines()
+            val response = api.getMedicines(page,limit)
             if (response.isSuccessful) {
                 val medicines = response.body()?.products?.map { it.toDomain() }.orEmpty()
                 Result.success(medicines)

@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun RatingSummaryCard(
@@ -31,7 +32,7 @@ fun RatingSummaryCard(
                 .padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            AutoText(
                 text = rating.toString(),
                 fontSize = 40.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -50,13 +51,13 @@ fun RatingSummaryCard(
             Spacer(Modifier.width(16.dp))
 
             Column {
-                Text(
+                AutoText(
                     text = "Overall Rating",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
-                Text(
+                AutoText(
                     text = "$reviews Reviews",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant

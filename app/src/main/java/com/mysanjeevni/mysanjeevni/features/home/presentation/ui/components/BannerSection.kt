@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.mysanjeevni.mysanjeevni.app.LocalIsDarkTheme
 import com.mysanjeevni.mysanjeevni.core.navigation.Screen
 import com.mysanjeevni.mysanjeevni.features.home.presentation.ui.LavenderPrimary
 import com.mysanjeevni.mysanjeevni.features.home.presentation.ui.TealAccent
@@ -38,7 +39,8 @@ import com.mysanjeevni.mysanjeevni.utils.AutoText
 
 @Composable
 fun PrescriptionActionCard(navController: NavController) {
-    val isDark = isSystemInDarkTheme()
+//    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current || isSystemInDarkTheme()
     val cardBg = if (isDark) Color(0xFF15302D) else Color(0xFFE0F2F1)
     val textColor = if (isDark) Color.White else Color.Black
 
@@ -71,7 +73,7 @@ fun PrescriptionActionCard(navController: NavController) {
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),  // ✅ proper padding
                 modifier = Modifier.wrapContentSize()
             ) {
-                Text("Upload Now", fontSize = 12.sp, maxLines = 1, color = Color.White)  // ✅ maxLines = 1
+                AutoText("Upload Now", fontSize = 12.sp, maxLines = 1, color = Color.White)  // ✅ maxLines = 1
             }
         }
     }
@@ -79,7 +81,8 @@ fun PrescriptionActionCard(navController: NavController) {
 
 @Composable
 fun ActionGridSection() {
-    val isDark = isSystemInDarkTheme()
+//    val isDark = isSystemInDarkTheme()
+    val isDark = LocalIsDarkTheme.current
     val greenCardBg = if (isDark) Color(0xFF1B2A14) else Color(0xFFF1F8E9)
     val purpleCardBg = if (isDark) Color(0xFF2A2030) else Color(0xFFF3E5F5)
     val textColor = if (isDark) Color.White else Color.Black

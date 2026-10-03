@@ -1,6 +1,6 @@
 package com.mysanjeevni.mysanjeevni.features.profile.presentation.ui
 
-import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -35,16 +35,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,6 +57,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.mysanjeevni.mysanjeevni.R
 import com.mysanjeevni.mysanjeevni.features.profile.presentation.viewmodel.EditProfileViewModel
+import com.mysanjeevni.mysanjeevni.utils.AutoText
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,14 +69,13 @@ fun EditProfileScreen(navController: NavController) {
     val context = LocalContext.current
     val sessionManager = SessionManager(context)
     val userId = sessionManager.getUserId()
-    var selectedImageUri by remember {
-        mutableStateOf<Uri?>(null)
-    }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        selectedImageUri = uri
+        if (uri != null) {
+            viewModel.onImageSelected(uri)
+        }
     }
     val colorScheme = MaterialTheme.colorScheme
     LaunchedEffect(userId) {
@@ -89,7 +85,21 @@ fun EditProfileScreen(navController: NavController) {
     }
     LaunchedEffect(state.navigateBack) {
         if (state.navigateBack) {
+
+            Log.d(
+                "PROFILE_NAV_RESULT",
+                "Profile updated successfully, sending refresh result"
+            )
+
+            navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set(
+                    "profile_updated",
+                    true
+                )
+
             viewModel.onNavigatedBack()
+
             navController.popBackStack()
         }
     }
@@ -98,7 +108,7 @@ fun EditProfileScreen(navController: NavController) {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.edit_profile)) },
+                    title = { AutoText(stringResource(R.string.edit_profile)) },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
@@ -134,9 +144,9 @@ fun EditProfileScreen(navController: NavController) {
                                 .clickable { galleryLauncher.launch("image/*") }
                         ) {
                             when {
-                                selectedImageUri != null -> {
+                                state.selectedImageUri != null -> {
                                     AsyncImage(
-                                        model = selectedImageUri,
+                                        model = state.selectedImageUri,
                                         contentDescription = null,
                                         modifier = Modifier.fillMaxSize(),
                                         contentScale = ContentScale.Crop
@@ -182,7 +192,7 @@ fun EditProfileScreen(navController: NavController) {
                     TextField(
                         value = state.fullName,
                         onValueChange = { viewModel.onNameChanged(it) },
-                        label = { Text(stringResource(R.string.full_name)) },
+                        label = { AutoText(stringResource(R.string.full_name)) },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = colorScheme.surfaceVariant,
                             unfocusedContainerColor = colorScheme.surfaceVariant,
@@ -205,7 +215,7 @@ fun EditProfileScreen(navController: NavController) {
                     TextField(
                         value = state.email,
                         onValueChange = { viewModel.onEmailChanged(it) },
-                        label = { Text(stringResource(R.string.email)) },
+                        label = { AutoText(stringResource(R.string.email)) },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = colorScheme.surfaceVariant,
                             unfocusedContainerColor = colorScheme.surfaceVariant,
@@ -231,7 +241,7 @@ fun EditProfileScreen(navController: NavController) {
                     TextField(
                         value = state.phone,
                         onValueChange = { viewModel.onPhoneChanged(it) },
-                        label = { Text(stringResource(R.string.mobile_number)) },
+                        label = { AutoText(stringResource(R.string.mobile_number)) },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = colorScheme.surfaceVariant,
                             unfocusedContainerColor = colorScheme.surfaceVariant,
@@ -257,7 +267,7 @@ fun EditProfileScreen(navController: NavController) {
                     TextField(
                         value = state.address,
                         onValueChange = { viewModel.onAddressChanged(it) },
-                        label = { Text("Address") },
+                        label = { AutoText("Address") },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = colorScheme.surfaceVariant,
                             unfocusedContainerColor = colorScheme.surfaceVariant,
@@ -280,6 +290,7 @@ fun EditProfileScreen(navController: NavController) {
 
                     Button(
                         onClick = {
+                            Log.d("EDIT_PROFILE_UI", "Save Changes button clicked")
                             viewModel.updateProfile()
                         },
                         enabled = !state.isLoading,
@@ -295,7 +306,7 @@ fun EditProfileScreen(navController: NavController) {
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text(
+                            AutoText(
                                 stringResource(R.string.save_changes),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold

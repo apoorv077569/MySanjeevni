@@ -6,11 +6,12 @@ import androidx.lifecycle.viewModelScope
 import com.mysanjeevni.mysanjeevni.features.cart.domain.repository.CartRepository
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.CreateOrderRequest
 import com.mysanjeevni.mysanjeevni.features.orders.data.dto.OrderItemDto
+import com.mysanjeevni.mysanjeevni.features.orders.data.mapper.toDomain
 import com.mysanjeevni.mysanjeevni.features.orders.domain.repository.OrderRepository
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.CreateRazorpayOrderRequest
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.PaymentRepository
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.RazorpayOrder
-import com.mysanjeevni.mysanjeevni.features.payment.data.remote.VerifyPaymentRequest
+import com.mysanjeevni.mysanjeevni.features.payment.data.dto.CreateRazorpayOrderRequest
+import com.mysanjeevni.mysanjeevni.features.payment.domain.repository.PaymentRepository
+import com.mysanjeevni.mysanjeevni.features.payment.data.dto.RazorpayOrder
+import com.mysanjeevni.mysanjeevni.features.payment.data.dto.VerifyPaymentRequest
 import com.mysanjeevni.mysanjeevni.features.payment.presentation.state.PaymentState
 import com.mysanjeevni.mysanjeevni.utils.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -71,6 +72,12 @@ class PaymentViewModel @Inject constructor(
                 }
         }
     }
+
+    fun getRazorpayOrderId() = razorpayOrderId
+
+    fun getRazorpayPaymentId() = razorpayPaymentId
+
+    fun getRazorpaySignature() = razorpaySignature
 
     fun verifyPayment(
         razorpayOrderId: String,
@@ -168,7 +175,11 @@ class PaymentViewModel @Inject constructor(
                             "COD Order - No Razorpay Order Returned"
                         )
                         cartRepository.clearCart(userId ?: "")
-                        _paymentState.value = PaymentState.PaymentSuccess
+                        if (notes == "COD") {
+                            _paymentState.value = PaymentState.CodOrderCreated(response.order.toDomain())
+                        } else {
+                            _paymentState.value = PaymentState.PaymentSuccess
+                        }
                     }
                 }
                 .onFailure { e ->
